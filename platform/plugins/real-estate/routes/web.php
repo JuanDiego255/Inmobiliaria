@@ -309,6 +309,9 @@ Route::group(['namespace' => 'Botble\RealEstate\Http\Controllers', 'middleware' 
             Route::get('board/{token}', 'PublicBoardController@show')
                 ->name('public.board.show');
 
+            Route::post('board/{token}/update-status', 'PublicBoardController@updatePropertyStatus')
+                ->name('public.board.update-status');
+
             Route::get('currency/switch/{code?}', [
                 'as' => 'public.change-currency',
                 'uses' => 'PublicController@changeCurrency',

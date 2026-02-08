@@ -40,4 +40,12 @@ return [
     'floors' => 'Floors',
     'area' => 'Area',
     'view_property' => 'View Property',
+    'status_updated' => 'Property status updated successfully!',
+    'kanban' => [
+        'properties' => 'Properties',
+        'interested' => 'Interested',
+        'visited' => 'Visited',
+        'discarded' => 'Discarded',
+        'drop_here' => 'Drag properties here',
+    ],
 ];

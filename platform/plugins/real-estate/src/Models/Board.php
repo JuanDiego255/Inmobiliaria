@@ -48,7 +48,7 @@ class Board extends BaseModel
     public function properties(): BelongsToMany
     {
         return $this->belongsToMany(Property::class, 're_board_properties')
-            ->withPivot(['notes', 'order'])
+            ->withPivot(['notes', 'order', 'property_status'])
             ->withTimestamps()
             ->orderBy('re_board_properties.order');
     }

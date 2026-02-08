@@ -1,0 +1,38 @@
+<?php
+
+return [
+    'create' => 'Nueva cuenta',
+    'edit' => 'Editar cuenta ":name"',
+    'name' => 'Cuentas',
+    'form' => [
+        'email' => 'Correo electrónico',
+        'password' => 'Contraseña',
+        'password_confirmation' => 'Confirmación de contraseña',
+        'change_password' => '¿Cambiar contraseña?',
+        'is_public_profile' => '¿Perfil público?',
+    ],
+    'forgot_password' => '¿Olvidaste tu contraseña?',
+    'login' => 'Iniciar sesión',
+    'buy_credits' => 'Comprar créditos',
+    'credits' => 'créditos',
+    'account_settings' => 'Configuración de la cuenta',
+    'update_profile_success' => '¡Perfil actualizado con éxito!',
+    'security' => 'Seguridad',
+    'packages' => 'Paquetes',
+    'transactions' => 'Transacciones',
+    'subscribe_package' => 'Suscribirse al paquete ":name"',
+    'description' => 'Descripción',
+    'first_name' => 'Nombre',
+    'last_name' => 'Apellido',
+    'username' => 'Nombre de usuario',
+    'username_placeholder' => 'Ej: juan_perez',
+    'company' => 'Nombre de la empresa',
+    'company_placeholder' => 'Nombre de la empresa',
+    'phone' => 'Teléfono',
+    'phone_placeholder' => 'Teléfono',
+    'email_placeholder' => 'Ej: ejemplo@gmail.com',
+    'dob' => 'Fecha de nacimiento',
+    'number_of_properties' => 'Número de propiedades',
+    'agents' => 'Agentes',
+];
+

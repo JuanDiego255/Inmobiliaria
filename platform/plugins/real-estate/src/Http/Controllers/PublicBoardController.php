@@ -5,8 +5,6 @@ namespace Botble\RealEstate\Http\Controllers;
 use Botble\Base\Http\Responses\BaseHttpResponse;
 use Botble\Media\Facades\RvMedia;
 use Botble\RealEstate\Models\Board;
-use Botble\SeoHelper\Facades\SeoHelper;
-use Botble\Theme\Facades\Theme;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 
@@ -22,7 +20,9 @@ class PublicBoardController extends Controller
             }])
             ->firstOrFail();
 
-        SeoHelper::setTitle($board->name);
+        if (class_exists(\Botble\SeoHelper\Facades\SeoHelper::class)) {
+            \Botble\SeoHelper\Facades\SeoHelper::setTitle($board->name);
+        }
 
         $statuses = [
             'properties' => trans('plugins/real-estate::board.kanban.properties'),
@@ -56,8 +56,8 @@ class PublicBoardController extends Controller
             }
         }
 
-        if (defined('THEME_MODULE_SCREEN_NAME')) {
-            return Theme::scope('real-estate.board', compact('board', 'columns', 'statuses'))->render();
+        if (defined('THEME_MODULE_SCREEN_NAME') && class_exists(\Botble\Theme\Facades\Theme::class)) {
+            return \Botble\Theme\Facades\Theme::scope('real-estate.board', compact('board', 'columns', 'statuses'))->render();
         }
 
         return view('plugins/real-estate::boards.public-board', compact('board', 'columns', 'statuses'));

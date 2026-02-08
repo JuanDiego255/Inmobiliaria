@@ -312,12 +312,6 @@ Route::group(['namespace' => 'Botble\RealEstate\Http\Controllers', 'middleware' 
             Route::post('send-consult', 'PublicController@postSendConsult')
                 ->name('public.send.consult');
 
-            Route::get('board/{token}', 'PublicBoardController@show')
-                ->name('public.board.show');
-
-            Route::post('board/{token}/update-status', 'PublicBoardController@updatePropertyStatus')
-                ->name('public.board.update-status');
-
             Route::get('currency/switch/{code?}', [
                 'as' => 'public.change-currency',
                 'uses' => 'PublicController@changeCurrency',
@@ -504,6 +498,13 @@ Route::group(['namespace' => 'Botble\RealEstate\Http\Controllers', 'middleware' 
             Route::get('ajax/review/{slug}', [ReviewController::class, 'index'])->name('public.ajax.review.index');
         });
     }
+
+    // Public board routes (outside theme conditional so they always register)
+    Route::get('board/{token}', 'PublicBoardController@show')
+        ->name('public.board.show');
+
+    Route::post('board/{token}/update-status', 'PublicBoardController@updatePropertyStatus')
+        ->name('public.board.update-status');
 
     Route::group(['prefix' => 'payments'], function () {
         Route::post('checkout', 'CheckoutController@postCheckout')->name('payments.checkout');

@@ -11,6 +11,7 @@ use Botble\Base\Facades\PageTitle;
 use Botble\Base\Forms\FormBuilder;
 use Botble\Base\Http\Controllers\BaseController;
 use Botble\Base\Http\Responses\BaseHttpResponse;
+use Botble\Media\Facades\RvMedia;
 use Botble\RealEstate\Facades\RealEstateHelper;
 use Botble\RealEstate\Forms\PropertyForm;
 use Botble\RealEstate\Http\Requests\PropertyRequest;
@@ -22,6 +23,7 @@ use Botble\RealEstate\Services\StorePropertyCategoryService;
 use Botble\RealEstate\Tables\PropertyTable;
 use Carbon\Carbon;
 use Exception;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class PropertyController extends BaseController
@@ -138,6 +140,95 @@ class PropertyController extends BaseController
                 ->setError()
                 ->setMessage($exception->getMessage());
         }
+    }
+
+    public function getGridData(Request $request): JsonResponse
+    {
+        $perPage = (int) $request->input('per_page', 18);
+        $search = $request->input('search', '');
+        $status = $request->input('status', '');
+        $sort = $request->input('sort', 'created_at');
+        $direction = $request->input('direction', 'desc');
+
+        $allowedSorts = ['name', 'created_at', 'price'];
+        $allowedDirections = ['asc', 'desc'];
+
+        if (! in_array($sort, $allowedSorts)) {
+            $sort = 'created_at';
+        }
+
+        if (! in_array($direction, $allowedDirections)) {
+            $direction = 'desc';
+        }
+
+        $query = Property::query()
+            ->select([
+                'id', 'name', 'images', 'price', 'currency_id', 'type', 'period',
+                'status', 'moderation_status', 'number_bedroom', 'number_bathroom',
+                'number_floor', 'square', 'location', 'unique_id', 'created_at',
+            ])
+            ->with('currency');
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'LIKE', "%{$search}%")
+                    ->orWhere('unique_id', 'LIKE', "%{$search}%")
+                    ->orWhere('location', 'LIKE', "%{$search}%");
+            });
+        }
+
+        if ($status) {
+            $query->where('status', $status);
+        }
+
+        $query->orderBy($sort, $direction);
+
+        $paginated = $query->paginate($perPage);
+
+        $items = $paginated->getCollection()->map(function (Property $property) {
+            $image = null;
+            $images = $property->images;
+            if (! empty($images) && is_array($images) && count($images) > 0) {
+                $image = RvMedia::getImageUrl($images[0], 'medium', false, RvMedia::getDefaultImage());
+            } else {
+                $image = RvMedia::getDefaultImage();
+            }
+
+            return [
+                'id' => $property->id,
+                'name' => $property->name,
+                'image' => $image,
+                'price' => $property->price_format,
+                'type' => $property->type->label(),
+                'type_value' => $property->type->value,
+                'status' => $property->status->value,
+                'status_html' => $property->status->toHtml(),
+                'moderation_status' => $property->moderation_status->value,
+                'moderation_html' => $property->moderation_status->toHtml(),
+                'unique_id' => $property->unique_id ?: '',
+                'location' => $property->location ?: '',
+                'bedrooms' => $property->number_bedroom,
+                'bathrooms' => $property->number_bathroom,
+                'floors' => $property->number_floor,
+                'square' => $property->square,
+                'square_text' => $property->square_text,
+                'created_at' => $property->created_at->format('Y-m-d'),
+                'edit_url' => route('property.edit', $property->id),
+                'delete_url' => route('property.destroy', $property->id),
+            ];
+        });
+
+        return response()->json([
+            'data' => $items,
+            'meta' => [
+                'current_page' => $paginated->currentPage(),
+                'last_page' => $paginated->lastPage(),
+                'per_page' => $paginated->perPage(),
+                'total' => $paginated->total(),
+                'from' => $paginated->firstItem(),
+                'to' => $paginated->lastItem(),
+            ],
+        ]);
     }
 
     protected function saveCustomFields(Property $property, array $customFields = []): void

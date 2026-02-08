@@ -27,6 +27,8 @@ use Illuminate\Validation\Rule;
 
 class PropertyTable extends TableAbstract
 {
+    protected $view = 'plugins/real-estate::properties.index';
+
     public function setup(): void
     {
         $this

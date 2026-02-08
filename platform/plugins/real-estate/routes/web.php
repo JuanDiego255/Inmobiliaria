@@ -43,6 +43,12 @@ Route::group(['namespace' => 'Botble\RealEstate\Http\Controllers', 'middleware' 
                 'uses' => 'DuplicatePropertyController@__invoke',
                 'permission' => 'property.edit',
             ]);
+
+            Route::get('grid-data', [
+                'as' => 'grid-data',
+                'uses' => 'PropertyController@getGridData',
+                'permission' => 'property.index',
+            ]);
         });
 
         Route::group(['prefix' => 'projects', 'as' => 'project.'], function () {

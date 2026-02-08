@@ -304,4 +304,46 @@ return [
         'flag' => 'coupons.destroy',
         'parent_flag' => 'coupons.index',
     ],
+
+    [
+        'name' => 'Clients',
+        'flag' => 'client.index',
+        'parent_flag' => 'plugins.real-estate',
+    ],
+    [
+        'name' => 'Create',
+        'flag' => 'client.create',
+        'parent_flag' => 'client.index',
+    ],
+    [
+        'name' => 'Edit',
+        'flag' => 'client.edit',
+        'parent_flag' => 'client.index',
+    ],
+    [
+        'name' => 'Delete',
+        'flag' => 'client.destroy',
+        'parent_flag' => 'client.index',
+    ],
+
+    [
+        'name' => 'Boards',
+        'flag' => 'board.index',
+        'parent_flag' => 'plugins.real-estate',
+    ],
+    [
+        'name' => 'Create',
+        'flag' => 'board.create',
+        'parent_flag' => 'board.index',
+    ],
+    [
+        'name' => 'Edit',
+        'flag' => 'board.edit',
+        'parent_flag' => 'board.index',
+    ],
+    [
+        'name' => 'Delete',
+        'flag' => 'board.destroy',
+        'parent_flag' => 'board.index',
+    ],
 ];

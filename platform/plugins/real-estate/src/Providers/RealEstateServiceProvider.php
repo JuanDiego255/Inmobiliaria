@@ -18,7 +18,9 @@ use Botble\RealEstate\Http\Middleware\RedirectIfAccount;
 use Botble\RealEstate\Http\Middleware\RedirectIfNotAccount;
 use Botble\RealEstate\Models\Account;
 use Botble\RealEstate\Models\AccountActivityLog;
+use Botble\RealEstate\Models\Board;
 use Botble\RealEstate\Models\Category;
+use Botble\RealEstate\Models\Client;
 use Botble\RealEstate\Models\Consult;
 use Botble\RealEstate\Models\Currency;
 use Botble\RealEstate\Models\CustomField;
@@ -35,7 +37,9 @@ use Botble\RealEstate\Models\Review;
 use Botble\RealEstate\Models\Transaction;
 use Botble\RealEstate\Repositories\Eloquent\AccountActivityLogRepository;
 use Botble\RealEstate\Repositories\Eloquent\AccountRepository;
+use Botble\RealEstate\Repositories\Eloquent\BoardRepository;
 use Botble\RealEstate\Repositories\Eloquent\CategoryRepository;
+use Botble\RealEstate\Repositories\Eloquent\ClientRepository;
 use Botble\RealEstate\Repositories\Eloquent\ConsultRepository;
 use Botble\RealEstate\Repositories\Eloquent\CurrencyRepository;
 use Botble\RealEstate\Repositories\Eloquent\CustomFieldRepository;
@@ -50,7 +54,9 @@ use Botble\RealEstate\Repositories\Eloquent\ReviewRepository;
 use Botble\RealEstate\Repositories\Eloquent\TransactionRepository;
 use Botble\RealEstate\Repositories\Interfaces\AccountActivityLogInterface;
 use Botble\RealEstate\Repositories\Interfaces\AccountInterface;
+use Botble\RealEstate\Repositories\Interfaces\BoardInterface;
 use Botble\RealEstate\Repositories\Interfaces\CategoryInterface;
+use Botble\RealEstate\Repositories\Interfaces\ClientInterface;
 use Botble\RealEstate\Repositories\Interfaces\ConsultInterface;
 use Botble\RealEstate\Repositories\Interfaces\CurrencyInterface;
 use Botble\RealEstate\Repositories\Interfaces\CustomFieldInterface;
@@ -139,6 +145,14 @@ class RealEstateServiceProvider extends ServiceProvider
 
         $this->app->singleton(TransactionInterface::class, function () {
             return new TransactionRepository(new Transaction());
+        });
+
+        $this->app->bind(ClientInterface::class, function () {
+            return new ClientRepository(new Client());
+        });
+
+        $this->app->bind(BoardInterface::class, function () {
+            return new BoardRepository(new Board());
         });
 
         config([
@@ -307,6 +321,24 @@ class RealEstateServiceProvider extends ServiceProvider
                     'icon' => 'fas fa-percent',
                     'url' => route('coupons.index'),
                     'permissions' => ['real-estate.coupons.index'],
+                ])
+                ->registerItem([
+                    'id' => 'cms-plugins-client',
+                    'priority' => 8,
+                    'parent_id' => null,
+                    'name' => 'plugins/real-estate::client.name',
+                    'icon' => 'fas fa-user-tie',
+                    'url' => route('client.index'),
+                    'permissions' => ['client.index'],
+                ])
+                ->registerItem([
+                    'id' => 'cms-plugins-board',
+                    'priority' => 9,
+                    'parent_id' => null,
+                    'name' => 'plugins/real-estate::board.name',
+                    'icon' => 'fas fa-clipboard-list',
+                    'url' => route('board.index'),
+                    'permissions' => ['board.index'],
                 ]);
 
             if (RealEstateHelper::isEnabledCustomFields()) {

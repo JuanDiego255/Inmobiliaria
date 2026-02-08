@@ -230,6 +230,40 @@ Route::group(['namespace' => 'Botble\RealEstate\Http\Controllers', 'middleware' 
                 'permission' => 'coupons.destroy',
             ]);
         });
+
+        Route::group(['prefix' => 'clients', 'as' => 'client.'], function () {
+            Route::resource('', 'ClientController')
+                ->parameters(['' => 'client']);
+        });
+
+        Route::group(['prefix' => 'boards', 'as' => 'board.'], function () {
+            Route::resource('', 'BoardController')
+                ->parameters(['' => 'board']);
+
+            Route::post('{id}/add-property', [
+                'as' => 'add-property',
+                'uses' => 'BoardController@addProperty',
+                'permission' => 'board.edit',
+            ])->wherePrimaryKey();
+
+            Route::delete('{id}/remove-property/{propertyId}', [
+                'as' => 'remove-property',
+                'uses' => 'BoardController@removeProperty',
+                'permission' => 'board.edit',
+            ])->where('propertyId', '[0-9]+');
+
+            Route::get('get-boards-for-property', [
+                'as' => 'get-boards-for-property',
+                'uses' => 'BoardController@getBoardsForProperty',
+                'permission' => 'board.index',
+            ]);
+
+            Route::post('add-property-to-board', [
+                'as' => 'add-property-to-board',
+                'uses' => 'BoardController@addPropertyToBoard',
+                'permission' => 'board.edit',
+            ]);
+        });
     });
 
     if (defined('THEME_MODULE_SCREEN_NAME')) {
@@ -271,6 +305,9 @@ Route::group(['namespace' => 'Botble\RealEstate\Http\Controllers', 'middleware' 
 
             Route::post('send-consult', 'PublicController@postSendConsult')
                 ->name('public.send.consult');
+
+            Route::get('board/{token}', 'PublicBoardController@show')
+                ->name('public.board.show');
 
             Route::get('currency/switch/{code?}', [
                 'as' => 'public.change-currency',

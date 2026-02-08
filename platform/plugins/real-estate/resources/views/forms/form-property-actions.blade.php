@@ -38,11 +38,25 @@
                 >
                     <i class="fa fa-copy"></i> {{ trans('plugins/real-estate::property.duplicate') }}
                 </button>
+                &nbsp;
+                <button
+                    type="button"
+                    class="btn btn-secondary"
+                    data-bs-toggle="modal"
+                    data-bs-target="#addToBoardModal"
+                    title="{{ trans('plugins/real-estate::board.add_to_board') }}"
+                >
+                    <i class="fas fa-clipboard-list"></i> {{ trans('plugins/real-estate::board.add_to_board') }}
+                </button>
             @endif
 
         </div>
     </div>
 </div>
+
+@if ($property && $property->id)
+    @include('plugins/real-estate::boards.add-to-board-modal', ['propertyId' => $property->id])
+@endif
 <div id="waypoint"></div>
 <div class="form-actions form-actions-fixed-top hidden">
     {!! Breadcrumbs::render('main', PageTitle::getTitle(false)) !!}

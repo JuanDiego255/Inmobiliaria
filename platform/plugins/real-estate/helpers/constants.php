@@ -75,3 +75,11 @@ if (! defined('INVOICE_PAYMENT_CREATED')) {
 if (! defined('COUPON_MODULE_SCREEN_NAME')) {
     define('COUPON_MODULE_SCREEN_NAME', 'coupon');
 }
+
+if (! defined('CLIENT_MODULE_SCREEN_NAME')) {
+    define('CLIENT_MODULE_SCREEN_NAME', 'client');
+}
+
+if (! defined('BOARD_MODULE_SCREEN_NAME')) {
+    define('BOARD_MODULE_SCREEN_NAME', 'board');
+}

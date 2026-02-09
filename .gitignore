@@ -33,7 +33,8 @@ bun.lockb
 
 public/mix-manifest.json
 
-public/themes
+public/themes/flex-home/images
+public/themes/flex-home/screenshot.png
 public/docs
 resources/docs
 

@@ -136,7 +136,7 @@
                                         ])
                                     !!}
                                     @if (is_plugin_active('real-estate') && RealEstateHelper::isLoginEnabled())
-                                        <a class="btn btn-primary add-property" href="{{ route('public.account.properties.index') }}">
+                                        <a class="btn btn-add-property add-property" href="{{ route('public.account.properties.index') }}">
                                             <i class="fas fa-plus-circle"></i> {{ __('Add Property') }}
                                         </a>
                                     @endif

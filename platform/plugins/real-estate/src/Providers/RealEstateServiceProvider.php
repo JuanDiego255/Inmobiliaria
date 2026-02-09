@@ -288,7 +288,7 @@ class RealEstateServiceProvider extends ServiceProvider
                     'url' => route('property_category.index'),
                     'permissions' => ['property_category.index'],
                 ])
-                ->registerItem([
+                /* ->registerItem([
                     'id' => 'cms-plugins-real-estate-account',
                     'priority' => 22,
                     'parent_id' => null,
@@ -296,10 +296,10 @@ class RealEstateServiceProvider extends ServiceProvider
                     'icon' => 'fa fa-users',
                     'url' => route('account.index'),
                     'permissions' => ['account.index'],
-                ])
+                ]) */
                 ->registerItem([
                     'id' => 'cms-plugins-real-estate-invoice',
-                    'priority' => 7,
+                    'priority' => 8,
                     'parent_id' => 'cms-plugins-real-estate',
                     'name' => 'plugins/real-estate::invoice.name',
                     'url' => route('invoices.index'),
@@ -307,7 +307,7 @@ class RealEstateServiceProvider extends ServiceProvider
                 ])
                 ->registerItem([
                     'id' => 'cms-plugins-real-estate-invoice-template',
-                    'priority' => 8,
+                    'priority' => 9,
                     'parent_id' => 'cms-plugins-real-estate',
                     'name' => 'plugins/real-estate::invoice.template.name',
                     'url' => route('invoice-template.index'),
@@ -324,19 +324,17 @@ class RealEstateServiceProvider extends ServiceProvider
                 ])
                 ->registerItem([
                     'id' => 'cms-plugins-client',
-                    'priority' => 8,
-                    'parent_id' => null,
+                    'priority' => 6,
+                    'parent_id' => 'cms-plugins-real-estate',
                     'name' => 'plugins/real-estate::client.name',
-                    'icon' => 'fas fa-user-tie',
                     'url' => route('client.index'),
                     'permissions' => ['client.index'],
                 ])
                 ->registerItem([
                     'id' => 'cms-plugins-board',
-                    'priority' => 9,
-                    'parent_id' => null,
+                    'priority' => 7,
+                    'parent_id' => 'cms-plugins-real-estate',
                     'name' => 'plugins/real-estate::board.name',
-                    'icon' => 'fas fa-clipboard-list',
                     'url' => route('board.index'),
                     'permissions' => ['board.index'],
                 ]);
@@ -355,7 +353,7 @@ class RealEstateServiceProvider extends ServiceProvider
             }
 
             if (RealEstateHelper::isEnabledCreditsSystem()) {
-                dashboard_menu()
+               /*  dashboard_menu()
                     ->registerItem([
                         'id' => 'cms-plugins-package',
                         'priority' => 23,
@@ -364,7 +362,7 @@ class RealEstateServiceProvider extends ServiceProvider
                         'icon' => 'fas fa-money-check-alt',
                         'url' => route('package.index'),
                         'permissions' => ['package.index'],
-                    ]);
+                    ]); */
             }
 
             if (RealEstateHelper::isEnabledReview()) {

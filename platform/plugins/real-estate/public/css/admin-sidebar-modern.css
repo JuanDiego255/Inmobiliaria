@@ -189,12 +189,33 @@
 }
 
 /* ========================================
-   SIDEBAR — Blue, full height
+   SIDEBAR — Blue, full height via pseudo-element
    ======================================== */
 
+/* Paint blue column behind sidebar without affecting layout flow */
+.page-container {
+    position: relative;
+}
+
+.page-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: var(--sidebar-width);
+    background-color: var(--sidebar-bg);
+    z-index: 0;
+}
+
 .page-sidebar-wrapper {
-    background-color: var(--sidebar-bg) !important;
-    min-height: 100vh !important;
+    position: relative;
+    z-index: 1;
+}
+
+.page-content-wrapper {
+    position: relative;
+    z-index: 1;
 }
 
 .page-sidebar-closed.page-sidebar-fixed .page-sidebar:hover,
@@ -203,7 +224,6 @@
     border-right: none !important;
     box-shadow: none !important;
     width: var(--sidebar-width) !important;
-    min-height: 100vh !important;
 }
 
 .page-sidebar .sidebar {
@@ -606,9 +626,8 @@
    ======================================== */
 
 @media (min-width: 992px) {
-    .page-sidebar-closed .page-sidebar-wrapper {
-        width: 45px !important;
-        min-height: 100vh !important;
+    .page-sidebar-closed .page-container::before {
+        width: 45px;
     }
 
     .page-sidebar-closed .page-sidebar {
@@ -622,8 +641,8 @@
 }
 
 @media (max-width: 991px) {
-    .page-sidebar-wrapper {
-        min-height: auto !important;
+    .page-container::before {
+        display: none;
     }
 
     .page-sidebar {

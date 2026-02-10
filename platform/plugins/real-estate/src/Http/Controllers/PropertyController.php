@@ -166,8 +166,7 @@ class PropertyController extends BaseController
                 'id', 'name', 'images', 'price', 'currency_id', 'type', 'period',
                 'status', 'moderation_status', 'number_bedroom', 'number_bathroom',
                 'number_floor', 'square', 'location', 'unique_id', 'created_at',
-            ])
-            ->with('currency');
+            ]);
 
         if ($search) {
             $query->where(function ($q) use ($search) {
@@ -186,24 +185,37 @@ class PropertyController extends BaseController
         $paginated = $query->paginate($perPage);
 
         $items = $paginated->getCollection()->map(function (Property $property) {
-            $image = null;
+            $image = RvMedia::getDefaultImage();
             $images = $property->images;
             if (! empty($images) && is_array($images) && count($images) > 0) {
                 $image = RvMedia::getImageUrl($images[0], 'medium', false, RvMedia::getDefaultImage());
-            } else {
-                $image = RvMedia::getDefaultImage();
+            }
+
+            $price = '';
+            try {
+                $property->loadMissing('currency');
+                $price = $property->price_format;
+            } catch (\Throwable $e) {
+                $price = $property->price ? number_format($property->price) : __('Contact');
+            }
+
+            $typeLabel = '';
+            try {
+                $typeLabel = $property->type->label();
+            } catch (\Throwable $e) {
+                $typeLabel = (string) $property->type->value;
             }
 
             return [
                 'id' => $property->id,
                 'name' => $property->name,
                 'image' => $image,
-                'price' => $property->price_format,
-                'type' => $property->type->label(),
-                'type_value' => $property->type->value,
-                'status' => $property->status->value,
+                'price' => $price,
+                'type' => $typeLabel,
+                'type_value' => $property->type->value ?? '',
+                'status' => $property->status->value ?? '',
                 'status_html' => $property->status->toHtml(),
-                'moderation_status' => $property->moderation_status->value,
+                'moderation_status' => $property->moderation_status->value ?? '',
                 'moderation_html' => $property->moderation_status->toHtml(),
                 'unique_id' => $property->unique_id ?: '',
                 'location' => $property->location ?: '',
@@ -211,8 +223,8 @@ class PropertyController extends BaseController
                 'bathrooms' => $property->number_bathroom,
                 'floors' => $property->number_floor,
                 'square' => $property->square,
-                'square_text' => $property->square_text,
-                'created_at' => $property->created_at->format('Y-m-d'),
+                'square_text' => $property->square ? number_format($property->square) . ' ' . setting('real_estate_square_unit', 'm²') : '',
+                'created_at' => $property->created_at ? $property->created_at->format('Y-m-d') : '',
                 'edit_url' => route('property.edit', $property->id),
                 'delete_url' => route('property.destroy', $property->id),
             ];

@@ -121,15 +121,24 @@
 
         fetch(url, {
             headers: { 'Accept': 'application/json' },
+            credentials: 'same-origin',
         })
-        .then(function (r) { return r.json(); })
+        .then(function (r) {
+            if (!r.ok) {
+                throw new Error('HTTP ' + r.status);
+            }
+            return r.json();
+        })
         .then(function (response) {
-            renderGrid(response.data, response.meta);
-            renderPagination(response.meta);
+            var data = response.data || [];
+            var meta = response.meta || null;
+            renderGrid(data, meta);
+            renderPagination(meta);
             isLoading = false;
         })
-        .catch(function () {
-            grid.innerHTML = '<div class="property-grid-empty"><i class="fas fa-exclamation-triangle"></i>Error loading properties</div>';
+        .catch(function (err) {
+            console.error('Grid load error:', err);
+            grid.innerHTML = '<div class="property-grid-empty"><i class="fas fa-exclamation-triangle"></i> Error loading properties: ' + (err.message || 'Unknown error') + '</div>';
             isLoading = false;
         });
     }

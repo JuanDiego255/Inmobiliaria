@@ -10,7 +10,7 @@
 :root {
     --sidebar-bg: #1e3a5f;
     --sidebar-bg-dark: #172e4d;
-    --sidebar-width: 250px;
+    --sidebar-width: 235px;
     --sidebar-text: rgba(255, 255, 255, 0.8);
     --sidebar-text-hover: #ffffff;
     --sidebar-icon: rgba(255, 255, 255, 0.5);
@@ -36,13 +36,10 @@
     min-height: 60px;
 }
 
-/* Logo area — white to match topbar */
+/* Logo area — white to match topbar, do NOT override width (framework handles it) */
 .page-header.navbar .page-logo {
     background: var(--header-bg) !important;
     border-right: 1px solid var(--header-border) !important;
-    width: var(--sidebar-width) !important;
-    padding: 0 20px;
-    transition: width 0.2s ease;
 }
 
 .page-header.navbar .page-logo > a .logo-default {
@@ -194,7 +191,7 @@
 
 /* Blue column via background gradient on container — no pseudo-elements, no z-index */
 .page-container {
-    background: linear-gradient(to right, var(--sidebar-bg) var(--sidebar-width), transparent var(--sidebar-width)) !important;
+    background: linear-gradient(to right, var(--sidebar-bg) 235px, transparent 235px) !important;
 }
 
 /* When sidebar is closed, narrow the blue column */
@@ -206,6 +203,7 @@
     background-color: transparent !important;
 }
 
+/* Sidebar background — only colors, do NOT override width */
 .page-sidebar-closed.page-sidebar-fixed .page-sidebar:hover,
 .page-sidebar {
     background-color: var(--sidebar-bg) !important;
@@ -555,15 +553,36 @@
 }
 
 /* ========================================
-   CLOSED SIDEBAR SUBMENU POPUP
+   CLOSED SIDEBAR — style hover popups
    ======================================== */
 
-.page-sidebar-closed .page-sidebar .page-sidebar-menu:hover .sub-menu,
-.page-sidebar-closed .page-sidebar-closed.page-sidebar-fixed .page-sidebar:hover .page-sidebar-menu:hover .sub-menu {
+/* When collapsed: hovered item expands — style with blue bg */
+.page-sidebar-closed .page-sidebar .page-sidebar-menu.page-sidebar-menu-closed > li:hover > a {
+    background: var(--sidebar-hover-bg) !important;
+    color: #fff !important;
+}
+
+/* Collapsed submenu popup */
+.page-sidebar-closed .page-sidebar .page-sidebar-menu.page-sidebar-menu-closed > li:hover > .sub-menu {
     background: var(--sidebar-bg-dark) !important;
     border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    border-radius: 8px !important;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2) !important;
+    border-radius: 0 0 4px 4px !important;
+    box-shadow: 4px 4px 20px rgba(0, 0, 0, 0.2) !important;
+}
+
+.page-sidebar-closed .page-sidebar .page-sidebar-menu.page-sidebar-menu-closed > li:hover > .sub-menu > li > a {
+    color: rgba(255, 255, 255, 0.7) !important;
+    background: transparent !important;
+}
+
+.page-sidebar-closed .page-sidebar .page-sidebar-menu.page-sidebar-menu-closed > li:hover > .sub-menu > li > a:hover,
+.page-sidebar-closed .page-sidebar .page-sidebar-menu.page-sidebar-menu-closed > li:hover > .sub-menu > li.active > a {
+    color: #fff !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+}
+
+.page-sidebar-closed .page-sidebar .page-sidebar-menu.page-sidebar-menu-closed > li:hover > .sub-menu > li > a > i {
+    color: rgba(255, 255, 255, 0.5) !important;
 }
 
 /* ========================================
@@ -612,60 +631,9 @@
    RESPONSIVE
    ======================================== */
 
-@media (min-width: 992px) {
-    .page-sidebar-closed .page-sidebar {
-        width: 45px !important;
-    }
-
-    .page-sidebar-closed .page-sidebar:hover {
-        width: var(--sidebar-width) !important;
-        box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15) !important;
-    }
-
-    /* Collapsed: shrink logo area to match sidebar width */
-    .page-sidebar-closed .page-header.navbar .page-logo {
-        width: 45px !important;
-        padding: 0 !important;
-        overflow: hidden;
-    }
-
-    /* Hide logo text/image in collapsed state */
-    .page-sidebar-closed .page-header.navbar .page-logo > a {
-        display: none;
-    }
-
-    /* Center the hamburger icon in collapsed state */
-    .page-sidebar-closed .page-header.navbar .page-logo .menu-toggler {
-        width: 45px;
-        margin: 0 auto !important;
-        display: block !important;
-        text-align: center;
-    }
-
-    /* Sidebar menu items: center icons when collapsed */
-    .page-sidebar-closed .page-sidebar .page-sidebar-menu > li > a {
-        padding: 10px 12px !important;
-        text-align: center;
-    }
-
-    .page-sidebar-closed .page-sidebar .page-sidebar-menu > li > a > i {
-        margin-right: 0 !important;
-        display: block;
-        width: 100% !important;
-    }
-
-    /* Restore on hover when sidebar-fixed */
-    .page-sidebar-closed.page-sidebar-fixed .page-sidebar:hover .page-sidebar-menu > li > a {
-        padding: 10px 14px !important;
-        text-align: left;
-    }
-
-    .page-sidebar-closed.page-sidebar-fixed .page-sidebar:hover .page-sidebar-menu > li > a > i {
-        margin-right: 10px !important;
-        display: inline-block;
-        width: 22px !important;
-    }
-}
+/* ========================================
+   RESPONSIVE
+   ======================================== */
 
 @media (max-width: 991px) {
     .page-container {

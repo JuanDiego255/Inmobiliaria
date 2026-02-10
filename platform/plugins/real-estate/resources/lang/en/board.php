@@ -27,6 +27,8 @@ return [
     'add_to_board' => 'Add to Board',
     'select_board' => 'Select a Board',
     'add_property_to_board' => 'Add Property to Board',
+    'loading' => 'Loading...',
+    'adding' => 'Adding...',
     'statuses' => [
         'active' => 'Active',
         'inactive' => 'Inactive',

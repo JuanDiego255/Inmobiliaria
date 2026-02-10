@@ -38,6 +38,8 @@
             @include('plugins/real-estate::properties.grid-view')
         </div>
     </div>
+
+    @include('plugins/real-estate::boards.add-to-board-table-modal')
 @stop
 
 @push('header')
@@ -46,4 +48,5 @@
 
 @push('footer')
     <script src="{{ asset('vendor/core/plugins/real-estate/js/property-grid.js') }}"></script>
+    <script src="{{ asset('vendor/core/plugins/real-estate/js/add-to-board-table.js') }}"></script>
 @endpush

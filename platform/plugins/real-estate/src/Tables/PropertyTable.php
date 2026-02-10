@@ -7,6 +7,7 @@ use Botble\RealEstate\Enums\ModerationStatusEnum;
 use Botble\RealEstate\Enums\PropertyStatusEnum;
 use Botble\RealEstate\Models\Property;
 use Botble\Table\Abstracts\TableAbstract;
+use Botble\RealEstate\Tables\Actions\AddToBoardAction;
 use Botble\Table\Actions\DeleteAction;
 use Botble\Table\Actions\EditAction;
 use Botble\Table\BulkActions\DeleteBulkAction;
@@ -35,6 +36,7 @@ class PropertyTable extends TableAbstract
             ->model(Property::class)
             ->addActions([
                 EditAction::make()->route('property.edit'),
+                AddToBoardAction::make(),
                 DeleteAction::make()->route('property.destroy'),
             ]);
     }

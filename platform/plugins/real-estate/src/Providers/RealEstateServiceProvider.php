@@ -207,7 +207,10 @@ class RealEstateServiceProvider extends ServiceProvider
         });
 
         $this->app['events']->listen(RouteMatched::class, function () {
-            \Botble\Base\Facades\Assets::addStylesDirectly('vendor/core/plugins/real-estate/css/admin-table-modern.css');
+            \Botble\Base\Facades\Assets::addStylesDirectly([
+                'vendor/core/plugins/real-estate/css/admin-table-modern.css',
+                'vendor/core/plugins/real-estate/css/admin-sidebar-modern.css',
+            ]);
 
             dashboard_menu()
                 ->registerItem([

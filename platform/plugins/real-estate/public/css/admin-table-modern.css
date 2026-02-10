@@ -1,0 +1,497 @@
+/*
+ * Modern Admin Table Override
+ * Clean, minimal design inspired by modern SaaS dashboards
+ */
+
+/* ========================================
+   TABLE CARD CONTAINER
+   ======================================== */
+
+.table-wrapper .portlet.light.bordered.portlet-no-padding {
+    border: none !important;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+    overflow: hidden;
+}
+
+.table-wrapper .portlet.portlet-no-padding .portlet-title {
+    border-bottom: 1px solid #f0f0f0;
+    padding: 12px 20px;
+    min-height: 50px;
+    display: flex;
+    align-items: center;
+}
+
+.table-wrapper .portlet.portlet-no-padding .portlet-body {
+    padding: 0;
+}
+
+/* ========================================
+   TABLE HEADER TOOLBAR
+   ======================================== */
+
+.table-wrapper .portlet-title .caption {
+    width: 100%;
+}
+
+.table-wrapper .wrapper-action {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.table-wrapper .wrapper-action .btn-group .btn.btn-secondary {
+    background: #f8f9fa;
+    border: 1px solid #e2e5e9;
+    color: #4a5568;
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: 8px;
+    padding: 6px 14px;
+    transition: all 0.15s ease;
+}
+
+.table-wrapper .wrapper-action .btn-group .btn.btn-secondary:hover {
+    background: #edf2f7;
+    border-color: #cbd5e0;
+}
+
+.table-wrapper .wrapper-action .btn-primary.btn-show-table-options {
+    background: #f8f9fa;
+    border: 1px solid #e2e5e9;
+    color: #4a5568;
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: 8px;
+    padding: 6px 14px;
+}
+
+.table-wrapper .wrapper-action .btn-primary.btn-show-table-options:hover {
+    background: #edf2f7;
+    border-color: #cbd5e0;
+}
+
+/* ========================================
+   DATATABLE HEADER (search bar area)
+   ======================================== */
+
+.datatable-header {
+    background: transparent !important;
+    height: auto !important;
+    padding: 0 !important;
+}
+
+.page-content .dataTables_wrapper .datatables__info_wrap {
+    background-color: transparent !important;
+    border-bottom: 1px solid #f0f0f0;
+    padding: 10px 20px;
+}
+
+/* Search input */
+.dataTables_filter input[type=search] {
+    border: 1px solid #e2e5e9 !important;
+    border-radius: 8px !important;
+    padding: 8px 36px 8px 12px !important;
+    font-size: 13px !important;
+    height: 38px !important;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
+    background: #f8f9fa !important;
+}
+
+.dataTables_filter input[type=search]:focus {
+    background: #fff !important;
+    border-color: #667eea !important;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
+    outline: none !important;
+}
+
+/* Export buttons */
+.page-content .dataTables_wrapper .dt-buttons {
+    top: -48px;
+}
+
+.page-content .dataTables_wrapper .dt-buttons .btn {
+    border-radius: 8px !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    padding: 6px 14px !important;
+}
+
+/* ========================================
+   TABLE HEAD
+   ======================================== */
+
+.dataTables_wrapper thead > tr > th {
+    background-color: #fafbfc !important;
+    border-bottom: 1px solid #edf2f7 !important;
+    color: #718096 !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.3px !important;
+    text-transform: uppercase !important;
+    padding: 14px 16px !important;
+}
+
+.table th {
+    border-bottom: 1px solid #edf2f7 !important;
+    color: #718096 !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    padding: 14px 16px !important;
+}
+
+/* ========================================
+   TABLE BODY / ROWS
+   ======================================== */
+
+.table td {
+    padding: 14px 16px !important;
+    border-bottom: 1px solid #f7f8fa !important;
+    color: #2d3748;
+    font-size: 13.5px;
+    vertical-align: middle !important;
+}
+
+.table > tbody > tr {
+    transition: background-color 0.1s ease;
+}
+
+.table.table-hover > tbody > tr:hover,
+.table.table-hover > tbody > tr:hover > td {
+    background-color: #f8fafc !important;
+}
+
+/* Remove heavy borders from bordered tables */
+.dataTables_wrapper .table-bordered > tbody > tr > td,
+.dataTables_wrapper .table-bordered > tbody > tr > th,
+.dataTables_wrapper .table-bordered > thead > tr > td,
+.dataTables_wrapper .table-bordered > thead > tr > th,
+.dataTables_wrapper .table-bordered > tfoot > tr > td,
+.dataTables_wrapper .table-bordered > tfoot > tr > th {
+    border-color: #f0f0f0 !important;
+    border-left: none !important;
+    border-right: none !important;
+}
+
+/* Last row no border */
+.table > tbody > tr:last-child > td {
+    border-bottom: none !important;
+}
+
+/* Selected row */
+.dataTables_wrapper .table.table-hover > tbody > tr.selected > td,
+.dataTables_wrapper .table.table-hover > tbody > tr.selected:hover > td {
+    background: rgba(102, 126, 234, 0.06) !important;
+}
+
+/* ========================================
+   ROW ACTIONS — text links style
+   ======================================== */
+
+.dataTables_wrapper td .table-actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    min-width: auto !important;
+}
+
+.table-actions .btn {
+    background: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 4px 10px !important;
+    margin: 0 !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    border-radius: 6px !important;
+    transition: all 0.15s ease !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 5px !important;
+}
+
+/* Edit action */
+.table-actions .btn.btn-primary {
+    color: #4a6cf7 !important;
+}
+
+.table-actions .btn.btn-primary:hover {
+    background: rgba(74, 108, 247, 0.08) !important;
+    color: #3b5de7 !important;
+}
+
+/* Delete action */
+.table-actions .btn.btn-danger {
+    color: #e53e3e !important;
+}
+
+.table-actions .btn.btn-danger:hover {
+    background: rgba(229, 62, 62, 0.08) !important;
+    color: #c53030 !important;
+}
+
+/* Info action */
+.table-actions .btn.btn-info {
+    color: #38b2ac !important;
+}
+
+.table-actions .btn.btn-info:hover {
+    background: rgba(56, 178, 172, 0.08) !important;
+}
+
+/* Show text labels next to icons */
+.table-actions .btn .sr-only {
+    position: static !important;
+    width: auto !important;
+    height: auto !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: visible !important;
+    clip: auto !important;
+    white-space: nowrap !important;
+}
+
+.table-actions .btn i {
+    font-size: 13px;
+}
+
+/* ========================================
+   PAGINATION
+   ======================================== */
+
+.page-content .dataTables_wrapper .dataTables_paginate {
+    padding: 12px 20px;
+}
+
+.page-content .dataTables_wrapper .dataTables_paginate .pagination {
+    gap: 4px;
+    margin: 0;
+}
+
+.page-content .dataTables_wrapper .dataTables_paginate .pagination li a {
+    background-color: transparent !important;
+    border: none !important;
+    border-radius: 8px !important;
+    color: #4a5568 !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    min-width: 34px !important;
+    height: 34px !important;
+    line-height: 34px !important;
+    padding: 0 8px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: all 0.15s ease !important;
+}
+
+.page-content .dataTables_wrapper .dataTables_paginate .pagination li a:hover {
+    background-color: #edf2f7 !important;
+    color: #2d3748 !important;
+}
+
+.page-content .dataTables_wrapper .dataTables_paginate .pagination li.active a {
+    background-color: #4a6cf7 !important;
+    color: #fff !important;
+    box-shadow: 0 2px 4px rgba(74, 108, 247, 0.3) !important;
+}
+
+/* Records info */
+.page-content .dataTables_wrapper .dataTables_info {
+    color: #a0aec0 !important;
+    font-size: 13px;
+    padding-left: 20px;
+}
+
+/* Length selector */
+.page-content .dataTables_wrapper .dataTables_length label {
+    font-size: 13px;
+    color: #718096;
+    padding-left: 20px;
+}
+
+/* ========================================
+   STATUS BADGES (enums)
+   ======================================== */
+
+.table td .label,
+.table td .badge {
+    font-weight: 500;
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    letter-spacing: 0.2px;
+}
+
+/* ========================================
+   IMAGE COLUMNS
+   ======================================== */
+
+.table td img.img-thumb-tiny {
+    border-radius: 8px;
+    object-fit: cover;
+}
+
+/* ========================================
+   CHECKBOX COLUMN
+   ======================================== */
+
+.dataTables_wrapper thead .table-check-all,
+.dataTables_wrapper .checkboxes {
+    cursor: pointer;
+}
+
+/* ========================================
+   FILTER CONFIG PANEL
+   ======================================== */
+
+.table-wrapper .table-configuration-wrap {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    margin-bottom: 16px;
+    padding: 20px;
+}
+
+.table-wrapper .table-configuration-wrap .configuration-close-btn {
+    background: #f0f0f0;
+    border-radius: 50% !important;
+}
+
+.table-wrapper .table-configuration-wrap .configuration-close-btn:hover {
+    background: #e2e8f0;
+}
+
+.table-wrapper .wrapper-filter .form-filter .filter-item {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 12px;
+}
+
+/* ========================================
+   PAGE-LEVEL: breadcrumb & page buttons
+   ======================================== */
+
+.page-content .breadcrumb {
+    background: transparent;
+    padding: 8px 0;
+    margin-bottom: 8px;
+    font-size: 13px;
+}
+
+.page-content .breadcrumb .breadcrumb-item a {
+    color: #718096;
+    text-decoration: none;
+}
+
+.page-content .breadcrumb .breadcrumb-item a:hover {
+    color: #4a6cf7;
+}
+
+.page-content .breadcrumb .breadcrumb-item.active {
+    color: #2d3748;
+    font-weight: 600;
+}
+
+/* Page action buttons (Create, Export, etc.) */
+.page-content .btn[class*="btn-primary"],
+.page-content a.btn[class*="btn-primary"] {
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 13.5px;
+    padding: 8px 18px;
+}
+
+/* ========================================
+   EMPTY TABLE STATE
+   ======================================== */
+
+.dataTables_wrapper .dataTables_empty {
+    font-size: 14px;
+    color: #a0aec0;
+    padding: 40px 20px !important;
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+
+@media screen and (max-width: 1100px) {
+    .table-actions .btn .sr-only {
+        position: absolute !important;
+        width: 1px !important;
+        height: 1px !important;
+        overflow: hidden !important;
+        clip: rect(0, 0, 0, 0) !important;
+    }
+}
+
+/* ========================================
+   DROPDOWN MENUS (bulk actions, etc.)
+   ======================================== */
+
+.table-wrapper .dropdown-menu {
+    border: 1px solid #e2e5e9;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    padding: 6px;
+}
+
+.table-wrapper .dropdown-menu li a,
+.table-wrapper .dropdown-menu .dropdown-item {
+    border-radius: 6px;
+    font-size: 13px;
+    padding: 8px 12px;
+}
+
+.table-wrapper .dropdown-menu li a:hover,
+.table-wrapper .dropdown-menu .dropdown-item:hover {
+    background-color: #f7f8fa;
+}
+
+/* ========================================
+   MODALS (confirm delete, etc.)
+   ======================================== */
+
+.modal-content {
+    border: none;
+    border-radius: 14px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+}
+
+.modal-header {
+    border-bottom: 1px solid #f0f0f0;
+    padding: 18px 24px;
+}
+
+.modal-body {
+    padding: 24px;
+}
+
+.modal-footer {
+    border-top: 1px solid #f0f0f0;
+    padding: 16px 24px;
+}
+
+.modal-footer .btn {
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 13.5px;
+    padding: 8px 20px;
+}
+
+/* ========================================
+   DATATABLES FOOTER
+   ======================================== */
+
+.datatable-footer {
+    background: transparent !important;
+    border-top: 1px solid #f0f0f0;
+    padding: 8px 0 !important;
+}
+
+.datatables__info_wrap {
+    border-top: 1px solid #f0f0f0;
+}

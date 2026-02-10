@@ -189,36 +189,21 @@
 }
 
 /* ========================================
-   SIDEBAR — Blue, full height via pseudo-element
+   SIDEBAR — Blue, full height
    ======================================== */
 
-/* Paint blue column behind sidebar without affecting layout flow */
+/* Blue column via background gradient on container — no pseudo-elements, no z-index */
 .page-container {
-    position: relative;
+    background: linear-gradient(to right, var(--sidebar-bg) var(--sidebar-width), transparent var(--sidebar-width)) !important;
 }
 
-.page-container::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    width: var(--sidebar-width);
-    background-color: var(--sidebar-bg);
-    z-index: 0;
-    pointer-events: none; /* CRITICAL: don't block clicks on sidebar */
+/* When sidebar is closed, narrow the blue column */
+.page-sidebar-closed .page-container {
+    background: linear-gradient(to right, var(--sidebar-bg) 45px, transparent 45px) !important;
 }
 
 .page-sidebar-wrapper {
-    position: relative;
-    z-index: 1;
-    background-color: var(--sidebar-bg) !important;
-    min-height: 100%;
-}
-
-.page-content-wrapper {
-    position: relative;
-    z-index: 1;
+    background-color: transparent !important;
 }
 
 .page-sidebar-closed.page-sidebar-fixed .page-sidebar:hover,
@@ -226,7 +211,6 @@
     background-color: var(--sidebar-bg) !important;
     border-right: none !important;
     box-shadow: none !important;
-    width: var(--sidebar-width) !important;
 }
 
 .page-sidebar .sidebar {
@@ -629,10 +613,6 @@
    ======================================== */
 
 @media (min-width: 992px) {
-    .page-sidebar-closed .page-container::before {
-        width: 45px;
-    }
-
     .page-sidebar-closed .page-sidebar {
         width: 45px !important;
     }
@@ -646,7 +626,7 @@
     .page-sidebar-closed .page-header.navbar .page-logo {
         width: 45px !important;
         padding: 0 !important;
-        text-align: center;
+        overflow: hidden;
     }
 
     /* Hide logo text/image in collapsed state */
@@ -656,23 +636,22 @@
 
     /* Center the hamburger icon in collapsed state */
     .page-sidebar-closed .page-header.navbar .page-logo .menu-toggler {
-        display: flex !important;
-        align-items: center;
-        justify-content: center;
         width: 45px;
-        height: 100%;
-        margin: 0 !important;
-        padding: 0 !important;
+        margin: 0 auto !important;
+        display: block !important;
+        text-align: center;
     }
 
     /* Sidebar menu items: center icons when collapsed */
     .page-sidebar-closed .page-sidebar .page-sidebar-menu > li > a {
-        padding: 10px 0 !important;
+        padding: 10px 12px !important;
         text-align: center;
     }
 
     .page-sidebar-closed .page-sidebar .page-sidebar-menu > li > a > i {
         margin-right: 0 !important;
+        display: block;
+        width: 100% !important;
     }
 
     /* Restore on hover when sidebar-fixed */
@@ -683,12 +662,14 @@
 
     .page-sidebar-closed.page-sidebar-fixed .page-sidebar:hover .page-sidebar-menu > li > a > i {
         margin-right: 10px !important;
+        display: inline-block;
+        width: 22px !important;
     }
 }
 
 @media (max-width: 991px) {
-    .page-container::before {
-        display: none;
+    .page-container {
+        background: none !important;
     }
 
     .page-sidebar {

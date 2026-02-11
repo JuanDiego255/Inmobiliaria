@@ -24,7 +24,31 @@ __MACOSX
 /.phpintel
 /.php_cs.cache
 
-public/vendor/core
+# Ignorar todo vendor/core
+public/vendor/core/*
+
+# Permitir entrar en core
+!public/vendor/core/core/
+
+# Ignorar todo dentro de core
+public/vendor/core/core/*
+
+# Permitir entrar en base y table
+!public/vendor/core/core/base/
+!public/vendor/core/core/table/
+
+# Ignorar todo dentro de base y table
+public/vendor/core/core/base/*
+public/vendor/core/core/table/*
+
+# Permitir solo las carpetas css
+!public/vendor/core/core/base/css/
+!public/vendor/core/core/table/css/
+
+# Permitir su contenido
+!public/vendor/core/core/base/css/**
+!public/vendor/core/core/table/css/**
+
 
 _ide_helper.php
 yarn.lock

@@ -206,7 +206,7 @@ class BoardController extends BaseController
                     $image = RvMedia::getDefaultImage();
                     $images = $property->images;
                     if (! empty($images) && is_array($images) && count($images) > 0) {
-                        $image = RvMedia::getImageUrl($images[0], 'thumb', false, RvMedia::getDefaultImage());
+                        $image = RvMedia::getImageUrl($images[0], null, false, RvMedia::getDefaultImage());
                     }
 
                     $price = '';

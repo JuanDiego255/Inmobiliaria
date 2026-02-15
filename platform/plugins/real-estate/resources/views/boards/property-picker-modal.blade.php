@@ -42,8 +42,8 @@
                         <div class="col-md-2">
                             <select class="form-select" id="picker-type">
                                 <option value="">{{ trans('plugins/real-estate::board.all_types') }}</option>
-                                @foreach(\Botble\RealEstate\Enums\PropertyTypeEnum::cases() as $type)
-                                    <option value="{{ $type->value }}">{{ $type->label() }}</option>
+                                @foreach(\Botble\RealEstate\Enums\PropertyTypeEnum::labels() as $key => $label)
+                                    <option value="{{ $key }}">{{ $label }}</option>
                                 @endforeach
                             </select>
                         </div>

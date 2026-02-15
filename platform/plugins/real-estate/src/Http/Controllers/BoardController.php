@@ -13,9 +13,12 @@ use Botble\Base\Http\Responses\BaseHttpResponse;
 use Botble\RealEstate\Forms\BoardForm;
 use Botble\RealEstate\Http\Requests\BoardRequest;
 use Botble\RealEstate\Models\Board;
+use Botble\RealEstate\Models\Client;
 use Botble\RealEstate\Models\Property;
 use Botble\RealEstate\Tables\BoardTable;
+use Botble\Media\Facades\RvMedia;
 use Exception;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class BoardController extends BaseController
@@ -135,6 +138,193 @@ class BoardController extends BaseController
             });
 
         return $response->setData($boards);
+    }
+
+    public function searchPropertiesForBoard(Request $request): JsonResponse
+    {
+        $boardId = $request->input('board_id');
+        $search = $request->input('search', '');
+        $type = $request->input('type', '');
+        $bedrooms = $request->input('bedrooms', '');
+        $bathrooms = $request->input('bathrooms', '');
+        $priceMin = $request->input('price_min', '');
+        $priceMax = $request->input('price_max', '');
+        $clientNotes = $request->input('client_notes', '');
+        $page = (int) $request->input('page', 1);
+        $perPage = 24;
+
+        $board = Board::query()->findOrFail($boardId);
+        $existingIds = $board->properties()->pluck('re_board_properties.property_id')->toArray();
+
+        $query = Property::query()
+            ->select([
+                'id', 'name', 'images', 'price', 'currency_id', 'type', 'period',
+                'status', 'number_bedroom', 'number_bathroom', 'number_floor',
+                'square', 'location', 'unique_id', 'description',
+            ]);
+
+        // Smart filter from client notes
+        if ($clientNotes) {
+            $this->applySmartFilter($query, $clientNotes);
+        }
+
+        // Manual search
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'LIKE', "%{$search}%")
+                    ->orWhere('location', 'LIKE', "%{$search}%")
+                    ->orWhere('unique_id', 'LIKE', "%{$search}%")
+                    ->orWhere('description', 'LIKE', "%{$search}%");
+            });
+        }
+
+        // Type filter
+        if ($type) {
+            $query->where('type', $type);
+        }
+
+        // Bedrooms filter
+        if ($bedrooms !== '' && $bedrooms !== null) {
+            $query->where('number_bedroom', '>=', (int) $bedrooms);
+        }
+
+        // Bathrooms filter
+        if ($bathrooms !== '' && $bathrooms !== null) {
+            $query->where('number_bathroom', '>=', (int) $bathrooms);
+        }
+
+        // Price range
+        if ($priceMin !== '' && $priceMin !== null) {
+            $query->where('price', '>=', (float) $priceMin);
+        }
+        if ($priceMax !== '' && $priceMax !== null) {
+            $query->where('price', '<=', (float) $priceMax);
+        }
+
+        $query->orderBy('created_at', 'desc');
+
+        $paginated = $query->paginate($perPage, ['*'], 'page', $page);
+
+        $items = $paginated->getCollection()->map(function (Property $property) use ($existingIds) {
+            $image = RvMedia::getDefaultImage();
+            $images = $property->images;
+            if (! empty($images) && is_array($images) && count($images) > 0) {
+                $image = RvMedia::getImageUrl($images[0], 'thumb', false, RvMedia::getDefaultImage());
+            }
+
+            $price = '';
+            try {
+                $property->loadMissing('currency');
+                $price = $property->price_format;
+            } catch (\Throwable $e) {
+                $price = $property->price ? number_format($property->price) : '';
+            }
+
+            return [
+                'id' => $property->id,
+                'name' => $property->name,
+                'image' => $image,
+                'price' => $price,
+                'type' => $property->type->label(),
+                'location' => $property->location ?: '',
+                'bedrooms' => $property->number_bedroom,
+                'bathrooms' => $property->number_bathroom,
+                'square' => $property->square,
+                'already_added' => in_array($property->id, $existingIds),
+            ];
+        });
+
+        return response()->json([
+            'data' => $items,
+            'meta' => [
+                'current_page' => $paginated->currentPage(),
+                'last_page' => $paginated->lastPage(),
+                'total' => $paginated->total(),
+            ],
+        ]);
+    }
+
+    protected function applySmartFilter($query, string $notes): void
+    {
+        $notes = mb_strtolower($notes);
+
+        // Extract bedroom numbers: "3 cuartos", "3 habitaciones", "3 dormitorios"
+        if (preg_match('/(\d+)\s*(?:cuarto|habitaci[oó]n|dormitorio|bedroom|room)/iu', $notes, $m)) {
+            $query->where('number_bedroom', '>=', (int) $m[1]);
+        }
+
+        // Extract bathroom numbers: "2 baños", "2 bathrooms"
+        if (preg_match('/(\d+)\s*(?:ba[nñ]o|bathroom)/iu', $notes, $m)) {
+            $query->where('number_bathroom', '>=', (int) $m[1]);
+        }
+
+        // Extract floor numbers: "2 pisos", "2 niveles", "2 floors"
+        if (preg_match('/(\d+)\s*(?:piso|nivel|floor|planta)/iu', $notes, $m)) {
+            $query->where('number_floor', '>=', (int) $m[1]);
+        }
+
+        // Location keywords: extract place names after "en" preposition
+        // e.g. "propiedades en occidente", "casas en San José"
+        if (preg_match_all('/(?:en|near|cerca\s+de)\s+([a-záéíóúñü\s]+?)(?:,|$|\.|;|\d)/iu', $notes, $matches)) {
+            $query->where(function ($q) use ($matches) {
+                foreach ($matches[1] as $location) {
+                    $location = trim($location);
+                    if (mb_strlen($location) >= 3) {
+                        $q->orWhere('location', 'LIKE', "%{$location}%")
+                          ->orWhere('name', 'LIKE', "%{$location}%")
+                          ->orWhere('description', 'LIKE', "%{$location}%");
+                    }
+                }
+            });
+        }
+
+        // Property type keywords
+        $typeMap = [
+            'sale' => 'sale', 'venta' => 'sale', 'compra' => 'sale', 'comprar' => 'sale',
+            'rent' => 'rent', 'alquiler' => 'rent', 'renta' => 'rent', 'arrendamiento' => 'rent',
+        ];
+        foreach ($typeMap as $keyword => $type) {
+            if (str_contains($notes, $keyword)) {
+                $query->where('type', $type);
+                break;
+            }
+        }
+    }
+
+    public function bulkAddProperties(Request $request, BaseHttpResponse $response)
+    {
+        $request->validate([
+            'board_id' => ['required', 'exists:re_boards,id'],
+            'property_ids' => ['required', 'array', 'min:1'],
+            'property_ids.*' => ['exists:re_properties,id'],
+        ]);
+
+        $board = Board::query()->findOrFail($request->input('board_id'));
+        $existingIds = $board->properties()->pluck('re_board_properties.property_id')->toArray();
+        $maxOrder = $board->properties()->max('re_board_properties.order') ?? 0;
+
+        $added = 0;
+        $skipped = 0;
+
+        foreach ($request->input('property_ids') as $propertyId) {
+            if (in_array((int) $propertyId, $existingIds)) {
+                $skipped++;
+                continue;
+            }
+
+            $maxOrder++;
+            $board->properties()->attach($propertyId, [
+                'order' => $maxOrder,
+            ]);
+            $added++;
+        }
+
+        $message = trans('plugins/real-estate::board.bulk_add_result', [
+            'added' => $added,
+            'skipped' => $skipped,
+        ]);
+
+        return $response->setMessage($message);
     }
 
     public function addPropertyToBoard(Request $request, BaseHttpResponse $response)

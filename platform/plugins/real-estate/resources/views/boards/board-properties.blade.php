@@ -1,3 +1,9 @@
+<div class="mb-3">
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#propertyPickerModal">
+        <i class="fas fa-plus-circle me-1"></i> {{ trans('plugins/real-estate::board.add_properties') }}
+    </button>
+</div>
+
 @if($properties->count())
     <div class="table-responsive">
         <table class="table table-striped table-hover">
@@ -47,6 +53,9 @@
     <p class="text-muted text-center py-3">{{ trans('plugins/real-estate::board.no_properties') }}</p>
 @endif
 
+@include('plugins/real-estate::boards.property-picker-modal')
+
+<script src="{{ asset('vendor/core/plugins/real-estate/js/property-picker.js') }}"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         document.querySelectorAll('.btn-remove-property-from-board').forEach(function (button) {

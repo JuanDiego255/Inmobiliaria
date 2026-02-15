@@ -269,6 +269,18 @@ Route::group(['namespace' => 'Botble\RealEstate\Http\Controllers', 'middleware' 
                 'uses' => 'BoardController@addPropertyToBoard',
                 'permission' => 'board.edit',
             ]);
+
+            Route::get('search-properties', [
+                'as' => 'search-properties',
+                'uses' => 'BoardController@searchPropertiesForBoard',
+                'permission' => 'board.edit',
+            ]);
+
+            Route::post('bulk-add-properties', [
+                'as' => 'bulk-add-properties',
+                'uses' => 'BoardController@bulkAddProperties',
+                'permission' => 'board.edit',
+            ]);
         });
     });
 

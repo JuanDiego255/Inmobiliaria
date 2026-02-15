@@ -201,7 +201,7 @@
         bulkAddUrl: '{{ route("board.bulk-add-properties") }}',
         csrfToken: '{{ csrf_token() }}',
         boardId: {{ $board->id }},
-        clientNotes: @json($board->client->notes ?? ''),
+        clientNotes: @json($board->client?->notes ?? ''),
         translations: {
             selectedCount: '{{ trans("plugins/real-estate::board.selected_count") }}',
             addSelected: '{{ trans("plugins/real-estate::board.add_selected") }}',

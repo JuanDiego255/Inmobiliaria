@@ -112,7 +112,15 @@
             credentials: 'same-origin',
         })
         .then(function (r) {
-            if (!r.ok) throw new Error('HTTP ' + r.status);
+            if (!r.ok) {
+                return r.json().then(function (errData) {
+                    console.error('Property picker server error:', errData);
+                    throw new Error('HTTP ' + r.status + ': ' + (errData.message || 'Unknown error'));
+                }).catch(function (parseErr) {
+                    if (parseErr.message && parseErr.message.startsWith('HTTP ')) throw parseErr;
+                    throw new Error('HTTP ' + r.status);
+                });
+            }
             return r.json();
         })
         .then(function (response) {
@@ -135,6 +143,7 @@
         })
         .catch(function (err) {
             loading.classList.add('d-none');
+            empty.classList.remove('d-none');
             console.error('Property picker error:', err);
         });
     }

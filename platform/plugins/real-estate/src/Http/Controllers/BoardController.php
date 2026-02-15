@@ -142,106 +142,130 @@ class BoardController extends BaseController
 
     public function searchPropertiesForBoard(Request $request): JsonResponse
     {
-        $boardId = $request->input('board_id');
-        $search = $request->input('search', '');
-        $type = $request->input('type', '');
-        $bedrooms = $request->input('bedrooms', '');
-        $bathrooms = $request->input('bathrooms', '');
-        $priceMin = $request->input('price_min', '');
-        $priceMax = $request->input('price_max', '');
-        $clientNotes = $request->input('client_notes', '');
-        $page = (int) $request->input('page', 1);
-        $perPage = 24;
+        try {
+            $boardId = $request->input('board_id');
+            $search = $request->input('search', '');
+            $type = $request->input('type', '');
+            $bedrooms = $request->input('bedrooms', '');
+            $bathrooms = $request->input('bathrooms', '');
+            $priceMin = $request->input('price_min', '');
+            $priceMax = $request->input('price_max', '');
+            $clientNotes = $request->input('client_notes', '');
+            $page = (int) $request->input('page', 1);
+            $perPage = 24;
 
-        $board = Board::query()->findOrFail($boardId);
-        $existingIds = $board->properties()->pluck('re_board_properties.property_id')->toArray();
+            $board = Board::query()->findOrFail($boardId);
+            $existingIds = $board->properties()->pluck('re_board_properties.property_id')->toArray();
 
-        $query = Property::query()
-            ->select([
-                'id', 'name', 'images', 'price', 'currency_id', 'type', 'period',
-                'status', 'number_bedroom', 'number_bathroom', 'number_floor',
-                'square', 'location', 'unique_id', 'description',
-            ]);
+            $query = Property::query()->with('currency');
 
-        // Smart filter from client notes
-        if ($clientNotes) {
-            $this->applySmartFilter($query, $clientNotes);
-        }
+            // Smart filter from client notes
+            if ($clientNotes) {
+                $this->applySmartFilter($query, $clientNotes);
+            }
 
-        // Manual search
-        if ($search) {
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'LIKE', "%{$search}%")
-                    ->orWhere('location', 'LIKE', "%{$search}%")
-                    ->orWhere('unique_id', 'LIKE', "%{$search}%")
-                    ->orWhere('description', 'LIKE', "%{$search}%");
+            // Manual search
+            if ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('name', 'LIKE', "%{$search}%")
+                        ->orWhere('location', 'LIKE', "%{$search}%")
+                        ->orWhere('unique_id', 'LIKE', "%{$search}%")
+                        ->orWhere('description', 'LIKE', "%{$search}%");
+                });
+            }
+
+            // Type filter
+            if ($type) {
+                $query->where('type', $type);
+            }
+
+            // Bedrooms filter
+            if ($bedrooms !== '' && $bedrooms !== null) {
+                $query->where('number_bedroom', '>=', (int) $bedrooms);
+            }
+
+            // Bathrooms filter
+            if ($bathrooms !== '' && $bathrooms !== null) {
+                $query->where('number_bathroom', '>=', (int) $bathrooms);
+            }
+
+            // Price range
+            if ($priceMin !== '' && $priceMin !== null) {
+                $query->where('price', '>=', (float) $priceMin);
+            }
+            if ($priceMax !== '' && $priceMax !== null) {
+                $query->where('price', '<=', (float) $priceMax);
+            }
+
+            $query->orderBy('created_at', 'desc');
+
+            $paginated = $query->paginate($perPage, ['*'], 'page', $page);
+
+            $items = $paginated->getCollection()->map(function (Property $property) use ($existingIds) {
+                try {
+                    $image = RvMedia::getDefaultImage();
+                    $images = $property->images;
+                    if (! empty($images) && is_array($images) && count($images) > 0) {
+                        $image = RvMedia::getImageUrl($images[0], 'thumb', false, RvMedia::getDefaultImage());
+                    }
+
+                    $price = '';
+                    try {
+                        $price = $property->price_format;
+                    } catch (\Throwable $e) {
+                        $price = $property->price ? number_format($property->price) : '';
+                    }
+
+                    $typeLabel = '';
+                    try {
+                        $typeLabel = $property->type ? $property->type->label() : '';
+                    } catch (\Throwable $e) {
+                        $typeLabel = $property->getRawOriginal('type') ?: '';
+                    }
+
+                    return [
+                        'id' => $property->id,
+                        'name' => $property->name,
+                        'image' => $image,
+                        'price' => $price,
+                        'type' => $typeLabel,
+                        'location' => $property->location ?: '',
+                        'bedrooms' => $property->number_bedroom,
+                        'bathrooms' => $property->number_bathroom,
+                        'square' => $property->square,
+                        'already_added' => in_array($property->id, $existingIds),
+                    ];
+                } catch (\Throwable $e) {
+                    return [
+                        'id' => $property->id,
+                        'name' => $property->name ?? 'Property #' . $property->id,
+                        'image' => RvMedia::getDefaultImage(),
+                        'price' => '',
+                        'type' => '',
+                        'location' => '',
+                        'bedrooms' => 0,
+                        'bathrooms' => 0,
+                        'square' => 0,
+                        'already_added' => in_array($property->id, $existingIds),
+                    ];
+                }
             });
+
+            return response()->json([
+                'data' => $items,
+                'meta' => [
+                    'current_page' => $paginated->currentPage(),
+                    'last_page' => $paginated->lastPage(),
+                    'total' => $paginated->total(),
+                ],
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'error' => true,
+                'message' => $e->getMessage(),
+                'file' => basename($e->getFile()) . ':' . $e->getLine(),
+            ], 500);
         }
-
-        // Type filter
-        if ($type) {
-            $query->where('type', $type);
-        }
-
-        // Bedrooms filter
-        if ($bedrooms !== '' && $bedrooms !== null) {
-            $query->where('number_bedroom', '>=', (int) $bedrooms);
-        }
-
-        // Bathrooms filter
-        if ($bathrooms !== '' && $bathrooms !== null) {
-            $query->where('number_bathroom', '>=', (int) $bathrooms);
-        }
-
-        // Price range
-        if ($priceMin !== '' && $priceMin !== null) {
-            $query->where('price', '>=', (float) $priceMin);
-        }
-        if ($priceMax !== '' && $priceMax !== null) {
-            $query->where('price', '<=', (float) $priceMax);
-        }
-
-        $query->orderBy('created_at', 'desc');
-
-        $paginated = $query->paginate($perPage, ['*'], 'page', $page);
-
-        $items = $paginated->getCollection()->map(function (Property $property) use ($existingIds) {
-            $image = RvMedia::getDefaultImage();
-            $images = $property->images;
-            if (! empty($images) && is_array($images) && count($images) > 0) {
-                $image = RvMedia::getImageUrl($images[0], 'thumb', false, RvMedia::getDefaultImage());
-            }
-
-            $price = '';
-            try {
-                $property->loadMissing('currency');
-                $price = $property->price_format;
-            } catch (\Throwable $e) {
-                $price = $property->price ? number_format($property->price) : '';
-            }
-
-            return [
-                'id' => $property->id,
-                'name' => $property->name,
-                'image' => $image,
-                'price' => $price,
-                'type' => $property->type->label(),
-                'location' => $property->location ?: '',
-                'bedrooms' => $property->number_bedroom,
-                'bathrooms' => $property->number_bathroom,
-                'square' => $property->square,
-                'already_added' => in_array($property->id, $existingIds),
-            ];
-        });
-
-        return response()->json([
-            'data' => $items,
-            'meta' => [
-                'current_page' => $paginated->currentPage(),
-                'last_page' => $paginated->lastPage(),
-                'total' => $paginated->total(),
-            ],
-        ]);
     }
 
     protected function applySmartFilter($query, string $notes): void

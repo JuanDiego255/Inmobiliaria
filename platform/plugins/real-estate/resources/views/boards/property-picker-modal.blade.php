@@ -1,5 +1,5 @@
 <div class="modal fade" id="propertyPickerModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
-    <div class="modal-dialog modal-fullscreen">
+    <div class="modal-dialog modal-full">
         <div class="modal-content">
             <div class="modal-header border-bottom" style="background: #f8f9fa;">
                 <div class="d-flex align-items-center gap-3 w-100">

@@ -150,7 +150,7 @@
 
     function createCard(item) {
         var col = document.createElement('div');
-        col.className = 'col-6 col-md-4 col-lg-3 col-xl-2';
+        col.className = 'col-6 col-md-4 col-lg-3';
 
         var isSelected = selectedIds.has(item.id);
         var card = document.createElement('div');

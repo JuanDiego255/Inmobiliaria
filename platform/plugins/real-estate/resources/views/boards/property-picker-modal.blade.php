@@ -143,31 +143,34 @@
 }
 .property-pick-card .pick-image {
     width: 100%;
-    height: 130px;
+    aspect-ratio: 4 / 3;
     object-fit: cover;
 }
 .property-pick-card .pick-body {
-    padding: 10px 12px;
+    padding: 12px 14px;
 }
 .property-pick-card .pick-name {
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 600;
     color: #1e293b;
-    white-space: nowrap;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
     overflow: hidden;
-    text-overflow: ellipsis;
+    line-height: 1.3;
 }
 .property-pick-card .pick-price {
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 700;
     color: #3b82f6;
+    margin-top: 2px;
 }
 .property-pick-card .pick-meta {
-    font-size: 11px;
+    font-size: 12px;
     color: #94a3b8;
     display: flex;
-    gap: 8px;
-    margin-top: 4px;
+    gap: 10px;
+    margin-top: 5px;
 }
 .property-pick-card .pick-badge {
     position: absolute;

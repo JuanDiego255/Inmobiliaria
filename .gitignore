@@ -24,7 +24,7 @@ __MACOSX
 /.phpintel
 /.php_cs.cache
 
-public/vendor/core
+/public/vendor/core
 
 _ide_helper.php
 yarn.lock
@@ -33,7 +33,7 @@ bun.lockb
 
 public/mix-manifest.json
 
-/public/themes
+public/themes
 public/docs
 resources/docs
 

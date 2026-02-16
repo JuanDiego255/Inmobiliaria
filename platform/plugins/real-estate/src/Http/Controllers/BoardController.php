@@ -203,11 +203,9 @@ class BoardController extends BaseController
 
             $items = $paginated->getCollection()->map(function (Property $property) use ($existingIds) {
                 try {
-                    $image = RvMedia::getDefaultImage();
-                    $images = $property->images;
-                    if (! empty($images) && is_array($images) && count($images) > 0) {
-                        $image = RvMedia::getImageUrl($images[0], null, false, RvMedia::getDefaultImage());
-                    }
+                    $image = $property->image
+                        ? RvMedia::getImageUrl($property->image, null, false, RvMedia::getDefaultImage())
+                        : RvMedia::getDefaultImage();
 
                     $price = '';
                     try {

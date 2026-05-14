@@ -18,7 +18,7 @@
 
         {{-- Category --}}
         <div class="filter-item">
-            <label>{{ __('Property type') }}</label>
+            <label>{{ __('Tipos de propiedades') }}</label>
             <select name="category_id" class="form-control">
                 <option value="">{{ __('All') }}</option>
                 @foreach($categories as $category)

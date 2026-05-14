@@ -53,7 +53,7 @@
                         <div class="sbm-dropdown" data-name="category_id">
                             <button type="button" class="sbm-dropdown__trigger">
                                 <i class="far fa-home"></i>
-                                <span class="sbm-dropdown__label">{{ __('Property type') }}</span>
+                                <span class="sbm-dropdown__label">{{ __('Tipos de propiedades') }}</span>
                                 <i class="fas fa-chevron-down sbm-dropdown__arrow"></i>
                             </button>
                             <div class="sbm-dropdown__menu">

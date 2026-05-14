@@ -1,127 +1,152 @@
-<div class="search-box">
-    <div class="screen-darken"></div>
-    <div class="search-box-content">
-        <div class="d-md-none bg-primary p-2">
-            <span class="text-white">{{ __('Filter') }}</span>
-            <span class="float-right toggle-filter-offcanvas text-white">
-                <i class="far fa-times-circle"></i>
-            </span>
-        </div>
-        <div class="search-box-items">
-            <div class="row ml-md-0 mr-md-0">
-                <div class="col-xl-3 col-lg-2 col-md-4 px-1">
-                    {!! Theme::partial('real-estate.filters.keyword') !!}
-                </div>
-                <div class="col-lg-2 col-md-4 px-1">
-                    {!! Theme::partial('real-estate.filters.city') !!}
-                </div>
-                <div class="col-lg-2 col-md-4 px-1">
-                    {!! Theme::partial('real-estate.filters.choices', ['type' => $type, 'categories' => $categories, 'labelDefault' => __('Type, category...'), 'extraChoices' => $extraChoices ?? null]) !!}
-                </div>
-                @if ($type == 'property')
-                    <div class="col-lg-2 col-md-4 px-1 mb-2">
-                        <label for="select-type" class="control-label">{{ __('Price range') }}</label>
-                        <div class="dropdown">
-                            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuPrice" data-toggle="dropdown"
-                                aria-haspopup="true" aria-expanded="false">
-                                <span>{{ __('All prices') }}</span>
-                            </button>
-                            <div class="dropdown-menu" style="min-width: 20em;" aria-labelledby="dropdownMenuPrice">
-                                <div class="dropdown-item">
-                                    @php
-                                        $calc = [
-                                            [
-                                                'number' => 1000000000,
-                                                'label' => '__value__ ' . __('billion')
-                                            ],
-                                            [
-                                                'number' => 1000000,
-                                                'label' => '__value__ ' . __('million')
-                                            ],
-                                            [
-                                                'number' => 1000,
-                                                'label' => '__value__ ' . __('thousand')
-                                            ],
-                                            [
-                                                'number' => 0,
-                                                'label' => '__value__'
-                                            ],
-                                        ];
-                                        $symbol = '';
-                                        $currency = get_application_currency();
-                                        if ($currency) {
-                                            $symbol = ' (' . $currency->symbol . ')';
-                                        }
-                                    @endphp
-                                    <div class="form-group min-max-input" data-calc="{{ json_encode($calc, true) }}" data-all="{{ __('All prices') }}">
-                                        <div class="row">
-                                            <div class="col-5 pr-1">
-                                                <label for="min_price" class="control-label">{{ __('Price from') . $symbol }}</label>
-                                                <input type="number" name="min_price" class="form-control min-input" id="min_price"
-                                                       value="{{ BaseHelper::stringify(request()->input('min_price')) }}" placeholder="{{ __('From') }}" min="0" step="1">
-                                                <span class="position-absolute min-label d-none"></span>
-                                            </div>
-                                            <div class="col-5 px-1">
-                                                <label for="max_price" class="control-label">{{ __('Price to') . $symbol }}</label>
-                                                <input type="number" name="max_price" class="form-control max-input" id="max_price"
-                                                       value="{{ BaseHelper::stringify(request()->input('max_price')) }}" placeholder="{{ __('To') }}" min="0" step="1">
-                                                <span class="position-absolute max-label d-none"></span>
-                                            </div>
-                                            <div class="col-2 px-0 btn-min-max" style="align-self: flex-end">
-                                                <button class="btn btn-primary">{{ __('OK') }}</button>
-                                            </div>
-                                        </div>
-                                    </div>
+@php
+    $states = \Botble\Location\Models\State::query()
+        ->wherePublished()
+        ->orderBy('order')
+        ->orderBy('name')
+        ->select(['id', 'name'])
+        ->get();
+@endphp
 
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-2 col-md-4 px-1 mb-2">
-                        <label for="select-type" class="control-label">{{ __('Square range') }}</label>
-                        <div class="dropdown">
-                            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuSquare" data-toggle="dropdown"
-                                aria-haspopup="true" aria-expanded="false">
-                                <span>{{ __('All squares') }}</span>
-                            </button>
-                            <div class="dropdown-menu" style="min-width: 20em;" aria-labelledby="dropdownMenuSquare">
-                                <div class="dropdown-item">
-                                    {!! Theme::partial('real-estate.filters.square') !!}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                @else
-                    <div class="col-lg-2 col-md-4 px-1">
-                        {!! Theme::partial('real-estate.filters.floor') !!}
-                    </div>
-                    <div class="col-lg-2 col-md-4 px-1">
-                        <label for="select-type" class="control-label">{{ __('Flat range') }}</label>
-                        <div class="dropdown mb-2">
-                            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuFlat" data-toggle="dropdown"
-                                aria-haspopup="true" aria-expanded="false">
-                                <span>{{ __('All squares') }}</span>
-                            </button>
-                            <div class="dropdown-menu" style="min-width: 20em;" aria-labelledby="dropdownMenuFlat">
-                                <div class="dropdown-item">
-                                    {!! Theme::partial('real-estate.filters.flat') !!}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                @endif
-                <div class="col-lg-2 col-xl-1 col-md-2 px-1 button-search-wrapper" style="align-self: flex-end;">
-                    <div class="btn-group text-center w-100 ">
-                        <button type="submit" class="btn btn-primary btn-full">{{ __('Search') }}</button>
-                        <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            <span class="sr-only">Toggle Dropdown</span>
-                        </button>
-                        <div class="dropdown-menu dropdown-menu-right">
-                            <button class="dropdown-item" type="reset">{{ __('Reset filters') }}</button>
-                        </div>
-                    </div>
-                </div>
+<div class="search-box-filters-modern">
+    <div class="filters-row">
+        {{-- Keyword --}}
+        <div class="filter-item">
+            <label>{{ __('Keyword') }}</label>
+            <input type="text" name="k" class="form-control" placeholder="{{ __('Enter keyword...') }}"
+                   value="{{ BaseHelper::stringify(request()->input('k')) }}">
+        </div>
+
+        {{-- Category --}}
+        <div class="filter-item">
+            <label>{{ __('Property type') }}</label>
+            <select name="category_id" class="form-control">
+                <option value="">{{ __('All') }}</option>
+                @foreach($categories as $category)
+                    <option value="{{ $category->id }}" @if(request()->input('category_id') == $category->id) selected @endif>
+                        {!! BaseHelper::clean($category->indent_text) !!} {{ $category->name }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+
+        {{-- Type --}}
+        <div class="filter-item">
+            <label>{{ __('Type') }}</label>
+            <select name="type" class="form-control">
+                <option value="">{{ __('All') }}</option>
+                @foreach(\Botble\RealEstate\Enums\PropertyTypeEnum::labels() as $key => $label)
+                    <option value="{{ $key }}" @if(request()->input('type') == $key) selected @endif>{{ $label }}</option>
+                @endforeach
+            </select>
+        </div>
+
+        {{-- State --}}
+        <div class="filter-item">
+            <label>{{ __('State') }}</label>
+            <select name="state_id" class="form-control" id="filter-state">
+                <option value="">{{ __('All') }}</option>
+                @foreach($states as $state)
+                    <option value="{{ $state->id }}" @if(request()->input('state_id') == $state->id) selected @endif>{{ $state->name }}</option>
+                @endforeach
+            </select>
+        </div>
+
+        {{-- City --}}
+        <div class="filter-item">
+            <label>{{ __('City') }}</label>
+            <select name="city_id" class="form-control" id="filter-city"
+                    data-url="{{ route('ajax.cities-by-state') }}">
+                <option value="">{{ __('All') }}</option>
+            </select>
+        </div>
+
+        @if ($type == 'property')
+            {{-- Bedrooms --}}
+            <div class="filter-item">
+                <label>{{ __('Bedrooms') }}</label>
+                <select name="bedroom" class="form-control">
+                    <option value="">{{ __('All') }}</option>
+                    @for($i = 1; $i <= 5; $i++)
+                        <option value="{{ $i }}" @if(request()->input('bedroom') == $i) selected @endif>{{ $i }}+</option>
+                    @endfor
+                </select>
             </div>
+
+            {{-- Bathrooms --}}
+            <div class="filter-item">
+                <label>{{ __('Bathrooms') }}</label>
+                <select name="bathroom" class="form-control">
+                    <option value="">{{ __('All') }}</option>
+                    @for($i = 1; $i <= 5; $i++)
+                        <option value="{{ $i }}" @if(request()->input('bathroom') == $i) selected @endif>{{ $i }}+</option>
+                    @endfor
+                </select>
+            </div>
+
+            {{-- Price range --}}
+            <div class="filter-item">
+                <label>{{ __('Min price') }}</label>
+                <input type="number" name="min_price" class="form-control" placeholder="{{ __('Min') }}"
+                       value="{{ BaseHelper::stringify(request()->input('min_price')) }}" min="0">
+            </div>
+            <div class="filter-item">
+                <label>{{ __('Max price') }}</label>
+                <input type="number" name="max_price" class="form-control" placeholder="{{ __('Max') }}"
+                       value="{{ BaseHelper::stringify(request()->input('max_price')) }}" min="0">
+            </div>
+        @endif
+
+        {{-- Buttons --}}
+        <div class="filter-item filter-item--btn" style="align-self: flex-end;">
+            <button type="submit" class="btn-search">
+                <i class="far fa-search"></i> {{ __('Search') }}
+            </button>
+        </div>
+        <div class="filter-item filter-item--btn" style="align-self: flex-end;">
+            <button type="reset" class="btn-reset">
+                <i class="far fa-undo"></i> {{ __('Reset') }}
+            </button>
         </div>
     </div>
 </div>
+
+<script>
+    $(function () {
+        var filterState = $('#filter-state');
+        var filterCity = $('#filter-city');
+        var citiesUrl = filterCity.data('url');
+
+        function loadCities(stateId, selectedCityId) {
+            if (!stateId) {
+                filterCity.html('<option value="">{{ __("All") }}</option>');
+                return;
+            }
+            filterCity.html('<option value="">{{ __("Loading...") }}</option>');
+            $.get(citiesUrl, { state_id: stateId }, function (response) {
+                var items = response.data || response;
+                var html = '<option value="">{{ __("All") }}</option>';
+                if (Array.isArray(items)) {
+                    items.forEach(function (city) {
+                        var id = city.id || city.value;
+                        var name = city.name || city.label || city.text;
+                        if (id) {
+                            var sel = (selectedCityId && String(id) === String(selectedCityId)) ? ' selected' : '';
+                            html += '<option value="' + id + '"' + sel + '>' + name + '</option>';
+                        }
+                    });
+                }
+                filterCity.html(html);
+            });
+        }
+
+        filterState.on('change', function () {
+            loadCities($(this).val());
+        });
+
+        // Load cities on page load if state is pre-selected
+        var initialState = filterState.val();
+        if (initialState) {
+            loadCities(initialState, '{{ request()->input("city_id") }}');
+        }
+    });
+</script>

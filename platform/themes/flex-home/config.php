@@ -53,6 +53,7 @@ return [
             $theme->asset()->usePath()->add('owl-carousel-css', 'libraries/owl-carousel/owl.carousel.min.css');
             $theme->asset()->usePath()->add('owl-carousel-theme-css', 'libraries/owl-carousel/owl.theme.default.css');
             $theme->asset()->usePath()->add('style-css', 'css/style.css', [], [], $version);
+            $theme->asset()->usePath()->add('search-box-modern-css', 'css/search-box-modern.css', [], [], $version);
 
             if (BaseHelper::isRtlEnabled()) {
                 $theme->asset()->usePath()->add('rtl-style', 'css/rtl-style.css', [], [], $version);
@@ -66,6 +67,7 @@ return [
             $theme->asset()->container('footer')->usePath()->add('waypoints-js', 'libraries/jquery.waypoints.min.js');
 
             $theme->asset()->container('footer')->usePath()->add('app-js', 'js/app.js', [], [], $version);
+            $theme->asset()->container('footer')->usePath()->add('search-box-modern-js', 'js/search-box-modern.js', ['jquery'], [], $version);
             $theme->asset()->container('footer')->usePath()->add('wishlist', 'js/wishlist.js', [], [], $version);
 
             if (function_exists('shortcode')) {

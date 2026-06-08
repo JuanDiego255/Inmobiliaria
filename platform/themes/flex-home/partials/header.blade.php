@@ -45,7 +45,7 @@
             ->orderBy('position')
             ->get();
     }
-    $leftMenuItems = $eliteMenuNodes->take(3);
+    $leftMenuItems = $eliteMenuNodes;
     $allMenuItems = $eliteMenuNodes;
 @endphp
 
@@ -58,20 +58,24 @@
             @endforeach
         </nav>
 
+        {{-- Tapered line LEFT → center --}}
+        <div class="elite-header__taper-line elite-header__taper-line--left"></div>
+
         {{-- Center: Logo with animation --}}
         <div class="elite-header__logo-wrap">
             <a href="{{ route('public.index') }}" class="elite-header__logo">
                 <div class="elite-logo-anim">
-                    <div class="elite-logo-anim__line elite-logo-anim__line--top"></div>
                     @if (theme_option('logo'))
                         <img src="{{ RvMedia::getImageUrl(theme_option('logo')) }}" alt="{{ theme_option('site_name') }}" class="elite-logo-anim__img">
                     @else
                         <span class="elite-logo-anim__text">{{ theme_option('site_name', 'Logo') }}</span>
                     @endif
-                    <div class="elite-logo-anim__line elite-logo-anim__line--bottom"></div>
                 </div>
             </a>
         </div>
+
+        {{-- Tapered line center → RIGHT --}}
+        <div class="elite-header__taper-line elite-header__taper-line--right"></div>
 
         {{-- Right: Social icons + hamburger --}}
         <div class="elite-header__right">
@@ -148,17 +152,34 @@
 /* ================================================
    ELITE HEADER — Centered Logo + Hamburger Overlay
    ================================================ */
+
+/* 1. Hide admin bar + old header elements */
+#admin-bar,
+.admin-bar-container,
+.admin-bar,
+.bravo_topbar,
+header.topmenu {
+    display: none !important;
+}
+
+body.show-admin-bar {
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+}
+
+/* 2. Header overlays the banner — NO body padding */
 .elite-header {
-    position: fixed;
+    position: absolute;
     top: 0;
     left: 0;
     right: 0;
     z-index: 9999;
     padding: 0 40px;
-    transition: background 0.4s, box-shadow 0.4s;
+    transition: background 0.4s, box-shadow 0.4s, position 0s;
 }
 
 .elite-header--scrolled {
+    position: fixed;
     background: rgba(15, 30, 51, 0.95);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
@@ -168,31 +189,35 @@
 .elite-header__inner {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    max-width: 1400px;
+    justify-content: center;
+    max-width: 1600px;
     margin: 0 auto;
     height: 80px;
+    gap: 0;
 }
 
-/* Nav links */
+/* Nav links — 3. All 6 items on the left */
 .elite-header__nav {
     display: flex;
     align-items: center;
-    gap: 32px;
-    flex: 1;
+    gap: 28px;
 }
 
-.elite-header__nav--left { justify-content: flex-start; }
+.elite-header__nav--left {
+    justify-content: flex-end;
+    margin-right: 0;
+}
 
 .elite-header__link {
     color: rgba(255,255,255,0.85);
     text-decoration: none;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
     letter-spacing: 1.5px;
     text-transform: uppercase;
     transition: color 0.2s;
     position: relative;
+    white-space: nowrap;
 }
 
 .elite-header__link:hover,
@@ -217,6 +242,29 @@
     width: 100%;
 }
 
+/* 4. Tapered HR lines — thick at edges, thin at center */
+.elite-header__taper-line {
+    flex: 1;
+    height: 1px;
+    min-width: 20px;
+    opacity: 0;
+    transition: opacity 0.8s ease 0.2s;
+}
+
+.elite-header.loaded .elite-header__taper-line {
+    opacity: 1;
+}
+
+.elite-header__taper-line--left {
+    background: linear-gradient(to right, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.05) 100%);
+    margin: 0 20px 0 24px;
+}
+
+.elite-header__taper-line--right {
+    background: linear-gradient(to left, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.05) 100%);
+    margin: 0 24px 0 20px;
+}
+
 /* Logo */
 .elite-header__logo-wrap {
     flex: 0 0 auto;
@@ -233,27 +281,6 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 6px;
-}
-
-.elite-logo-anim__line {
-    width: 60px;
-    height: 1px;
-    background: rgba(255,255,255,0.4);
-    transform: scaleX(0);
-    transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.elite-logo-anim__line--top {
-    transform-origin: left;
-}
-
-.elite-logo-anim__line--bottom {
-    transform-origin: right;
-}
-
-.elite-header.loaded .elite-logo-anim__line {
-    transform: scaleX(1);
 }
 
 .elite-logo-anim__img {
@@ -261,13 +288,13 @@
     width: auto;
     filter: brightness(0) invert(1);
     opacity: 0;
-    transform: scale(0.8) rotate(-8deg);
-    transition: opacity 0.6s ease 0.3s, transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s;
+    transform: scale(0.8);
+    transition: opacity 0.6s ease 0.15s, transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 0.15s;
 }
 
 .elite-header.loaded .elite-logo-anim__img {
     opacity: 1;
-    transform: scale(1) rotate(0deg);
+    transform: scale(1);
 }
 
 .elite-logo-anim__text {
@@ -278,24 +305,22 @@
     text-transform: uppercase;
 }
 
-/* Hover pulse on logo */
+/* Hover: gentle glow */
 .elite-header__logo:hover .elite-logo-anim__img {
-    animation: eliteLogoPulse 0.6s ease;
+    animation: eliteLogoGlow 0.8s ease;
 }
 
-@keyframes eliteLogoPulse {
-    0% { transform: scale(1) rotate(0deg); }
-    30% { transform: scale(1.08) rotate(2deg); }
-    60% { transform: scale(0.95) rotate(-1deg); }
-    100% { transform: scale(1) rotate(0deg); }
+@keyframes eliteLogoGlow {
+    0%   { filter: brightness(0) invert(1) drop-shadow(0 0 0 transparent); }
+    50%  { filter: brightness(0) invert(1) drop-shadow(0 0 12px rgba(255,255,255,0.5)); }
+    100% { filter: brightness(0) invert(1) drop-shadow(0 0 0 transparent); }
 }
 
 /* Right section */
 .elite-header__right {
-    flex: 1;
     display: flex;
     align-items: center;
-    justify-content: flex-end;
+    justify-content: flex-start;
     gap: 20px;
 }
 
@@ -355,7 +380,6 @@
     align-self: flex-end;
 }
 
-/* Hamburger active (X) */
 .elite-hamburger.active .elite-hamburger__line:first-child {
     transform: translateY(4.5px) rotate(45deg);
     width: 28px;
@@ -492,36 +516,44 @@
     color: #fff;
 }
 
-/* ============ BODY OFFSET ============ */
-body {
-    padding-top: 80px;
-}
-
-/* Hide old header elements */
-.bravo_topbar { display: none !important; }
-header.topmenu { display: none !important; }
-
 /* ============ MOBILE ============ */
 @media (max-width: 991px) {
     .elite-header {
-        padding: 0 20px;
+        padding: 0 16px;
     }
 
     .elite-header__inner {
-        height: 64px;
+        height: 60px;
+    }
+
+    .elite-header__nav,
+    .elite-header__taper-line {
+        display: none !important;
+    }
+
+    .elite-header__right {
+        flex: 1;
+        justify-content: flex-end;
     }
 
     .elite-logo-anim__img {
         height: 36px;
     }
 
-    body {
-        padding-top: 64px;
-    }
-
     .elite-overlay__link {
         font-size: 24px;
         letter-spacing: 2px;
+    }
+}
+
+@media (min-width: 992px) and (max-width: 1200px) {
+    .elite-header__link {
+        font-size: 11px;
+        letter-spacing: 1px;
+    }
+
+    .elite-header__nav {
+        gap: 18px;
     }
 }
 </style>

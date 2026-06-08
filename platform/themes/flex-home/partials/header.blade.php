@@ -58,9 +58,6 @@
             @endforeach
         </nav>
 
-        {{-- Tapered line LEFT → center --}}
-        <div class="elite-header__taper-line elite-header__taper-line--left"></div>
-
         {{-- Center: Logo with animation --}}
         <div class="elite-header__logo-wrap">
             <a href="{{ route('public.index') }}" class="elite-header__logo">
@@ -73,9 +70,6 @@
                 </div>
             </a>
         </div>
-
-        {{-- Tapered line center → RIGHT --}}
-        <div class="elite-header__taper-line elite-header__taper-line--right"></div>
 
         {{-- Right: Social icons + hamburger --}}
         <div class="elite-header__right">
@@ -97,6 +91,12 @@
                 <span class="elite-hamburger__line"></span>
             </button>
         </div>
+    </div>
+
+    {{-- Tapered HR lines BELOW the navbar --}}
+    <div class="elite-header__hr-wrap d-none d-lg-flex">
+        <div class="elite-header__taper-line elite-header__taper-line--left"></div>
+        <div class="elite-header__taper-line elite-header__taper-line--right"></div>
     </div>
 </header>
 
@@ -153,18 +153,33 @@
    ELITE HEADER — Centered Logo + Hamburger Overlay
    ================================================ */
 
-/* 1. Hide admin bar + old header elements */
+/* 1. Hide admin bar + old header elements — aggressively */
 #admin-bar,
 .admin-bar-container,
 .admin-bar,
+[class*="admin-bar"],
 .bravo_topbar,
 header.topmenu {
     display: none !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    max-height: 0 !important;
+    overflow: hidden !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    visibility: hidden !important;
 }
 
-body.show-admin-bar {
+body.show-admin-bar,
+body[class*="admin-bar"] {
     padding-top: 0 !important;
     margin-top: 0 !important;
+}
+
+/* Hide admin bar injected stylesheet */
+link[href*="admin-bar.css"] {
+    display: none;
 }
 
 /* 2. Header overlays the banner — NO body padding */
@@ -193,10 +208,10 @@ body.show-admin-bar {
     max-width: 1600px;
     margin: 0 auto;
     height: 80px;
-    gap: 0;
+    gap: 30px;
 }
 
-/* Nav links — 3. All 6 items on the left */
+/* Nav links */
 .elite-header__nav {
     display: flex;
     align-items: center;
@@ -205,15 +220,15 @@ body.show-admin-bar {
 
 .elite-header__nav--left {
     justify-content: flex-end;
-    margin-right: 0;
+    flex: 1;
 }
 
 .elite-header__link {
     color: rgba(255,255,255,0.85);
     text-decoration: none;
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 600;
-    letter-spacing: 1.5px;
+    letter-spacing: 1.8px;
     text-transform: uppercase;
     transition: color 0.2s;
     position: relative;
@@ -242,11 +257,19 @@ body.show-admin-bar {
     width: 100%;
 }
 
-/* 4. Tapered HR lines — thick at edges, thin at center */
+/* 4. Tapered HR lines — BELOW the navbar, full width */
+.elite-header__hr-wrap {
+    display: flex;
+    width: 100%;
+    max-width: 1600px;
+    margin: -6px auto 0;
+    padding: 0 0;
+    gap: 0;
+}
+
 .elite-header__taper-line {
     flex: 1;
-    height: 1px;
-    min-width: 20px;
+    height: 3px;
     opacity: 0;
     transition: opacity 0.8s ease 0.2s;
 }
@@ -256,13 +279,11 @@ body.show-admin-bar {
 }
 
 .elite-header__taper-line--left {
-    background: linear-gradient(to right, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.05) 100%);
-    margin: 0 20px 0 24px;
+    background: linear-gradient(to right, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0) 100%);
 }
 
 .elite-header__taper-line--right {
-    background: linear-gradient(to left, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.05) 100%);
-    margin: 0 24px 0 20px;
+    background: linear-gradient(to left, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0) 100%);
 }
 
 /* Logo */
@@ -320,8 +341,9 @@ body.show-admin-bar {
 .elite-header__right {
     display: flex;
     align-items: center;
-    justify-content: flex-start;
+    justify-content: flex-end;
     gap: 20px;
+    flex: 1;
 }
 
 .elite-header__socials {
@@ -368,7 +390,9 @@ body.show-admin-bar {
     border-radius: 2px;
     transition: transform 0.4s cubic-bezier(0.77, 0, 0.18, 1),
                 opacity 0.3s,
-                width 0.3s;
+                width 0.4s cubic-bezier(0.77, 0, 0.18, 1),
+                box-shadow 0.3s;
+    transform-origin: center;
 }
 
 .elite-hamburger__line:first-child {
@@ -380,14 +404,40 @@ body.show-admin-bar {
     align-self: flex-end;
 }
 
+/* Hover animation: lines equalize + spread apart + subtle glow */
+.elite-hamburger:hover .elite-hamburger__line:first-child {
+    transform: translateY(-2px);
+    box-shadow: 0 0 8px rgba(255,255,255,0.4);
+}
+
+.elite-hamburger:hover .elite-hamburger__line:last-child {
+    width: 28px;
+    transform: translateY(2px);
+    box-shadow: 0 0 8px rgba(255,255,255,0.4);
+}
+
+/* Active state (X) */
 .elite-hamburger.active .elite-hamburger__line:first-child {
     transform: translateY(4.5px) rotate(45deg);
     width: 28px;
+    box-shadow: none;
 }
 
 .elite-hamburger.active .elite-hamburger__line:last-child {
     transform: translateY(-4.5px) rotate(-45deg);
     width: 28px;
+    box-shadow: none;
+}
+
+/* Active hover: X rotates slightly */
+.elite-hamburger.active:hover .elite-hamburger__line:first-child {
+    transform: translateY(4.5px) rotate(135deg);
+    box-shadow: 0 0 8px rgba(255,255,255,0.3);
+}
+
+.elite-hamburger.active:hover .elite-hamburger__line:last-child {
+    transform: translateY(-4.5px) rotate(-135deg);
+    box-shadow: 0 0 8px rgba(255,255,255,0.3);
 }
 
 /* ============ OVERLAY MENU ============ */
@@ -527,7 +577,7 @@ body.show-admin-bar {
     }
 
     .elite-header__nav,
-    .elite-header__taper-line {
+    .elite-header__hr-wrap {
         display: none !important;
     }
 
@@ -548,12 +598,12 @@ body.show-admin-bar {
 
 @media (min-width: 992px) and (max-width: 1200px) {
     .elite-header__link {
-        font-size: 11px;
-        letter-spacing: 1px;
+        font-size: 12px;
+        letter-spacing: 1.2px;
     }
 
     .elite-header__nav {
-        gap: 18px;
+        gap: 14px;
     }
 }
 </style>
@@ -563,6 +613,21 @@ document.addEventListener('DOMContentLoaded', function () {
     var header = document.getElementById('elite-header');
     var hamburger = document.getElementById('elite-hamburger');
     var overlay = document.getElementById('elite-overlay');
+
+    // Remove admin bar and any parent wrappers
+    var adminBar = document.querySelector('.admin-bar-container') || document.querySelector('#admin-bar');
+    if (adminBar) {
+        var parent = adminBar.parentElement;
+        adminBar.remove();
+        if (parent && parent !== document.body && parent.children.length === 0) {
+            parent.remove();
+        }
+    }
+    document.body.classList.remove('show-admin-bar');
+    document.body.style.paddingTop = '';
+    document.body.style.marginTop = '';
+    // Remove admin-bar stylesheet
+    document.querySelectorAll('link[href*="admin-bar"]').forEach(function(el) { el.remove(); });
 
     // Logo entrance animation
     setTimeout(function () {

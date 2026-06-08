@@ -33,17 +33,20 @@
         if (count($sl) == 3 && $sl[1]['value'] && $sl[2]['value']) { $hasSocialLinks = true; break; }
     }
 
-    // Get menu nodes for main-menu location
+    // Get menu nodes via Botble's language-aware query system
     $eliteMenuNodes = collect();
-    $mainMenu = \Botble\Menu\Models\MenuLocation::query()
-        ->where('location', 'main-menu')
-        ->first();
-    if ($mainMenu) {
-        $eliteMenuNodes = \Botble\Menu\Models\MenuNode::query()
-            ->where('menu_id', $mainMenu->menu_id)
-            ->where('parent_id', 0)
-            ->orderBy('position')
-            ->get();
+    $menuQuery = \Botble\Menu\Models\Menu::query()
+        ->wherePublished()
+        ->with(['menuNodes', 'menuNodes.child', 'locations']);
+    $menus = \Botble\Base\Supports\RepositoryHelper::applyBeforeExecuteQuery($menuQuery, new \Botble\Menu\Models\Menu())->get();
+    foreach ($menus as $menu) {
+        if ($menu->locations->pluck('location')->contains('main-menu')) {
+            $eliteMenuNodes = $menu->menuNodes
+                ->where('parent_id', 0)
+                ->sortBy('position')
+                ->values();
+            break;
+        }
     }
     $leftMenuItems = $eliteMenuNodes;
     $allMenuItems = $eliteMenuNodes;

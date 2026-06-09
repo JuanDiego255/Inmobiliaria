@@ -74,7 +74,7 @@
                     @endphp
                     <article class="pc-card"
                              data-category="{{ $property->categories->pluck('id')->implode(',') }}"
-                             data-type="{{ $propType->value }}"
+                             data-type="{{ (string) $propType }}"
                              data-state="{{ $property->state_id }}"
                              data-city="{{ $property->city_id }}"
                              data-bedrooms="{{ $property->number_bedroom }}"

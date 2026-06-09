@@ -1,4 +1,9 @@
 @php
+    $categories = $categories ?? get_property_categories([
+        'indent' => '↳',
+        'conditions' => ['status' => \Botble\Base\Enums\BaseStatusEnum::PUBLISHED],
+    ]);
+
     $featuredProperties = \Botble\RealEstate\Models\Property::query()
         ->where('moderation_status', \Botble\RealEstate\Enums\ModerationStatusEnum::APPROVED)
         ->whereNotIn('status', [\Botble\RealEstate\Enums\PropertyStatusEnum::NOT_AVAILABLE])
@@ -9,7 +14,6 @@
         ->get();
 @endphp
 
-@if($featuredProperties->count() >= 1)
 {{-- Hero section --}}
 <header class="pc-hero">
     <div class="pc-wrap">
@@ -23,7 +27,24 @@
     </div>
 </header>
 
+{{-- Search filters --}}
+<section class="pc-filters-section">
+    <div class="container-fluid w90">
+        <form
+            id="pc-filter-form"
+            action="{{ $actionUrl ?? RealEstateHelper::getPropertiesListPageUrl() }}"
+            method="get"
+        >
+            @include(Theme::getThemeNamespace() . '::views.real-estate.includes.search-box', [
+                'type' => 'property',
+                'categories' => $categories,
+            ])
+        </form>
+    </div>
+</section>
+
 {{-- Pinned horizontal carousel --}}
+@if($featuredProperties->count() >= 1)
 <section class="pc-pin-wrap" id="pcPinWrap">
     <div class="pc-pin-sticky">
         <div class="pc-pin-inner">
@@ -51,7 +72,14 @@
                         $priceText = $property->price_format;
                         $periodLabel = $isRent ? '/' . Str::lower($property->period->label()) : '';
                     @endphp
-                    <article class="pc-card">
+                    <article class="pc-card"
+                             data-category="{{ $property->categories->pluck('id')->implode(',') }}"
+                             data-type="{{ $propType->value }}"
+                             data-state="{{ $property->state_id }}"
+                             data-city="{{ $property->city_id }}"
+                             data-bedrooms="{{ $property->number_bedroom }}"
+                             data-bathrooms="{{ $property->number_bathroom }}"
+                             data-price="{{ $property->price }}">
                         <a href="{{ $property->url }}" class="pc-card__link">
                             <img class="pc-card__img" src="{{ $propImage }}" alt="{{ $property->name }}" loading="lazy">
                         </a>
@@ -131,8 +159,16 @@
             </div>
 
             <div class="pc-prog">
-                <span class="pc-prog__num"><span id="pcProgNum">01</span> <span class="pc-prog__tot">/ {{ str_pad($featuredProperties->count(), 2, '0', STR_PAD_LEFT) }}</span></span>
+                <span class="pc-prog__num"><span id="pcProgNum">01</span> <span class="pc-prog__tot">/ <span id="pcProgTotal">{{ str_pad($featuredProperties->count(), 2, '0', STR_PAD_LEFT) }}</span></span></span>
                 <div class="pc-prog__line"><div class="pc-prog__fill" id="pcProgFill"></div></div>
+            </div>
+
+            {{-- No results message --}}
+            <div class="pc-no-results" id="pcNoResults" style="display:none;">
+                <div class="pc-no-results__inner">
+                    <span class="material-icons">search_off</span>
+                    <p>{{ __('No se encontraron propiedades con los filtros seleccionados.') }}</p>
+                </div>
             </div>
         </div>
     </div>

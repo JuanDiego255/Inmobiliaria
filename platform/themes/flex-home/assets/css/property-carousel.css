@@ -105,6 +105,13 @@
     50% { transform: translateY(3px); }
 }
 
+/* ── FILTERS SECTION ────────────────────────────── */
+.pc-filters-section {
+    background: #fff;
+    padding: 40px 0;
+    border-bottom: 1px solid var(--pc-line);
+}
+
 /* ── PINNED CAROUSEL ────────────────────────────── */
 .pc-pin-wrap {
     position: relative;
@@ -453,6 +460,36 @@
 .pc-prog__tot {
     color: var(--pc-ink-400);
     font-weight: 400;
+}
+
+/* Hidden card (filtered out) */
+.pc-card.pc-hidden {
+    display: none;
+}
+
+/* No results */
+.pc-no-results {
+    padding: 60px var(--pc-pad);
+    text-align: center;
+}
+
+.pc-no-results__inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    color: var(--pc-ink-400);
+}
+
+.pc-no-results__inner .material-icons {
+    font-size: 48px;
+    opacity: .5;
+}
+
+.pc-no-results__inner p {
+    font-size: 16px;
+    font-weight: 400;
+    margin: 0;
 }
 
 /* ── RESPONSIVE ─────────────────────────────────── */

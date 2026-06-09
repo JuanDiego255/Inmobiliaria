@@ -1,15 +1,15 @@
 @php
     $featuredProperties = \Botble\RealEstate\Models\Property::query()
-        ->where('is_featured', true)
         ->where('moderation_status', \Botble\RealEstate\Enums\ModerationStatusEnum::APPROVED)
-        ->wherePublished()
+        ->whereNotIn('status', [\Botble\RealEstate\Enums\PropertyStatusEnum::NOT_AVAILABLE])
         ->with(['categories', 'city', 'state', 'currency', 'features'])
+        ->orderByDesc('is_featured')
         ->orderByDesc('created_at')
         ->limit(8)
         ->get();
 @endphp
 
-@if($featuredProperties->count() >= 4)
+@if($featuredProperties->count() >= 1)
 {{-- Hero section --}}
 <header class="pc-hero">
     <div class="pc-wrap">

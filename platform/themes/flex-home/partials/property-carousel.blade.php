@@ -1,0 +1,140 @@
+@php
+    $featuredProperties = \Botble\RealEstate\Models\Property::query()
+        ->where('is_featured', true)
+        ->where('moderation_status', \Botble\RealEstate\Enums\ModerationStatusEnum::APPROVED)
+        ->wherePublished()
+        ->with(['categories', 'city', 'state', 'currency', 'features'])
+        ->orderByDesc('created_at')
+        ->limit(8)
+        ->get();
+@endphp
+
+@if($featuredProperties->count() >= 4)
+{{-- Hero section --}}
+<header class="pc-hero">
+    <div class="pc-wrap">
+        <span class="pc-eyebrow">{{ __('Bienes raíces') }} · Costa Rica</span>
+        <h1 class="pc-hero__title">Espacios pensados para <em>vivir mejor</em>.</h1>
+        <p class="pc-hero__text">Una selección curada de propiedades en venta y alquiler. Seguí bajando para recorrer nuestras propiedades destacadas.</p>
+        <div class="pc-scroll-hint">
+            <span class="pc-scroll-hint__dot"><span class="material-icons">arrow_downward</span></span>
+            {{ __('Desplazá para explorar') }}
+        </div>
+    </div>
+</header>
+
+{{-- Pinned horizontal carousel --}}
+<section class="pc-pin-wrap" id="pcPinWrap">
+    <div class="pc-pin-sticky">
+        <div class="pc-pin-inner">
+            <div class="pc-sec-head">
+                <div>
+                    <span class="pc-eyebrow">{{ __('Propiedades destacadas') }}</span>
+                    <h2 class="pc-sec-head__title">{{ __('Recorré nuestra cartera') }}</h2>
+                </div>
+                <div class="pc-sec-head__meta">
+                    <p class="pc-sec-head__lead">{{ __('El scroll mueve las propiedades de lado a lado. Pasá el cursor sobre una card para ver más detalles.') }}</p>
+                </div>
+            </div>
+
+            <div class="pc-track" id="pcTrack">
+                @foreach($featuredProperties as $property)
+                    @php
+                        $propImage = $property->image ? RvMedia::getImageUrl($property->image) : RvMedia::getDefaultImage();
+                        $propType = $property->type;
+                        $isRent = $propType == \Botble\RealEstate\Enums\PropertyTypeEnum::RENT;
+                        $dealLabel = $isRent ? __('Alquiler') : __('Venta');
+                        $categoryName = $property->category->name ?? __('Propiedad');
+                        $cityName = $property->city->name ?? '';
+                        $stateName = $property->state->name ?? '';
+                        $locationText = implode(', ', array_filter([$cityName, $stateName]));
+                        $priceText = $property->price_format;
+                        $periodLabel = $isRent ? '/' . Str::lower($property->period->label()) : '';
+                    @endphp
+                    <article class="pc-card">
+                        <a href="{{ $property->url }}" class="pc-card__link">
+                            <img class="pc-card__img" src="{{ $propImage }}" alt="{{ $property->name }}" loading="lazy">
+                        </a>
+                        <span class="pc-badge {{ $isRent ? 'pc-badge--rent' : '' }}">{{ $dealLabel }}</span>
+                        <button class="pc-fav add-to-wishlist" data-id="{{ $property->id }}" type="button" aria-label="Favorito">
+                            <span class="material-icons">favorite_border</span>
+                        </button>
+                        <div class="pc-overlay">
+                            <span class="pc-overlay__type">{{ $categoryName }}</span>
+                            <h3 class="pc-overlay__title">{{ $property->name }}</h3>
+                            <div class="pc-overlay__loc">
+                                <span class="material-icons">place</span>{{ $locationText ?: __('Sin ubicación') }}
+                            </div>
+                            <div class="pc-overlay__foot">
+                                <div class="pc-overlay__price">
+                                    {{ $priceText }}
+                                    @if($periodLabel)
+                                        <span>{{ $periodLabel }}</span>
+                                    @endif
+                                </div>
+                                <div class="pc-overlay__specs">
+                                    @if($property->number_bedroom)
+                                        <span class="pc-spec"><span class="material-icons">king_bed</span>{{ $property->number_bedroom }}</span>
+                                    @endif
+                                    @if($property->number_bathroom)
+                                        <span class="pc-spec"><span class="material-icons">bathtub</span>{{ $property->number_bathroom }}</span>
+                                    @endif
+                                    @if($property->square)
+                                        <span class="pc-spec"><span class="material-icons">square_foot</span>{{ number_format($property->square) }} m²</span>
+                                    @endif
+                                </div>
+                            </div>
+                            <div class="pc-reveal">
+                                <div class="pc-reveal__inner">
+                                    <div class="pc-reveal__grid">
+                                        @if($property->number_floor)
+                                            <div class="pc-rv">
+                                                <span class="material-icons">layers</span>
+                                                <div>
+                                                    <div class="pc-rv__k">{{ __('Pisos') }}</div>
+                                                    <div class="pc-rv__v">{{ $property->number_floor }}</div>
+                                                </div>
+                                            </div>
+                                        @endif
+                                        <div class="pc-rv">
+                                            <span class="material-icons">event</span>
+                                            <div>
+                                                <div class="pc-rv__k">{{ __('Publicado') }}</div>
+                                                <div class="pc-rv__v">{{ $property->created_at->format('Y') }}</div>
+                                            </div>
+                                        </div>
+                                        @if($property->square)
+                                            <div class="pc-rv">
+                                                <span class="material-icons">crop_free</span>
+                                                <div>
+                                                    <div class="pc-rv__k">{{ __('Área') }}</div>
+                                                    <div class="pc-rv__v">{{ number_format($property->square) }} m²</div>
+                                                </div>
+                                            </div>
+                                        @endif
+                                        <div class="pc-rv">
+                                            <span class="material-icons">category</span>
+                                            <div>
+                                                <div class="pc-rv__k">{{ __('Categoría') }}</div>
+                                                <div class="pc-rv__v">{{ $categoryName }}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <a class="pc-cta" href="{{ $property->url }}">
+                                        {{ __('Ver detalle') }} <span class="material-icons">north_east</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+                @endforeach
+            </div>
+
+            <div class="pc-prog">
+                <span class="pc-prog__num"><span id="pcProgNum">01</span> <span class="pc-prog__tot">/ {{ str_pad($featuredProperties->count(), 2, '0', STR_PAD_LEFT) }}</span></span>
+                <div class="pc-prog__line"><div class="pc-prog__fill" id="pcProgFill"></div></div>
+            </div>
+        </div>
+    </div>
+</section>
+@endif

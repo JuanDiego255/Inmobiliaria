@@ -7,7 +7,8 @@
 
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    {!! BaseHelper::googleFonts('https://fonts.googleapis.com/css2?family=' . urlencode(theme_option('primary_font', 'Nunito Sans')) . ':wght@300;600;700;800&display=swap') !!}
+    {!! BaseHelper::googleFonts('https://fonts.googleapis.com/css2?family=' . urlencode(theme_option('primary_font', 'Nunito Sans')) . ':wght@300;600;700;800&family=Playfair+Display:wght@400;500;600;700&display=swap') !!}
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
     <style>
         :root {

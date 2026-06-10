@@ -1,5 +1,5 @@
 {!! Theme::partial('short-codes.projects-list', [
-    'title' => __('Discover our projects'),
+    'title' => __('Descubre nuestros proyectos'),
     'description' => theme_option('home_project_description'),
     'projects' => $projects,
     'ajaxUrl' => $ajaxUrl ?? null,

@@ -23,6 +23,15 @@
 
 <div data-property-id="{{ $property->id }}"></div>
 
+{{-- Mini hero banner for navbar contrast --}}
+<div class="pd-hero">
+    <div class="pd-hero__inner">
+        <span class="pd-hero__eyebrow">{{ __('Detalle de propiedad') }}</span>
+        <h2 class="pd-hero__title">{{ __('Explorá a detalle:') }} <em>{{ $property->name }}</em></h2>
+        <p class="pd-hero__text">{{ $property->description ?: __('Conocé cada rincón de esta propiedad, sus características y ubicación.') }}</p>
+    </div>
+</div>
+
 <main class="pd-page" style="background:#fff;">
     <div class="pd-wrap">
 

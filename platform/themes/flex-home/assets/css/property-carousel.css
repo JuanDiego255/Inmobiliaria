@@ -116,8 +116,8 @@
 .pc-pin-wrap {
     position: relative;
     background: var(--pc-sec-bg);
-    margin-top: 60px;
-    margin-bottom: 80px;
+    padding-top: 60px;
+    padding-bottom: 60px;
 }
 
 .pc-pin-sticky {

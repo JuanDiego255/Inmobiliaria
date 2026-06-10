@@ -9,7 +9,7 @@
         Theme::asset()->container('footer')->usePath()->add('review-js', 'js/review.js');
     }
 
-    $images = (array) $property->images;
+    $images = array_values(array_filter((array) $property->images));
     $imageCount = count($images);
     $address = implode(', ', array_filter([$property->city->name ?? '', $property->state->name ?? '']));
     $account = $property->author;

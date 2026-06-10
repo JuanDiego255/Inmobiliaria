@@ -10,44 +10,66 @@
         ? RvMedia::url(theme_option('breadcrumb_background'))
         : null;
 
-    $heroTitle = $title ?? __('Descubre nuestros proyectos');
-    $heroDescription = $description ?? theme_option('home_project_description') ?? __('Una selección de proyectos inmobiliarios en desarrollo y venta. Explorá las mejores oportunidades de inversión.');
+    $heroTitle = $title ?? __('Descubrí nuestros proyectos');
+    $heroDescription = $description
+        ?? theme_option('home_project_description')
+        ?? __('Los desarrollos más prestigiosos, seleccionados a mano. Seguí bajando para recorrerlos uno a uno.');
 
-    $statusLabels = [
-        'not_available' => __('No disponible'),
-        'pre_sale'      => __('Preventa'),
-        'selling'       => __('En venta'),
-        'sold'          => __('Vendido'),
-        'building'      => __('En construcción'),
+    // Split featured vs rest
+    $featured = $allProjects->firstWhere('is_featured', true) ?? $allProjects->first();
+    $rest = $allProjects->reject(fn($p) => optional($featured)->id === $p->id);
+
+    // Status → label + CSS class
+    $statusMap = [
+        'selling'       => ['En venta', 'venta'],
+        'not_available' => ['No disponible', 'not_available'],
+        'pre_sale'      => ['Preventa', 'pre_sale'],
+        'sold'          => ['Vendido', 'vendido'],
+        'building'      => ['En construcción', 'building'],
     ];
 
-    $statusBadgeClass = [
-        'not_available' => '',
-        'pre_sale'      => 'pj-badge--presale',
-        'selling'       => '',
-        'sold'          => 'pj-badge--sold',
-        'building'      => 'pj-badge--building',
-    ];
+    $getStatus = function($project) use ($statusMap) {
+        $key = (string) $project->status;
+        return $statusMap[$key] ?? ['En venta', 'venta'];
+    };
 
-    $statusBarClass = [
-        'not_available' => 'pj-status-bar__fill--unavailable',
-        'pre_sale'      => 'pj-status-bar__fill--presale',
-        'selling'       => 'pj-status-bar__fill--selling',
-        'sold'          => 'pj-status-bar__fill--sold',
-        'building'      => 'pj-status-bar__fill--building',
-    ];
+    $getLocation = function($project) {
+        return implode(', ', array_filter([
+            optional($project->city)->name,
+            optional($project->state)->name,
+        ]));
+    };
+
+    $getPrice = function($project) {
+        if (!$project->price_from && !$project->price_to) return null;
+        $parts = [];
+        if ($project->price_from) {
+            $parts[] = format_price($project->price_from, $project->currency);
+        }
+        if ($project->price_to) {
+            $parts[] = format_price($project->price_to, $project->currency);
+        }
+        return implode(' – ', $parts);
+    };
 @endphp
 
-{{-- Hero section --}}
-<header class="pj-hero {{ $heroImage ? '' : 'pj-hero--solid' }}"
-    @if($heroImage) style="background-image: url('{{ $heroImage }}')" @endif>
-    <div class="pj-wrap">
-        <span class="pj-eyebrow">{{ __('Proyectos') }} · Costa Rica</span>
-        <h1 class="pj-hero__title">{!! $heroTitle !!}</h1>
-        <p class="pj-hero__text">{{ $heroDescription }}</p>
-        <div class="pj-scroll-hint">
-            <span class="pj-scroll-hint__dot"><span class="material-icons">arrow_downward</span></span>
-            {{ __('Desplazá para explorar') }}
+{{-- Hero --}}
+<header class="pj-hero {{ $heroImage ? '' : 'pj-hero--solid' }}">
+    @if($heroImage)
+        <div class="pj-hero-bg">
+            <img src="{{ $heroImage }}" alt="{{ $heroTitle }}">
+        </div>
+    @endif
+    <div class="pj-hero-inner">
+        <div class="pj-wrap">
+            <span class="pj-eyebrow">{{ __('Desarrollos inmobiliarios') }}</span>
+            <h1 class="pj-hero__title">{!! $heroTitle !!}</h1>
+            <p class="pj-hero__text">{{ $heroDescription }}</p>
+            <div class="pj-hero-crumb">
+                <a href="{{ route('public.index') }}">{{ __('Inicio') }}</a>
+                <span class="material-icons">chevron_right</span>
+                <span class="cur">{{ __('Proyectos') }}</span>
+            </div>
         </div>
     </div>
 </header>
@@ -80,165 +102,104 @@
         <div class="pj-pin-inner">
             <div class="pj-sec-head">
                 <div>
-                    <span class="pj-eyebrow">{{ __('Proyectos disponibles') }}</span>
-                    <h2 class="pj-sec-head__title">{{ __('Recorré nuestros proyectos') }}</h2>
+                    <span class="pj-eyebrow">{{ __('Proyectos destacados') }}</span>
+                    <h2 class="pj-sec-head__title">{{ __('Recorré los desarrollos') }}</h2>
                 </div>
-                <div class="pj-sec-head__meta">
-                    <p class="pj-sec-head__lead">{{ __('El scroll mueve los proyectos de lado a lado. Pasá el cursor sobre una tarjeta para ver más detalles.') }}</p>
-                </div>
-            </div>
-
-            {{-- Sort bar --}}
-            <div class="pj-sort-bar">
-                <div class="pj-sort-bar__group">
-                    <span class="pj-sort-bar__label">{{ __('Showing') }}</span>
-                    <select name="per_page" id="pj-per-page">
-                        <option value="">{{ $allProjects->count() }} {{ __('proyectos') }}</option>
-                    </select>
-                </div>
-                <div class="pj-sort-bar__group">
-                    <span class="pj-sort-bar__label">{{ __('Sort by') }}</span>
-                    <select name="sort_by" id="pj-sort-by">
-                        <option value="">{{ __('Default') }}</option>
-                        <option value="date_desc" @if(request()->input('sort_by') == 'date_desc') selected @endif>{{ __('Newest') }}</option>
-                        <option value="date_asc" @if(request()->input('sort_by') == 'date_asc') selected @endif>{{ __('Oldest') }}</option>
-                        <option value="price_asc" @if(request()->input('sort_by') == 'price_asc') selected @endif>{{ __('Price') . ': ' . __('low to high') }}</option>
-                        <option value="price_desc" @if(request()->input('sort_by') == 'price_desc') selected @endif>{{ __('Price') . ': ' . __('high to low') }}</option>
-                        <option value="name_asc" @if(request()->input('sort_by') == 'name_asc') selected @endif>{{ __('Name') . ': A-Z' }}</option>
-                        <option value="name_desc" @if(request()->input('sort_by') == 'name_desc') selected @endif>{{ __('Name') . ': Z-A' }}</option>
-                    </select>
-                </div>
+                <p class="pj-sec-head__lead">{{ __('El primero es el proyecto destacado. El scroll mueve los demás de lado a lado.') }}</p>
             </div>
 
             <div class="pj-track" id="pjTrack">
-                @foreach($allProjects as $project)
+
+                {{-- ═══ ITEM 1: PATTERN A — Featured split card ═══ --}}
+                @if($featured)
                     @php
-                        $projImage = $project->image
-                            ? RvMedia::getImageUrl($project->image, 'medium', false, RvMedia::getDefaultImage())
+                        [$fStatusLabel, $fStatusCls] = $getStatus($featured);
+                        $fImage = $featured->image
+                            ? RvMedia::getImageUrl($featured->image, null, false, RvMedia::getDefaultImage())
                             : RvMedia::getDefaultImage();
-                        $statusKey = (string) $project->status;
-                        $statusLabel = $statusLabels[$statusKey] ?? ucfirst(str_replace('_', ' ', $statusKey));
-                        $badgeClass = $statusBadgeClass[$statusKey] ?? '';
-                        $barClass = $statusBarClass[$statusKey] ?? 'pj-status-bar__fill--selling';
-                        $categoryName = optional($project->category)->name ?? __('Proyecto');
-                        $cityName = optional($project->city)->name ?? '';
-                        $stateName = optional($project->state)->name ?? '';
-                        $locationText = implode(', ', array_filter([$cityName, $stateName]));
-
-                        $priceText = '';
-                        if ($project->price_from || $project->price_to) {
-                            if ($project->price_from) {
-                                $priceText .= __('Desde') . ' ' . format_price($project->price_from, $project->currency);
-                            }
-                            if ($project->price_to) {
-                                $priceText .= ($priceText ? ' - ' : '') . format_price($project->price_to, $project->currency);
-                            }
-                        }
+                        $fLocation = $getLocation($featured);
+                        $fPrice = $getPrice($featured);
+                        $fCategoryName = optional($featured->categories->first())->name ?? __('Proyecto');
                     @endphp
-                    <article class="pj-card {{ $project->is_featured ? 'pj-card--featured' : '' }}"
-                             data-category="{{ optional($project->category)->id }}"
-                             data-state="{{ $project->state_id }}"
-                             data-city="{{ $project->city_id }}"
-                             data-price="{{ $project->price_from ?? 0 }}"
-                             data-name="{{ $project->name }}"
-                             data-date="{{ $project->created_at->format('Y-m-d') }}">
-                        <a href="{{ $project->url }}" class="pj-card__link">
-                            <img class="pj-card__img" src="{{ $projImage }}" alt="{{ $project->name }}" loading="lazy">
-                        </a>
-                        @if($project->is_featured)
-                            <span class="pj-badge pj-badge--featured">{{ __('Destacado') }}</span>
-                        @elseif($badgeClass)
-                            <span class="pj-badge {{ $badgeClass }}">{{ $statusLabel }}</span>
-                        @else
-                            <span class="pj-badge">{{ $statusLabel }}</span>
-                        @endif
-                        <div class="pj-overlay">
-                            <span class="pj-overlay__cat">{{ $categoryName }}</span>
-                            <h3 class="pj-overlay__title">{!! BaseHelper::clean($project->name) !!}</h3>
-                            <div class="pj-overlay__loc">
-                                <span class="material-icons">place</span>{{ $locationText ?: __('Sin ubicación') }}
+                    <article class="proj-featured" id="pjFeatured">
+                        <div class="pf-media">
+                            <img src="{{ $fImage }}" alt="{{ $featured->name }}">
+                            <span class="pf-badge"><span class="material-icons">star</span> {{ __('Destacado') }}</span>
+                        </div>
+                        <div class="pf-panel">
+                            <span class="pf-eyebrow">{{ $fCategoryName }} · {{ $fStatusLabel }}</span>
+                            <h3 class="pf-title">{{ $featured->name }}</h3>
+                            <div class="pf-loc"><span class="material-icons">place</span>{{ $fLocation ?: __('Sin ubicación') }}</div>
+                            <p class="pf-desc">{{ Str::limit(strip_tags($featured->description), 180) }}</p>
+                            <div class="pf-chips">
+                                @foreach($featured->categories as $cat)
+                                    <span>{{ $cat->name }}</span>
+                                @endforeach
                             </div>
-                            <div class="pj-overlay__foot">
-                                @if($priceText)
-                                    <div class="pj-overlay__price">{{ $priceText }}</div>
-                                @endif
-                                <div class="pj-overlay__specs">
-                                    @if($project->number_block)
-                                        <span class="pj-spec"><span class="material-icons">domain</span>{{ $project->number_block }}</span>
-                                    @endif
-                                    @if($project->number_floor)
-                                        <span class="pj-spec"><span class="material-icons">layers</span>{{ $project->number_floor }}</span>
-                                    @endif
-                                    @if($project->number_flat)
-                                        <span class="pj-spec"><span class="material-icons">apartment</span>{{ $project->number_flat }}</span>
-                                    @endif
+                            @if($fPrice)
+                                <div class="pf-price">
+                                    <span class="lbl">{{ __('Desde') }}</span>
+                                    {{ $fPrice }}
                                 </div>
-                            </div>
+                            @endif
+                            <a class="pf-cta" href="{{ $featured->url }}">
+                                {{ __('Conocer el proyecto') }} <span class="material-icons">north_east</span>
+                            </a>
+                        </div>
+                    </article>
 
-                            {{-- Status progress bar --}}
-                            <div class="pj-status-bar">
-                                <div class="pj-status-bar__track">
-                                    <div class="pj-status-bar__fill {{ $barClass }}"></div>
-                                </div>
-                                <span class="pj-status-bar__label">{{ $statusLabel }}</span>
-                            </div>
-
-                            <div class="pj-reveal">
-                                <div class="pj-reveal__inner">
-                                    <div class="pj-reveal__grid">
-                                        @if($project->number_flat)
-                                            <div class="pj-rv">
-                                                <span class="material-icons">apartment</span>
-                                                <div>
-                                                    <div class="pj-rv__k">{{ __('Unidades') }}</div>
-                                                    <div class="pj-rv__v">{{ $project->number_flat }}</div>
-                                                </div>
-                                            </div>
-                                        @endif
-                                        @if($project->number_floor)
-                                            <div class="pj-rv">
-                                                <span class="material-icons">layers</span>
-                                                <div>
-                                                    <div class="pj-rv__k">{{ __('Pisos') }}</div>
-                                                    <div class="pj-rv__v">{{ $project->number_floor }}</div>
-                                                </div>
-                                            </div>
-                                        @endif
-                                        @if($project->number_block)
-                                            <div class="pj-rv">
-                                                <span class="material-icons">domain</span>
-                                                <div>
-                                                    <div class="pj-rv__k">{{ __('Torres') }}</div>
-                                                    <div class="pj-rv__v">{{ $project->number_block }}</div>
-                                                </div>
-                                            </div>
-                                        @endif
-                                        @if($project->date_finish)
-                                            <div class="pj-rv">
-                                                <span class="material-icons">event</span>
-                                                <div>
-                                                    <div class="pj-rv__k">{{ __('Entrega') }}</div>
-                                                    <div class="pj-rv__v">{{ \Carbon\Carbon::parse($project->date_finish)->format('M Y') }}</div>
-                                                </div>
-                                            </div>
-                                        @endif
-                                    </div>
-                                    <a class="pj-cta" href="{{ $project->url }}">
-                                        {{ __('Ver proyecto') }} <span class="material-icons">north_east</span>
-                                    </a>
+                    {{-- ═══ CONNECTOR "Más proyectos" ═══ --}}
+                    @if($rest->count())
+                        <div class="pj-connector" aria-hidden="true">
+                            <div class="cn-inner">
+                                <span class="cn-label">{{ __('Más proyectos') }}</span>
+                                <div class="cn-arrows">
+                                    <span class="material-icons">chevron_right</span>
+                                    <span class="material-icons">chevron_right</span>
+                                    <span class="material-icons">chevron_right</span>
                                 </div>
                             </div>
                         </div>
-                    </article>
+                    @endif
+                @endif
+
+                {{-- ═══ ITEMS 2..N: PATTERN B — Regular cards (identical) ═══ --}}
+                @foreach($rest as $project)
+                    @php
+                        [$sLabel, $sCls] = $getStatus($project);
+                        $pImage = $project->image
+                            ? RvMedia::getImageUrl($project->image, null, false, RvMedia::getDefaultImage())
+                            : RvMedia::getDefaultImage();
+                        $pLocation = $getLocation($project);
+                        $pPrice = $getPrice($project);
+                        $pCategoryName = optional($project->categories->first())->name ?? __('Proyecto');
+                    @endphp
+                    <a class="proj-card" href="{{ $project->url }}">
+                        <img class="pc-img" src="{{ $pImage }}" alt="{{ $project->name }}" loading="lazy">
+                        <div class="pc-overlay"></div>
+                        <span class="pc-status {{ $sCls }}">{{ $sLabel }}</span>
+                        <div class="pc-content">
+                            <span class="pc-cat">{{ $pCategoryName }}</span>
+                            <h3 class="pc-title">{!! BaseHelper::clean($project->name) !!}</h3>
+                            <div class="pc-loc"><span class="material-icons">place</span>{{ $pLocation ?: __('Sin ubicación') }}</div>
+                            @if($pPrice)
+                                <div class="pc-price">
+                                    <span class="lbl">{{ __('Desde') }}</span>{{ $pPrice }}
+                                </div>
+                            @endif
+                        </div>
+                    </a>
                 @endforeach
             </div>
 
             <div class="pj-prog">
-                <span class="pj-prog__num"><span id="pjProgNum">01</span> <span class="pj-prog__tot">/ <span id="pjProgTotal">{{ str_pad($allProjects->count(), 2, '0', STR_PAD_LEFT) }}</span></span></span>
+                <span class="pj-prog__num">
+                    <span id="pjProgNum">01</span>
+                    <span class="pj-prog__tot">/ <span id="pjProgTotal">{{ str_pad($allProjects->count(), 2, '0', STR_PAD_LEFT) }}</span></span>
+                </span>
                 <div class="pj-prog__line"><div class="pj-prog__fill" id="pjProgFill"></div></div>
             </div>
 
-            {{-- No results message --}}
             <div class="pj-no-results" id="pjNoResults" style="display:none;">
                 <div class="pj-no-results__inner">
                     <span class="material-icons">search_off</span>
@@ -252,12 +213,17 @@
 
 {{-- Closing CTA --}}
 <section class="pj-closing">
-    <div class="pj-wrap" style="text-align: center;">
-        <h2 class="pj-closing__title">{{ __('¿Listo para') }} <em>{{ __('invertir') }}</em>?</h2>
-        <p class="pj-closing__text">{{ __('Contactanos y te ayudamos a encontrar el proyecto ideal para vos. Asesoría personalizada sin compromiso.') }}</p>
-        <a href="{{ url('/contact') }}" class="pj-closing__btn">
-            {{ __('Contactar un asesor') }} <span class="material-icons">arrow_forward</span>
-        </a>
+    <div class="pj-wrap">
+        <div class="pj-closing-inner">
+            <div>
+                <span class="pj-eyebrow">{{ __('¿Te interesa invertir?') }}</span>
+                <h2 class="pj-closing__title">{{ __('Conocé los planes de pago de cada proyecto.') }}</h2>
+                <p class="pj-closing__text">{{ __('Nuestro equipo te asesora sobre disponibilidad, financiamiento y fechas de cada desarrollo.') }}</p>
+            </div>
+            <a href="{{ url('/contact') }}" class="pj-closing__btn">
+                {{ __('Agendar una visita') }} <span class="material-icons">north_east</span>
+            </a>
+        </div>
     </div>
 </section>
 

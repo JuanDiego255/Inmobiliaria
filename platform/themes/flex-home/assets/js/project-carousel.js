@@ -5,40 +5,42 @@
     var track = document.getElementById('pjTrack');
     var fill = document.getElementById('pjProgFill');
     var counter = document.getElementById('pjProgNum');
-    var totalEl = document.getElementById('pjProgTotal');
-    var noResults = document.getElementById('pjNoResults');
 
     if (!pinWrap || !track) return;
 
     var inner = pinWrap.querySelector('.pj-pin-inner');
-    var allCards = Array.prototype.slice.call(track.querySelectorAll('.pj-card'));
     var maxX = 0, target = 0, current = 0;
     var speed = 1.35;
 
-    function getVisibleCards() {
-        return allCards.filter(function (c) { return !c.classList.contains('pj-hidden'); });
+    // Featured card entrance animation
+    var featured = document.getElementById('pjFeatured');
+    if (featured) {
+        requestAnimationFrame(function () {
+            featured.classList.add('in');
+        });
     }
 
+    // Regular cards: staggered reveal
+    var projCards = Array.prototype.slice.call(document.querySelectorAll('.proj-card'));
+    projCards.forEach(function (c, i) {
+        c.style.transitionDelay = (i % 3 * 0.05) + 's';
+    });
+
+    function revealVisibleCards() {
+        var vw = window.innerWidth;
+        projCards.forEach(function (c) {
+            if (c.classList.contains('inview')) return;
+            var r = c.getBoundingClientRect();
+            if (r.left < vw * 0.92 && r.right > 0) c.classList.add('inview');
+        });
+    }
+
+    // Count total items (featured + connector counts as 0, regular cards)
+    var totalItems = projCards.length + (featured ? 1 : 0);
+    var totEl = document.getElementById('pjProgTotal');
+    if (totEl) totEl.textContent = String(totalItems).padStart(2, '0');
+
     function layout() {
-        var visible = getVisibleCards();
-        var visibleCount = visible.length;
-
-        if (totalEl) totalEl.textContent = String(visibleCount).padStart(2, '0');
-
-        if (visibleCount === 0) {
-            pinWrap.style.height = 'auto';
-            track.style.display = 'none';
-            if (noResults) noResults.style.display = '';
-            var prog = pinWrap.querySelector('.pj-prog');
-            if (prog) prog.style.display = 'none';
-            return;
-        }
-
-        track.style.display = '';
-        if (noResults) noResults.style.display = 'none';
-        var prog = pinWrap.querySelector('.pj-prog');
-        if (prog) prog.style.display = '';
-
         track.style.transition = 'none';
         var prev = track.style.transform;
         track.style.transform = 'none';
@@ -60,8 +62,7 @@
         p = Math.min(1, Math.max(0, p));
         target = p * maxX;
         if (fill) fill.style.width = (p * 100) + '%';
-        var visibleCount = getVisibleCards().length;
-        var idx = Math.min(visibleCount, Math.max(1, Math.round(p * (visibleCount - 1)) + 1));
+        var idx = Math.min(totalItems, Math.max(1, Math.round(p * (totalItems - 1)) + 1));
         if (counter) counter.textContent = String(idx).padStart(2, '0');
     }
 
@@ -69,6 +70,7 @@
         current += (target - current) * 0.09;
         if (Math.abs(target - current) < 0.08) current = target;
         track.style.transform = 'translate3d(' + (-current).toFixed(2) + 'px,0,0)';
+        revealVisibleCards();
         requestAnimationFrame(raf);
     }
 
@@ -76,101 +78,6 @@
     window.addEventListener('resize', layout);
     window.addEventListener('load', layout);
     layout();
+    revealVisibleCards();
     requestAnimationFrame(raf);
-
-    // ── Client-side filtering ──────────────────────
-    var filterForm = document.getElementById('pj-filter-form');
-    if (!filterForm) return;
-
-    function applyFilters() {
-        var formData = new FormData(filterForm);
-        var catId = formData.get('category_id') || '';
-        var stateId = formData.get('state_id') || '';
-        var cityId = formData.get('city_id') || '';
-        var keyword = (formData.get('k') || '').toLowerCase().trim();
-
-        current = 0;
-        target = 0;
-        track.style.transform = 'translate3d(0,0,0)';
-
-        allCards.forEach(function (card) {
-            var show = true;
-
-            if (catId && card.dataset.category !== catId) show = false;
-            if (stateId && card.dataset.state !== stateId) show = false;
-            if (cityId && card.dataset.city !== cityId) show = false;
-
-            if (keyword) {
-                var cardText = card.textContent.toLowerCase();
-                if (cardText.indexOf(keyword) === -1) show = false;
-            }
-
-            card.classList.toggle('pj-hidden', !show);
-        });
-
-        layout();
-    }
-
-    filterForm.addEventListener('submit', function (e) {
-        e.preventDefault();
-        applyFilters();
-    });
-
-    filterForm.addEventListener('reset', function () {
-        setTimeout(function () {
-            allCards.forEach(function (card) {
-                card.classList.remove('pj-hidden');
-            });
-            current = 0;
-            target = 0;
-            track.style.transform = 'translate3d(0,0,0)';
-            layout();
-        }, 10);
-    });
-
-    // Sort controls
-    var perPageSelect = document.getElementById('pj-per-page');
-    var sortBySelect = document.getElementById('pj-sort-by');
-
-    if (perPageSelect) {
-        perPageSelect.addEventListener('change', function () {
-            if (filterForm) filterForm.submit();
-        });
-    }
-
-    if (sortBySelect) {
-        sortBySelect.addEventListener('change', function () {
-            var cards = getVisibleCards();
-            var sortVal = this.value;
-            if (!sortVal) return;
-
-            cards.sort(function (a, b) {
-                switch (sortVal) {
-                    case 'price_asc':
-                        return (parseFloat(a.dataset.price) || 0) - (parseFloat(b.dataset.price) || 0);
-                    case 'price_desc':
-                        return (parseFloat(b.dataset.price) || 0) - (parseFloat(a.dataset.price) || 0);
-                    case 'name_asc':
-                        return (a.dataset.name || '').localeCompare(b.dataset.name || '');
-                    case 'name_desc':
-                        return (b.dataset.name || '').localeCompare(a.dataset.name || '');
-                    case 'date_desc':
-                        return (b.dataset.date || '').localeCompare(a.dataset.date || '');
-                    case 'date_asc':
-                        return (a.dataset.date || '').localeCompare(b.dataset.date || '');
-                    default:
-                        return 0;
-                }
-            });
-
-            cards.forEach(function (card) {
-                track.appendChild(card);
-            });
-
-            current = 0;
-            target = 0;
-            track.style.transform = 'translate3d(0,0,0)';
-            layout();
-        });
-    }
 })();

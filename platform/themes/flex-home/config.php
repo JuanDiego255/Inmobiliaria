@@ -55,6 +55,7 @@ return [
             $theme->asset()->usePath()->add('style-css', 'css/style.css', [], [], $version);
             $theme->asset()->usePath()->add('search-box-modern-css', 'css/search-box-modern.css', [], [], $version);
             $theme->asset()->usePath()->add('property-carousel-css', 'css/property-carousel.css', [], [], $version);
+            $theme->asset()->usePath()->add('property-detail-css', 'css/property-detail.css', [], [], $version);
 
             if (BaseHelper::isRtlEnabled()) {
                 $theme->asset()->usePath()->add('rtl-style', 'css/rtl-style.css', [], [], $version);
@@ -70,6 +71,7 @@ return [
             $theme->asset()->container('footer')->usePath()->add('app-js', 'js/app.js', [], [], $version);
             $theme->asset()->container('footer')->usePath()->add('search-box-modern-js', 'js/search-box-modern.js', ['jquery'], [], $version);
             $theme->asset()->container('footer')->usePath()->add('property-carousel-js', 'js/property-carousel.js', [], [], $version);
+            $theme->asset()->container('footer')->usePath()->add('property-detail-js', 'js/property-detail.js', [], [], $version);
             $theme->asset()->container('footer')->usePath()->add('wishlist', 'js/wishlist.js', [], [], $version);
 
             if (function_exists('shortcode')) {

@@ -346,7 +346,9 @@
                         </div>
 
                         {{-- Write review form --}}
-                        @php($canReview = auth('account')->check() && auth('account')->user()->canReview($property))
+                        @php
+                            ($canReview = auth('account')->check() && auth('account')->user()->canReview($property))
+                        @endphp
                         <div class="pd-write-rev">
                             <h4>{{ __('Escribe una reseña') }}</h4>
                             <p class="pd-sub">{{ __('Compartí tu experiencia con esta propiedad.') }}</p>

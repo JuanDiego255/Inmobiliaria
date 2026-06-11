@@ -158,6 +158,8 @@
     position: relative;
     background: var(--pj-sec-bg);
     transition: background .5s ease;
+    padding-top: 60px;
+    padding-bottom: 60px;
 }
 
 .pj-pin-sticky {

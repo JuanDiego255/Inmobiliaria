@@ -1,290 +1,534 @@
 @php
-    Theme::asset()
-        ->usePath()
-        ->add('leaflet-css', 'libraries/leaflet/leaflet.css');
-    Theme::asset()
-        ->container('footer')
-        ->usePath()
-        ->add('leaflet-js', 'libraries/leaflet/leaflet.js');
-    Theme::asset()
-        ->usePath()
-        ->add('magnific-css', 'libraries/magnific/magnific-popup.css');
-    Theme::asset()
-        ->container('footer')
-        ->usePath()
-        ->add('magnific-js', 'libraries/magnific/jquery.magnific-popup.min.js');
-@endphp
-<main class="detailproject">
-    @include(Theme::getThemeNamespace() . '::views.real-estate.includes.slider', ['object' => $project])
+    Theme::asset()->usePath()->add('leaflet-css', 'libraries/leaflet/leaflet.css');
+    Theme::asset()->container('footer')->usePath()->add('leaflet-js', 'libraries/leaflet/leaflet.js');
 
-    <div class="container-fluid bgmenupro">
-        <div
-            class="container-fluid w90 padtop30"
-            style="padding: 15px 0;"
-        >
-            <div class="col-12">
-                <h1
-                    class="title"
-                    style="font-size: 1.5rem; font-weight: bold; margin-bottom: 0;"
-                >{!! BaseHelper::clean($project->name) !!}</h1>
-                @if (RealEstateHelper::isEnabledReview())
-                    <p style="margin-bottom: 5px;">@include(Theme::getThemeNamespace('views.real-estate.partials.review-star'), [
-                        'avgStar' => $project->reviews_avg_star,
-                        'count' => $project->reviews_count,
-                    ])</p>
-                @endif
-                <p class="addresshouse">
-                    @if ($address = implode(', ', array_filter([$project->city->name, $project->state->name])))
-                        <span
-                            class="d-inline-block"
-                            style="margin-right: 10px"
-                        >
-                            <i class="fas fa-map-marker-alt"></i> {{ $address }}
-                        </span>
-                    @endif
-                    @if (setting('real_estate_display_views_count_in_detail_page', 0) == 1)
-                        <span
-                            class="d-inline-block"
-                            style="margin-right: 10px"
-                        ><i class="fa fa-eye"></i> {{ number_format($project->views) }} {{ __('views') }}</span>
-                    @endif
-                    <span class="d-inline-block"><i class="fa fa-calendar-alt"></i>
-                        {{ $project->created_at->translatedFormat('M d, Y') }}</span>
-                </p>
-                <div class="d-none">
-                    {!! Theme::partial('breadcrumb') !!}
-                </div>
-            </div>
+    if (RealEstateHelper::isEnabledReview()) {
+        Theme::asset()->usePath()->add('jquery-bar-rating-css', 'libraries/jquery-bar-rating/css-stars.css');
+        Theme::asset()->container('footer')->usePath()->add('jquery-bar-rating-js', 'libraries/jquery-bar-rating/jquery.barrating.min.js');
+        Theme::asset()->container('footer')->usePath()->add('review-js', 'js/review.js');
+    }
+
+    $images = array_values(array_filter((array) $project->images));
+    $imageCount = count($images);
+    $address = implode(', ', array_filter([optional($project->city)->name, optional($project->state)->name]));
+
+    $statusLabels = [
+        'selling'       => __('En venta'),
+        'not_available' => __('No disponible'),
+        'pre_sale'      => __('Preventa'),
+        'sold'          => __('Vendido'),
+        'building'      => __('En construcción'),
+    ];
+    $statusKey = (string) $project->status;
+    $statusLabel = $statusLabels[$statusKey] ?? ucfirst(str_replace('_', ' ', $statusKey));
+    $categoryName = optional($project->categories->first())->name ?? __('Proyecto');
+
+    $reviewsAvg = $project->reviews_avg_star ?? 0;
+    $reviewsCount = $project->reviews_count ?? 0;
+@endphp
+
+<div data-project-id="{{ $project->id }}"></div>
+
+{{-- Mini hero banner for navbar contrast --}}
+<div class="pd-hero">
+    <div class="pc-wrap">
+        <span class="pc-eyebrow">{{ __('Detalle de proyecto') }}</span>
+        <h2 class="pd-hero__title">{{ __('Explorá a detalle:') }} <em>{{ $project->name }}</em></h2>
+        <p class="pc-hero__text">{{ $project->description ?: __('Conocé cada detalle de este proyecto, sus características y ubicación.') }}</p>
+        <div class="pc-scroll-hint">
+            <span class="pc-scroll-hint__dot"><span class="material-icons">arrow_downward</span></span>
+            {{ __('Visualizar proyecto') }}
         </div>
     </div>
+</div>
 
-    <div class="container-fluid w90 padtop30 single-post">
-        <section class="general">
-            <div class="row">
-                <div class="col-md-8">
-                    {!! apply_filters('before_single_content_detail', null, $project) !!}
+<main class="pd-page" style="background:#fff;">
+    <div class="pd-wrap">
 
-                    <div class="head">{{ __('Overview') }}</div>
-                    <span class="line_title"></span>
-                    <div class="row">
-                        <div class="col-sm-6 lineheight220">
-                            <div><span>{{ __('Status') }}:&nbsp;</span> {!! $project->status_html !!}</div>
-                            @if ($project->categories()->count())
-                                <div><span>{{ __('Category') }}:&nbsp;</span>
-                                    <strong>
-                                        @foreach ($project->categories()->get() as $category)
-                                            {{ $category->name }}
-                                            @if (!$loop->last)
-                                                ,&nbsp;
-                                            @endif
-                                        @endforeach
-                                    </strong>
-                                </div>
-                            @endif
-                            @if ($project->investor->name)
-                                <div><span>{{ __('Investor') }}:&nbsp;</span> <b>{{ $project->investor->name }}</b></div>
-                            @endif
-                            @if ($project->price_from || $project->price_to)
-                                <div>
-                                    <span>{{ __('Price') }}:&nbsp;</span>
-                                    <b>
-                                        @if ($project->price_from)
-                                            <span class="from">{{ __('From') }}</span>
-                                            {{ format_price($project->price_from, $project->currency) }}
-                                        @endif
-                                        @if ($project->price_to)
-                                            - {{ format_price($project->price_to, $project->currency) }}
-                                        @endif
-                                    </b>
-                                </div>
-                            @endif
-                        </div>
-                        <div class="col-sm-6 lineheight220">
-                            @if ($project->number_block)
-                                <div><span>{{ __('Number of blocks') }}:&nbsp;</span>
-                                    <b>{{ number_format($project->number_block) }}</b></div>
-                            @endif
-                            @if ($project->number_floor)
-                                <div><span>{{ __('Number of floors') }}:&nbsp;</span>
-                                    <b>{{ number_format($project->number_floor) }}</b></div>
-                            @endif
-                            @if ($project->number_flat)
-                                <div><span>{{ __('Number of flats') }}:&nbsp;</span>
-                                    <b>{{ number_format($project->number_flat) }}</b></div>
-                            @endif
-                        </div>
-                        @foreach ($project->customFields as $customField)
-                            <div class="col-sm-6 lineheight220">
-                                <div><span>{!! BaseHelper::clean($customField->name) !!}:&nbsp;</span> <strong>{!! BaseHelper::clean($customField->value) !!}</strong>
-                                </div>
+        {{-- BREADCRUMB --}}
+        <nav class="pd-crumb" aria-label="Migas de pan">
+            <a href="{{ route('public.index') }}">{{ __('Inicio') }}</a>
+            <span class="material-icons">chevron_right</span>
+            <a href="{{ RealEstateHelper::getProjectsListPageUrl() }}">{{ __('Proyectos') }}</a>
+            <span class="material-icons">chevron_right</span>
+            <span class="pd-crumb__cur">{{ $project->name }}</span>
+        </nav>
+
+        {{-- GALLERY MOSAIC --}}
+        @if($imageCount > 0)
+            <section class="pd-gallery @if($imageCount === 1) pd-gallery--single @endif" id="pdGallery">
+                <div class="pd-g-cell pd-g-main" data-i="0">
+                    <img src="{{ RvMedia::getImageUrl($images[0], null, false, RvMedia::getDefaultImage()) }}" alt="{{ $project->name }}">
+                </div>
+                @if($imageCount > 1)
+                    <div class="pd-g-side">
+                        @foreach(array_slice($images, 1, 4) as $idx => $img)
+                            <div class="pd-g-cell" data-i="{{ $idx + 1 }}">
+                                <img src="{{ RvMedia::getImageUrl($img, null, false, RvMedia::getDefaultImage()) }}" alt="{{ $project->name }}">
+                                @if($loop->last && $imageCount > 5)
+                                    <div class="pd-g-overlay">+{{ $imageCount - 5 }}</div>
+                                @endif
                             </div>
                         @endforeach
                     </div>
+                @endif
+                @if($imageCount > 1)
+                    <button class="pd-g-more" type="button">
+                        <span class="material-icons">grid_view</span>
+                        {{ __('Ver las :count fotos', ['count' => $imageCount]) }}
+                    </button>
+                @endif
+            </section>
+        @endif
 
-                    <div class="head">{{ __('Description') }}</div>
-                    @if ($project->content)
-                        <div class="ck-content">
+        {{-- DETAIL GRID --}}
+        <div class="pd-detail">
+
+            {{-- MAIN COLUMN --}}
+            <div class="pd-main">
+
+                {{-- TITLE BLOCK --}}
+                <header>
+                    <span class="pd-title-eyebrow">{{ $categoryName }} &middot; {{ $statusLabel }}</span>
+                    <h1 class="pd-prop-title">{!! BaseHelper::clean($project->name) !!}</h1>
+                    <div class="pd-title-meta">
+                        @if($address)
+                            <span class="pd-mi"><span class="material-icons">place</span>{{ $address }}</span>
+                        @endif
+                        @if (setting('real_estate_display_views_count_in_detail_page', 0) == 1)
+                            <span class="pd-mi"><span class="material-icons">visibility</span>{{ number_format($project->views) }} {{ __('vistas') }}</span>
+                        @endif
+                        <span class="pd-mi"><span class="material-icons">calendar_today</span>{{ $project->created_at->translatedFormat('d M, Y') }}</span>
+                        @if(RealEstateHelper::isEnabledReview() && $reviewsCount > 0)
+                            <span class="pd-stars">
+                                @for($i = 1; $i <= 5; $i++)
+                                    <span class="material-icons">{{ $i <= round($reviewsAvg) ? 'star' : 'star_border' }}</span>
+                                @endfor
+                                <span class="pd-cnt">({{ $reviewsCount }})</span>
+                            </span>
+                        @endif
+                    </div>
+                </header>
+
+                <hr class="pd-rule">
+
+                {!! apply_filters('before_single_content_detail', null, $project) !!}
+
+                {{-- FICHA TECNICA --}}
+                <section class="pd-sec" style="margin-top:0">
+                    <h2 class="pd-sec-h">{{ __('Ficha técnica') }}</h2>
+                    <div class="pd-spec-grid">
+                        @if($categoryName)
+                            <div class="pd-spec-tile">
+                                <span class="pd-spec-ic"><span class="material-icons">category</span></span>
+                                <div class="pd-spec-v">{{ $categoryName }}</div>
+                                <div class="pd-spec-k">{{ __('Categoría') }}</div>
+                            </div>
+                        @endif
+                        @if($project->investor && $project->investor->name)
+                            <div class="pd-spec-tile">
+                                <span class="pd-spec-ic"><span class="material-icons">business</span></span>
+                                <div class="pd-spec-v">{{ $project->investor->name }}</div>
+                                <div class="pd-spec-k">{{ __('Desarrollador') }}</div>
+                            </div>
+                        @endif
+                        @if($project->number_block)
+                            <div class="pd-spec-tile">
+                                <span class="pd-spec-ic"><span class="material-icons">domain</span></span>
+                                <div class="pd-spec-v">{{ number_format($project->number_block) }}</div>
+                                <div class="pd-spec-k">{{ __('Torres') }}</div>
+                            </div>
+                        @endif
+                        @if($project->number_floor)
+                            <div class="pd-spec-tile">
+                                <span class="pd-spec-ic"><span class="material-icons">layers</span></span>
+                                <div class="pd-spec-v">{{ number_format($project->number_floor) }}</div>
+                                <div class="pd-spec-k">{{ __('Pisos') }}</div>
+                            </div>
+                        @endif
+                        @if($project->number_flat)
+                            <div class="pd-spec-tile">
+                                <span class="pd-spec-ic"><span class="material-icons">apartment</span></span>
+                                <div class="pd-spec-v">{{ number_format($project->number_flat) }}</div>
+                                <div class="pd-spec-k">{{ __('Unidades') }}</div>
+                            </div>
+                        @endif
+                    </div>
+
+                    @if($project->customFields->isNotEmpty())
+                        <div class="pd-custom-fields">
+                            <table>
+                                @foreach($project->customFields as $customField)
+                                    <tr>
+                                        <td>{!! BaseHelper::clean($customField->name) !!}</td>
+                                        <td>{!! BaseHelper::clean($customField->value) !!}</td>
+                                    </tr>
+                                @endforeach
+                            </table>
+                        </div>
+                    @endif
+
+                    {!! apply_filters('property_details_extra_info', null, $project) !!}
+                </section>
+
+                {{-- DESCRIPCION --}}
+                @if($project->content)
+                    <section class="pd-sec">
+                        <h2 class="pd-sec-h">{{ __('Descripción') }}</h2>
+                        <div class="pd-desc ck-content">
                             {!! BaseHelper::clean($project->content) !!}
                         </div>
-                    @endif
-                    @if ($project->features->count())
-                        <br>
-                        <div class="head">{{ __('Features') }}</div>
-                        <div class="row">
-                            @php $project->features->loadMissing('metadata'); @endphp
-                            @foreach ($project->features as $feature)
-                                <div class="col-sm-4">
-                                    @if ($feature->getMetaData('icon_image', true))
-                                        <p><i><img
-                                                    src="{{ RvMedia::getImageUrl($feature->getMetaData('icon_image', true)) }}"
-                                                    alt="{{ $feature->name }}"
-                                                    style="vertical-align: top; margin-top: 3px;"
-                                                    width="18"
-                                                    height="18"
-                                                ></i> {{ $feature->name }}</p>
-                                    @else
-                                        <p><i
-                                                class="@if ($feature->icon) {{ $feature->icon }} @else fas fa-check @endif text-orange text0i"></i>
-                                            {{ $feature->name }}</p>
-                                    @endif
+
+                        {{-- Features --}}
+                        @if($project->features->count())
+                            <div class="pd-amen-block">
+                                <div class="pd-amen-head">
+                                    <span class="pd-amen-ic"><span class="material-icons">apartment</span></span>
+                                    <h4>{{ __('Características') }}</h4>
                                 </div>
-                            @endforeach
+                                @php $project->features->loadMissing('metadata'); @endphp
+                                <ul class="pd-amen-list">
+                                    @foreach($project->features as $feature)
+                                        <li><span class="material-icons">check_circle</span>{{ $feature->name }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif
+
+                        {{-- Facilities --}}
+                        @if($project->facilities->isNotEmpty())
+                            <div class="pd-amen-block">
+                                <div class="pd-amen-head">
+                                    <span class="pd-amen-ic"><span class="material-icons">pool</span></span>
+                                    <h4>{{ __('Facilidades cercanas') }}</h4>
+                                </div>
+                                @php $project->facilities->loadMissing('metadata'); @endphp
+                                <ul class="pd-amen-list">
+                                    @foreach($project->facilities as $facility)
+                                        <li>
+                                            <span class="material-icons">check_circle</span>
+                                            {{ $facility->name }}
+                                            @if($facility->pivot->distance)
+                                                — {{ $facility->pivot->distance }}
+                                            @endif
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif
+                    </section>
+                @endif
+
+                {{-- MAP --}}
+                <section class="pd-sec">
+                    <h2 class="pd-sec-h">{{ __('Ubicación') }}</h2>
+                    @if($project->latitude && $project->longitude)
+                        <div class="pd-map-frame">
+                            <div class="pd-map-card">
+                                <div class="pd-mc-name"><span class="material-icons">place</span>{{ $project->name }}</div>
+                                <div class="pd-mc-addr">{{ $project->location ?: $address }}</div>
+                            </div>
+                            {!! Theme::partial('real-estate.elements.traffic-map-modal', ['location' => $project->location]) !!}
+                        </div>
+                        <div class="d-none d-print-block">
+                            <a class="text-decoration-none" href="https://maps.google.com/?ll={{ $project->latitude }},{{ $project->longitude }}">
+                                {{ $project->location ?: $address }}
+                            </a>
+                        </div>
+                    @elseif($project->location)
+                        <div class="pd-map-frame">
+                            {!! Theme::partial('real-estate.elements.gmap-canvas', ['location' => $project->location]) !!}
+                        </div>
+                        <div class="d-none d-print-block">
+                            <a class="text-decoration-none" href="https://www.google.com/maps/search/{{ urlencode($project->location) }}">
+                                {{ $project->location ?: $address }}
+                            </a>
                         </div>
                     @endif
-                    <br>
-                    @if ($project->facilities->isNotEmpty())
-                        <div class="row">
-                            <div class="col-sm-12">
-                                <h5 class="headifhouse">{{ __('Distance key between facilities') }}</h5>
-                                <div class="row">
-                                    @php $project->facilities->loadMissing('metadata'); @endphp
-                                    @foreach ($project->facilities as $facility)
-                                        <div class="col-sm-4">
-                                            @if ($facility->getMetaData('icon_image', true))
-                                                <p><i><img
-                                                            src="{{ RvMedia::getImageUrl($facility->getMetaData('icon_image', true)) }}"
-                                                            alt="{{ $facility->name }}"
-                                                            style="vertical-align: top; margin-top: 3px;"
-                                                            width="18"
-                                                            height="18"
-                                                        ></i> {{ $facility->name }} - {{ $facility->pivot->distance }}
-                                                </p>
-                                            @else
-                                                <p><i
-                                                        class="@if ($facility->icon) {{ $facility->icon }} @else fas fa-check @endif text-orange text0i"></i>
-                                                    {{ $facility->name }} - {{ $facility->pivot->distance }}</p>
-                                            @endif
+                </section>
+
+                {{-- VIDEO --}}
+                @if($project->video_url)
+                    <section class="pd-sec">
+                        <h2 class="pd-sec-h">{{ __('Video del proyecto') }}</h2>
+                        <div style="border-radius:var(--pd-radius);overflow:hidden;aspect-ratio:16/9;">
+                            @php
+                                $videoId = '';
+                                if (preg_match('/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]+)/', $project->video_url, $m)) {
+                                    $videoId = $m[1];
+                                }
+                            @endphp
+                            @if($videoId)
+                                <iframe width="100%" height="100%" src="https://www.youtube.com/embed/{{ $videoId }}" frameborder="0" allowfullscreen style="border:0;"></iframe>
+                            @else
+                                <iframe width="100%" height="100%" src="{{ $project->video_url }}" frameborder="0" allowfullscreen style="border:0;"></iframe>
+                            @endif
+                        </div>
+                    </section>
+                @endif
+
+                <hr class="pd-rule" style="margin:44px 0 30px">
+
+                {!! apply_filters('after_single_content_detail', null, $project) !!}
+
+                {{-- SHARE --}}
+                <div class="pd-share-row">
+                    <span class="pd-lbl">{{ __('Compartir este proyecto') }}</span>
+                    <div class="pd-share-btns">
+                        <a class="pd-share-btn" href="https://www.facebook.com/sharer/sharer.php?u={{ urlencode(url()->current()) }}" target="_blank" rel="noopener" aria-label="Facebook">
+                            <svg viewBox="0 0 24 24"><path d="M13.5 21v-8h2.7l.4-3.1h-3.1V7.9c0-.9.25-1.5 1.55-1.5h1.65V3.6c-.3 0-1.3-.1-2.45-.1-2.4 0-4.05 1.47-4.05 4.17v2.32H7.7V13h2.45v8h3.35z"/></svg>
+                        </a>
+                        <a class="pd-share-btn" href="https://twitter.com/intent/tweet?url={{ urlencode(url()->current()) }}&text={{ urlencode($project->name) }}" target="_blank" rel="noopener" aria-label="X">
+                            <svg viewBox="0 0 24 24"><path d="M17.7 3h3.2l-7 8 8.2 10h-6.4l-5-6.5L4.7 21H1.5l7.5-8.6L1.1 3h6.6l4.5 6 5.5-6zm-1.1 16.2h1.8L7.5 4.7H5.6l11 14.5z"/></svg>
+                        </a>
+                        <a class="pd-share-btn" href="https://wa.me/?text={{ urlencode($project->name . ' - ' . url()->current()) }}" target="_blank" rel="noopener" aria-label="WhatsApp">
+                            <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.8 4.9-1.3A10 10 0 1012 2zm0 18.2c-1.5 0-3-.4-4.3-1.2l-.3-.2-2.9.8.8-2.8-.2-.3A8.2 8.2 0 1112 20.2zm4.5-6.1c-.25-.13-1.46-.72-1.69-.8-.23-.08-.4-.13-.56.13-.16.25-.64.8-.79.96-.14.17-.29.19-.54.06-.25-.13-1.04-.38-1.98-1.22-.73-.65-1.23-1.46-1.37-1.71-.14-.25-.02-.39.11-.51.11-.11.25-.29.38-.43.13-.14.17-.25.25-.42.08-.17.04-.31-.02-.44-.06-.13-.56-1.35-.77-1.85-.2-.48-.41-.42-.56-.43h-.48c-.17 0-.43.06-.66.31-.23.25-.86.85-.86 2.07 0 1.22.89 2.4 1.01 2.56.13.17 1.75 2.67 4.23 3.74.59.26 1.05.41 1.41.52.59.19 1.13.16 1.56.1.48-.07 1.46-.6 1.67-1.18.21-.58.21-1.07.14-1.18-.06-.1-.23-.16-.48-.29z"/></svg>
+                        </a>
+                        <button class="pd-share-btn" type="button" aria-label="{{ __('Copiar enlace') }}" id="pdCopyLink">
+                            <svg viewBox="0 0 24 24"><path d="M3.9 12a3.1 3.1 0 013.1-3.1h4V7h-4a5 5 0 100 10h4v-1.9h-4A3.1 3.1 0 013.9 12zM8 13h8v-2H8v2zm9-6h-4v1.9h4a3.1 3.1 0 010 6.2h-4V17h4a5 5 0 000-10z"/></svg>
+                        </button>
+                    </div>
+                </div>
+
+                {!! apply_filters(
+                    BASE_FILTER_PUBLIC_COMMENT_AREA,
+                    theme_option('facebook_comment_enabled_in_project', 'yes') == 'yes' ? Theme::partial('comments') : null,
+                ) !!}
+
+                {{-- REVIEWS --}}
+                @if(RealEstateHelper::isEnabledReview())
+                    <section class="pd-sec">
+                        <h2 class="pd-sec-h">{{ __('Reseñas') }} @if($reviewsCount > 0)<span style="color:var(--pd-ink-400);font-family:Poppins;font-size:20px;font-weight:500">({{ $reviewsCount }})</span>@endif</h2>
+
+                        @if($reviewsCount > 0)
+                            <div class="pd-rev-summary">
+                                <div class="pd-rev-avg">
+                                    <div class="pd-num">{{ number_format($reviewsAvg, 1) }}</div>
+                                    <div class="pd-stars">
+                                        @for($i = 1; $i <= 5; $i++)
+                                            <span class="material-icons">{{ $i <= round($reviewsAvg) ? 'star' : 'star_border' }}</span>
+                                        @endfor
+                                    </div>
+                                    <div class="pd-cnt2">{{ $reviewsCount }} {{ __('reseñas') }}</div>
+                                </div>
+                                <div class="pd-rev-bars">
+                                    @php
+                                        $allReviews = $project->reviews()->where('status', \Botble\RealEstate\Enums\ReviewStatusEnum::APPROVED)->get();
+                                        $starDist = [];
+                                        for ($s = 5; $s >= 1; $s--) {
+                                            $count = $allReviews->where('star', $s)->count();
+                                            $pct = $reviewsCount > 0 ? round(($count / $reviewsCount) * 100) : 0;
+                                            $starDist[] = ['star' => $s, 'pct' => $pct];
+                                        }
+                                    @endphp
+                                    @foreach($starDist as $dist)
+                                        <div class="pd-rev-bar">
+                                            <span class="pd-rk">{{ $dist['star'] }}<span class="material-icons">star</span></span>
+                                            <span class="pd-bw"><span class="pd-bf" style="width:{{ $dist['pct'] }}%"></span></span>
+                                            <span style="width:34px;text-align:right">{{ $dist['pct'] }}%</span>
                                         </div>
                                     @endforeach
                                 </div>
                             </div>
-                        </div>
-                    @endif
-                    <br>
-                    @if ($project->latitude && $project->longitude)
-                        {!! Theme::partial('real-estate.elements.traffic-map-modal', ['location' => $project->location]) !!}
+                        @else
+                            <div class="pd-rev-empty">
+                                <p>{{ __('Aún no hay reseñas. Sé el primero en opinar.') }}</p>
+                            </div>
+                        @endif
 
-                        <div class="d-none d-print-block">
-                            <a
-                                class="text-decoration-none"
-                                href="https://maps.google.com/?ll={{ $project->latitude }},{{ $project->longitude }}"
-                            >
-                                {{ $project->location ?: $address }}
-                            </a>
+                        <div class="reviews-container">
+                            <div class="loading-spinner"></div>
+                            <div class="pd-rev-list reviews-list @if($reviewsCount) mt-10 @endif" data-url="{{ route('public.ajax.review.index', $project->slug) }}?reviewable_type={{ get_class($project) }}" data-type="{{ get_class($project) }}"></div>
+                        </div>
+
+                        @php
+                            ($canReview = auth('account')->check() && auth('account')->user()->canReview($project))
+                        @endphp
+                        <div class="pd-write-rev">
+                            <h4>{{ __('Escribe una reseña') }}</h4>
+                            <p class="pd-sub">{{ __('Compartí tu experiencia con este proyecto.') }}</p>
+                            <form action="{{ route('public.ajax.review.store', $project->slug) }}" method="post" class="review-form">
+                                @csrf
+                                <input type="hidden" name="reviewable_type" value="{{ get_class($project) }}">
+
+                                <div style="display:none;">
+                                    <select name="star" id="select-star">
+                                        @foreach(range(1, 5) as $i)
+                                            <option value="{{ $i }}" @selected(old('star', 5) == $i)>{{ $i }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
+                                <div class="pd-star-input" id="pdStarInput" role="radiogroup" aria-label="{{ __('Calificación') }}">
+                                    @for($i = 1; $i <= 5; $i++)
+                                        <span class="material-icons" data-v="{{ $i }}">star</span>
+                                    @endfor
+                                </div>
+
+                                <textarea class="pd-fld" name="content" placeholder="{{ __('Contanos qué te pareció este proyecto…') }}" @disabled(!$canReview)>{{ old('content') }}</textarea>
+
+                                <div class="pd-rev-actions">
+                                    <button class="pd-btn-primary" type="submit" @disabled(!$canReview)>
+                                        {{ __('Enviar opinión') }} <span class="material-icons">send</span>
+                                    </button>
+                                    @guest('account')
+                                        <span class="pd-login-note">
+                                            <span class="material-icons">lock</span>
+                                            <a href="{{ route('public.account.login') }}">{{ __('Iniciá sesión') }}</a> {{ __('para publicar tu reseña.') }}
+                                        </span>
+                                    @endguest
+                                </div>
+                            </form>
+                        </div>
+                    </section>
+                @endif
+
+            </div>
+
+            {{-- ASIDE --}}
+            <aside class="pd-aside">
+
+                {{-- PRICE CARD --}}
+                <div class="pd-card pd-price-card">
+                    <span class="pd-price-badge">{{ $statusLabel }}</span>
+                    @if($project->price_from || $project->price_to)
+                        <div class="pd-price-val">
+                            @if($project->price_from)
+                                {{ format_price($project->price_from, $project->currency) }}
+                            @endif
+                            @if($project->price_to)
+                                <span class="pd-per">– {{ format_price($project->price_to, $project->currency) }}</span>
+                            @endif
+                        </div>
+                        <div class="pd-price-sub">
+                            @if($project->price_from && $project->price_to)
+                                {{ __('Rango de precios') }}
+                            @else
+                                {{ __('Precio del proyecto') }}
+                            @endif
+                            · {!! $project->status_html !!}
                         </div>
                     @else
-                        {!! Theme::partial('real-estate.elements.gmap-canvas', ['location' => $project->location]) !!}
+                        <div class="pd-price-val" style="font-size:22px;">{{ __('Consultar precio') }}</div>
+                        <div class="pd-price-sub">{!! $project->status_html !!}</div>
+                    @endif
+                    <div class="pd-price-foot">
+                        @if($project->number_block)
+                            <span class="pd-pf"><span class="material-icons">domain</span>{{ $project->number_block }} {{ __('torres') }}</span>
+                        @endif
+                        @if($project->number_floor)
+                            <span class="pd-pf"><span class="material-icons">layers</span>{{ $project->number_floor }} {{ __('pisos') }}</span>
+                        @endif
+                        @if($project->number_flat)
+                            <span class="pd-pf"><span class="material-icons">apartment</span>{{ $project->number_flat }} {{ __('unid.') }}</span>
+                        @endif
+                    </div>
+                </div>
 
-                        <div class="d-none d-print-block">
-                            <a
-                                class="text-decoration-none"
-                                href="https://www.google.com/maps/search/{{ urlencode($project->location) }}"
-                            >
-                                {{ $project->location ?: $address }}
-                            </a>
+                {{-- CONTACT FORM --}}
+                <div class="pd-card pd-form-card">
+                    <h3>{{ __('Solicitar información') }}</h3>
+                    <p class="pd-fc-sub">{{ __('Te contactamos en menos de 24 horas.') }}</p>
+                    <form action="{{ route('public.send.consult') }}" method="post" class="pd-fields generic-form" id="contact-form">
+                        @csrf
+                        <input type="hidden" value="project" name="type">
+                        <input type="hidden" value="{{ $project->id }}" name="data_id">
+                        <input class="pd-fld" type="text" name="name" placeholder="{{ __('Nombre completo') }} *">
+                        @if(!RealEstateHelper::isHiddenFieldAtConsultForm('phone'))
+                            <input class="pd-fld" type="tel" name="phone" placeholder="{{ __('Teléfono') }} @if(RealEstateHelper::hasEnabledFieldAtConsultForm('phone')) * @endif">
+                        @endif
+                        @if(!RealEstateHelper::isHiddenFieldAtConsultForm('email'))
+                            <input class="pd-fld" type="email" name="email" placeholder="{{ __('Correo electrónico') }} @if(RealEstateHelper::hasEnabledFieldAtConsultForm('email')) * @endif">
+                        @endif
+                        <input class="pd-fld pd-fld-locked" type="text" value="{{ $project->name }}" readonly>
+                        <textarea class="pd-fld" name="content" placeholder="{{ __('Mensaje') }} *" style="min-height:92px"></textarea>
+                        @if(setting('enable_captcha') && is_plugin_active('captcha'))
+                            {!! Captcha::display() !!}
+                        @endif
+                        <button class="pd-btn-primary" type="submit">{{ __('Enviar consulta') }} <span class="material-icons">arrow_forward</span></button>
+                    </form>
+                    <p class="pd-form-consent">{{ __('Al enviar aceptás ser contactado por la agencia.') }}</p>
+                    {!! apply_filters('consult_form_extra_info', null, $project) !!}
+                    <div class="alert alert-success text-success text-left" style="display: none;"><span></span></div>
+                    <div class="alert alert-danger text-danger text-left" style="display: none;"><span></span></div>
+                </div>
+
+            </aside>
+        </div>
+
+        {{-- RELATED PROPERTIES --}}
+        @php
+            $propertiesForSale = app(\Botble\RealEstate\Repositories\Interfaces\PropertyInterface::class)->getPropertiesByConditions(
+                [
+                    're_properties.project_id' => $project->id,
+                    're_properties.type' => \Botble\RealEstate\Enums\PropertyTypeEnum::SALE,
+                ],
+                8,
+                \Botble\RealEstate\Facades\RealEstateHelper::getPropertyRelationsQuery(),
+            );
+        @endphp
+
+        @if($propertiesForSale->isNotEmpty())
+            <div class="pd-related">
+                <h2 class="pd-sec-h">{{ __('Propiedades en venta') }}</h2>
+                <div class="row rowm10">
+                    @foreach($propertiesForSale as $propertyForSale)
+                        <div class="col-sm-6 col-lg-4 col-xl-3 colm10">
+                            {!! Theme::partial('real-estate.properties.item', ['property' => $propertyForSale]) !!}
                         </div>
-                    @endif
-
-                    <br>
-
-                    @if ($project->video_url)
-                        {!! Theme::partial('real-estate.elements.video', ['object' => $project, 'title' => __('Project video')]) !!}
-                    @endif
-
-                    {!! apply_filters('after_single_content_detail', null, $project) !!}
-
-                    <br>
-                    {!! Theme::partial('share', ['title' => __('Share this project'), 'description' => $project->description]) !!}
-                    <div class="clearfix"></div>
-                    {!! apply_filters(
-                        BASE_FILTER_PUBLIC_COMMENT_AREA,
-                        theme_option('facebook_comment_enabled_in_project', 'yes') == 'yes' ? Theme::partial('comments') : null,
-                    ) !!}
-                    <br>
-                    @if (RealEstateHelper::isEnabledReview())
-                        @include(Theme::getThemeNamespace('views.real-estate.partials.reviews'), [
-                            'model' => $project,
-                        ])
-                    @endif
-                </div>
-                <div class="col-md-4 padtop10">
-                    <div class="boxright p-3">
-                        {!! Theme::partial('consult-form', ['type' => 'project', 'data' => $project]) !!}
-                    </div>
+                    @endforeach
                 </div>
             </div>
+        @endif
 
-            <div class="projecthome mb-2">
-                @php
-                    $propertiesForSale = app(\Botble\RealEstate\Repositories\Interfaces\PropertyInterface::class)->getPropertiesByConditions(
-                        [
-                            're_properties.project_id' => $project->id,
-                            're_properties.type' => \Botble\RealEstate\Enums\PropertyTypeEnum::SALE,
-                        ],
-                        8,
-                        \Botble\RealEstate\Facades\RealEstateHelper::getPropertyRelationsQuery(),
-                    );
-                @endphp
+        @php
+            $propertiesForRent = app(\Botble\RealEstate\Repositories\Interfaces\PropertyInterface::class)->getPropertiesByConditions(
+                [
+                    're_properties.project_id' => $project->id,
+                    're_properties.type' => \Botble\RealEstate\Enums\PropertyTypeEnum::RENT,
+                ],
+                8,
+                \Botble\RealEstate\Facades\RealEstateHelper::getPropertyRelationsQuery(),
+            );
+        @endphp
 
-                @if ($propertiesForSale->isNotEmpty())
-                    <h5 class="headifhouse">{{ __('Properties For Sale') }}</h5>
-                    <div class="row rowm10">
-                        @foreach ($propertiesForSale as $propertyForSale)
-                            <div class="col-sm-6 col-lg-4 col-xl-3 colm10">
-                                {!! Theme::partial('real-estate.properties.item', ['property' => $propertyForSale]) !!}
-                            </div>
-                        @endforeach
-                    </div>
-                @endif
+        @if($propertiesForRent->isNotEmpty())
+            <div class="pd-related">
+                <h2 class="pd-sec-h">{{ __('Propiedades en alquiler') }}</h2>
+                <div class="row rowm10">
+                    @foreach($propertiesForRent as $propertyForRent)
+                        <div class="col-sm-6 col-lg-4 col-xl-3 colm10">
+                            {!! Theme::partial('real-estate.properties.item', ['property' => $propertyForRent]) !!}
+                        </div>
+                    @endforeach
+                </div>
             </div>
-
-            <div class="projecthome mb-2">
-                @php
-                    $propertiesForRent = app(\Botble\RealEstate\Repositories\Interfaces\PropertyInterface::class)->getPropertiesByConditions(
-                        [
-                            're_properties.project_id' => $project->id,
-                            're_properties.type' => \Botble\RealEstate\Enums\PropertyTypeEnum::RENT,
-                        ],
-                        8,
-                        \Botble\RealEstate\Facades\RealEstateHelper::getPropertyRelationsQuery(),
-                    );
-                @endphp
-
-                @if ($propertiesForRent->isNotEmpty())
-                    <h5 class="headifhouse">{{ __('Properties For Rent') }}</h5>
-                    <div class="row rowm10">
-                        @foreach ($propertiesForRent as $propertyForRent)
-                            <div class="col-sm-6 col-lg-4 col-xl-3 colm10">
-                                {!! Theme::partial('real-estate.properties.item', ['property' => $propertyForRent]) !!}
-                            </div>
-                        @endforeach
-                    </div>
-                @endif
-            </div>
-        </section>
+        @endif
 
     </div>
 </main>
+
+{{-- LIGHTBOX --}}
+@if($imageCount > 0)
+    <div class="pd-lb" id="pdLightbox" role="dialog" aria-modal="true" aria-label="{{ __('Galería de imágenes') }}">
+        <div class="pd-lb-top">
+            <span class="pd-lb-count" id="pdLbCount">1 / {{ $imageCount }}</span>
+            <button class="pd-lb-close" id="pdLbClose" aria-label="{{ __('Cerrar') }}"><span class="material-icons">close</span></button>
+        </div>
+        <div class="pd-lb-stage">
+            <button class="pd-lb-nav" id="pdLbPrev" aria-label="{{ __('Anterior') }}"><span class="material-icons">chevron_left</span></button>
+            <img class="pd-lb-img" id="pdLbImg" src="" alt="">
+            <button class="pd-lb-nav" id="pdLbNext" aria-label="{{ __('Siguiente') }}"><span class="material-icons">chevron_right</span></button>
+        </div>
+        <div class="pd-lb-thumbs" id="pdLbThumbs">
+            @foreach($images as $i => $img)
+                <img src="{{ RvMedia::getImageUrl($img, 'thumb', false, RvMedia::getDefaultImage()) }}" data-full="{{ RvMedia::getImageUrl($img, null, false, RvMedia::getDefaultImage()) }}" data-i="{{ $i }}" alt="">
+            @endforeach
+        </div>
+    </div>
+@endif
+
+<button class="pd-to-top" id="pdToTop" aria-label="{{ __('Volver arriba') }}"><span class="material-icons">arrow_upward</span></button>
 
 <script id="traffic-popup-map-template" type="text/x-custom-template">
     {!! Theme::partial('real-estate.projects.map', ['project' => $project]) !!}

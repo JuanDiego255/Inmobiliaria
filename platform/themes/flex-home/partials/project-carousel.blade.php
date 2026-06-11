@@ -175,15 +175,15 @@
                         $pCategoryName = optional($project->categories->first())->name ?? __('Proyecto');
                     @endphp
                     <a class="proj-card" href="{{ $project->url }}">
-                        <img class="pc-img" src="{{ $pImage }}" alt="{{ $project->name }}" loading="lazy">
-                        <div class="pc-overlay"></div>
-                        <span class="pc-status {{ $sCls }}">{{ $sLabel }}</span>
-                        <div class="pc-content">
-                            <span class="pc-cat">{{ $pCategoryName }}</span>
-                            <h3 class="pc-title">{!! BaseHelper::clean($project->name) !!}</h3>
-                            <div class="pc-loc"><span class="material-icons">place</span>{{ $pLocation ?: __('Sin ubicación') }}</div>
+                        <img class="pjc-img" src="{{ $pImage }}" alt="{{ $project->name }}" loading="lazy">
+                        <div class="pjc-overlay"></div>
+                        <span class="pjc-status {{ $sCls }}">{{ $sLabel }}</span>
+                        <div class="pjc-content">
+                            <span class="pjc-cat">{{ $pCategoryName }}</span>
+                            <h3 class="pjc-title">{!! BaseHelper::clean($project->name) !!}</h3>
+                            <div class="pjc-loc"><span class="material-icons">place</span>{{ $pLocation ?: __('Sin ubicación') }}</div>
                             @if($pPrice)
-                                <div class="pc-price">
+                                <div class="pjc-price">
                                     <span class="lbl">{{ __('Desde') }}</span>{{ $pPrice }}
                                 </div>
                             @endif

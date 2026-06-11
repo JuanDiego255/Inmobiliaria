@@ -495,7 +495,7 @@
     color: #fff;
 }
 
-.pc-img {
+.pjc-img {
     position: absolute;
     inset: 0;
     width: 100%;
@@ -504,17 +504,17 @@
     transition: transform .7s cubic-bezier(.2,.7,.2,1);
 }
 
-.proj-card:hover .pc-img {
+.proj-card:hover .pjc-img {
     transform: scale(1.06);
 }
 
-.pc-overlay {
+.pjc-overlay {
     position: absolute;
     inset: 0;
     background: linear-gradient(180deg, rgba(11,12,16,.10) 0%, rgba(11,12,16,0) 32%, rgba(11,12,16,.55) 68%, rgba(11,12,16,.90) 100%);
 }
 
-.pc-status {
+.pjc-status {
     position: absolute;
     top: 16px;
     left: 16px;
@@ -529,14 +529,14 @@
     backdrop-filter: blur(3px);
 }
 
-.pc-status.venta { background: var(--pj-accent); }
-.pc-status.alquiler { background: var(--pj-orange); }
-.pc-status.vendido { background: rgba(255,255,255,.18); }
-.pc-status.pre_sale { background: #f59e0b; }
-.pc-status.building { background: #3b82f6; }
-.pc-status.not_available { background: rgba(255,255,255,.18); }
+.pjc-status.venta { background: var(--pj-accent); }
+.pjc-status.alquiler { background: var(--pj-orange); }
+.pjc-status.vendido { background: rgba(255,255,255,.18); }
+.pjc-status.pre_sale { background: #f59e0b; }
+.pjc-status.building { background: #3b82f6; }
+.pjc-status.not_available { background: rgba(255,255,255,.18); }
 
-.pc-content {
+.pjc-content {
     position: absolute;
     left: 0;
     right: 0;
@@ -546,7 +546,7 @@
     color: #fff;
 }
 
-.pc-cat {
+.pjc-cat {
     font-size: 11px;
     font-weight: 600;
     letter-spacing: .14em;
@@ -554,7 +554,7 @@
     color: rgba(255,255,255,.72);
 }
 
-.pc-title {
+.pjc-title {
     font-family: 'Playfair Display', serif;
     font-weight: 500;
     font-size: clamp(22px, 1.9vw, 27px);
@@ -563,7 +563,7 @@
     margin: 8px 0 0;
 }
 
-.pc-loc {
+.pjc-loc {
     display: flex;
     align-items: center;
     gap: 6px;
@@ -573,11 +573,11 @@
     font-weight: 400;
 }
 
-.pc-loc .material-icons {
+.pjc-loc .material-icons {
     font-size: 16px;
 }
 
-.pc-price {
+.pjc-price {
     margin-top: 16px;
     padding-top: 14px;
     border-top: 1px solid rgba(255,255,255,.18);
@@ -586,7 +586,7 @@
     letter-spacing: -.005em;
 }
 
-.pc-price .lbl {
+.pjc-price .lbl {
     font-size: 11px;
     font-weight: 500;
     letter-spacing: .04em;

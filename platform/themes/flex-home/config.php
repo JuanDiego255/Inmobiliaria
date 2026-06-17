@@ -57,6 +57,9 @@ return [
             $theme->asset()->usePath()->add('property-carousel-css', 'css/property-carousel.css', [], [], $version);
             $theme->asset()->usePath()->add('property-detail-css', 'css/property-detail.css', [], [], $version);
             $theme->asset()->usePath()->add('project-carousel-css', 'css/project-carousel.css', [], [], $version);
+            $theme->asset()->add('playfair-display-font', 'https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&display=swap');
+            $theme->asset()->add('material-icons-font', 'https://fonts.googleapis.com/icon?family=Material+Icons');
+            $theme->asset()->usePath()->add('index-sections-css', 'css/index-sections.css', [], [], $version);
 
             if (BaseHelper::isRtlEnabled()) {
                 $theme->asset()->usePath()->add('rtl-style', 'css/rtl-style.css', [], [], $version);
@@ -75,6 +78,7 @@ return [
             $theme->asset()->container('footer')->usePath()->add('property-detail-js', 'js/property-detail.js', [], [], $version);
             $theme->asset()->container('footer')->usePath()->add('project-carousel-js', 'js/project-carousel.js', [], [], $version);
             $theme->asset()->container('footer')->usePath()->add('wishlist', 'js/wishlist.js', [], [], $version);
+            $theme->asset()->container('footer')->usePath()->add('index-sections-js', 'js/index-sections.js', ['jquery'], [], $version);
 
             if (function_exists('shortcode')) {
                 $theme->composer([

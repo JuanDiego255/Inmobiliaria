@@ -381,42 +381,12 @@
 }
 
 /* ══════════════════════════════════════════════════════
-   PAGE TEMPLATE OVERRIDES
-   Hide the old theme banner when our contact banner is present.
-   The page.blade.php wraps content in .bgheadproject + .padtop50;
-   we need to override that structure.
+   FULL-WIDTH RENDERING
+   The contact page now renders outside .container/.padtop50
+   via page.blade.php detection. These are safety fallbacks.
    ══════════════════════════════════════════════════════ */
-
-/* Hide old page banner */
-body:has(.ct-banner) .bgheadproject { display: none !important; }
-
-/* Remove padding/margin from the page wrapper */
-body:has(.ct-banner) .padtop50 { padding-top: 0 !important; margin-top: 0 !important; }
-body:has(.ct-banner) .container.padtop50,
-body:has(.ct-banner) .container-fluid.padtop50 {
-    max-width: none !important;
-    width: 100% !important;
-    padding-left: 0 !important;
-    padding-right: 0 !important;
-}
-
-/* Remove Bootstrap row/col constraints so content goes full-width */
-body:has(.ct-banner) .padtop50 > .row {
-    margin-left: 0 !important;
-    margin-right: 0 !important;
-}
-body:has(.ct-banner) .padtop50 > .row > .col-sm-12 {
-    padding-left: 0 !important;
-    padding-right: 0 !important;
-    max-width: none !important;
-    flex: 0 0 100% !important;
-}
-body:has(.ct-banner) .padtop50 > .row > .col-sm-12 > .scontent {
-    max-width: none !important;
-}
-
-/* Remove trailing br/spacing after the page content */
-body:has(.ct-banner) .padtop50 + br { display: none; }
+.ct-banner + .ct-sec { margin-top: 0; }
+.ck-content > .ct-banner:first-child { margin-top: 0; }
 
 /* ══════════════════════════════════════════════════════
    RESPONSIVE

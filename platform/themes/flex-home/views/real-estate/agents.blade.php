@@ -1,40 +1,102 @@
-<section class="main-homes">
-    <div
-        class="bgheadproject hidden-xs"
-        style="background: url('{{ theme_option('breadcrumb_background') ? RvMedia::url(theme_option('breadcrumb_background')) : Theme::asset()->url('images/banner-du-an.jpg') }}')"
-    >
-        <div class="description">
-            <div class="container-fluid w90">
-                <h1 class="text-center">{{ __('Agents') }}</h1>
-                {!! Theme::partial('breadcrumb') !!}
-            </div>
-        </div>
-    </div>
-    <div class="container-fluid w90 padtop30">
-        <div class="rowm10">
-            @if ($accounts->isNotEmpty())
-                <div class="container-fluid">
-                    <div class="row rowm10 list-agency">
-                        @foreach ($accounts as $account)
-                            <div class="col-lg-3 col-md-4 col-sm-6">
-                                {!! Theme::partial('real-estate.agents.item', compact('account')) !!}
-                            </div>
-                        @endforeach
+@php
+    $palette = ['#717fe0','#7cb342','#66a8a6','#e08a3e','#d4708a','#5b8def','#d6a23e','#4fa3a1'];
+    $colorFor = function($name) use ($palette) {
+        $h = 0;
+        for ($i = 0; $i < mb_strlen($name); $i++) {
+            $h = (($h * 31) + mb_ord(mb_substr($name, $i, 1))) & 0xFFFFFFFF;
+        }
+        return $palette[$h % count($palette)];
+    };
+@endphp
 
-                        @if($accounts->hasPages())
-                            <div class="colm10 col-sm-12">
-                                <nav class="d-flex justify-content-center pt-3">
-                                    {!! $accounts->withQueryString()->links() !!}
-                                </nav>
-                            </div>
-                        @endif
-                    </div>
-                </div>
-            @else
-                <p class="item">{{ __('0 results') }}</p>
-            @endif
+<section class="ag-sec" id="agAgentsList">
+    <div class="ag-wrap">
+        <div class="ag-sec-head ag-reveal-up">
+            <span class="ag-eyebrow">{{ __('Nuestro equipo') }}</span>
+            <h1>{{ __('Agentes inmobiliarios') }}</h1>
+            <p class="ag-lead">{{ __('Conocé a los asesores que te acompañan en cada paso. Profesionales con experiencia local listos para ayudarte a comprar, vender o invertir.') }}</p>
         </div>
+
+        @if($accounts->isNotEmpty())
+            <div class="ag-toolbar ag-reveal-up">
+                <span class="ag-count-pill">
+                    <span class="material-icons">groups</span>
+                    <b id="agAgentCount">{{ $accounts->total() }}</b>&nbsp;{{ __('agentes disponibles') }}
+                </span>
+                <div class="ag-search">
+                    <span class="material-icons">search</span>
+                    <input type="text" id="agAgentSearch" placeholder="{{ __('Buscar por nombre…') }}" aria-label="{{ __('Buscar agente') }}">
+                </div>
+            </div>
+
+            <div class="ag-agents-grid" id="agAgentGrid">
+                @foreach($accounts as $account)
+                    @php
+                        $c = $colorFor($account->name);
+                        $hasPhoto = $account->avatar && $account->avatar->url;
+                        $initial = mb_strtoupper(mb_substr($account->name, 0, 1));
+                    @endphp
+                    <a class="ag-agent-card" href="{{ $account->url ?? '#' }}" style="--c: {{ $c }}" data-name="{{ mb_strtolower($account->name) }}">
+                        <div class="ag-agent-cover"><span class="material-icons">apartment</span></div>
+                        <div class="ag-agent-avatar" style="--c: {{ $c }}">
+                            @if($hasPhoto)
+                                <img src="{{ RvMedia::getImageUrl($account->avatar->url, 'thumb') }}" alt="{{ $account->name }}">
+                            @else
+                                <span class="ag-agent-initial">{{ $initial }}</span>
+                            @endif
+                        </div>
+                        <div class="ag-agent-body">
+                            <span class="ag-agent-role">{{ __('Asesor inmobiliario') }}</span>
+                            <h3 class="ag-agent-name">{{ $account->name }}</h3>
+                            <div class="ag-agent-contact">
+                                @if($account->phone && !setting('real_estate_hide_agency_phone', 0))
+                                    <div class="ag-ac-row">
+                                        <span class="ag-ac-ico"><span class="material-icons">call</span></span>
+                                        <div class="ag-ac-text">
+                                            <div class="ag-ac-k">{{ __('Teléfono') }}</div>
+                                            <div class="ag-ac-v">{{ $account->phone }}</div>
+                                        </div>
+                                    </div>
+                                @endif
+                                @if($account->email && !setting('real_estate_hide_agency_email', 0))
+                                    <div class="ag-ac-row">
+                                        <span class="ag-ac-ico"><span class="material-icons">mail</span></span>
+                                        <div class="ag-ac-text">
+                                            <div class="ag-ac-k">{{ __('Correo') }}</div>
+                                            <div class="ag-ac-v">{{ $account->email }}</div>
+                                        </div>
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                        <div class="ag-agent-foot">
+                            <span class="ag-agent-props">
+                                <span class="material-icons">home</span>
+                                <b>{{ $account->properties_count }}</b>&nbsp;{{ $account->properties_count == 1 ? __('propiedad') : __('propiedades') }}
+                            </span>
+                            <span class="ag-agent-cta">{{ __('Ver perfil') }} <span class="material-icons">north_east</span></span>
+                        </div>
+                    </a>
+                @endforeach
+            </div>
+
+            <div class="ag-empty" id="agAgentEmpty">
+                <span class="material-icons">person_search</span>
+                {{ __('No encontramos agentes con ese nombre.') }}
+            </div>
+
+            @if($accounts->hasPages())
+                <div class="ag-pagination">
+                    <nav aria-label="Page navigation">
+                        {!! $accounts->withQueryString()->links() !!}
+                    </nav>
+                </div>
+            @endif
+        @else
+            <div class="ag-empty" style="display: block;">
+                <span class="material-icons">person_search</span>
+                {{ __('No hay agentes disponibles en este momento.') }}
+            </div>
+        @endif
     </div>
 </section>
-<br>
-<br>

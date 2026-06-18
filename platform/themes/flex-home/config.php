@@ -60,6 +60,7 @@ return [
             $theme->asset()->add('playfair-display-font', 'https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&display=swap');
             $theme->asset()->add('material-icons-font', 'https://fonts.googleapis.com/icon?family=Material+Icons');
             $theme->asset()->usePath()->add('index-sections-css', 'css/index-sections.css', [], [], $version);
+            $theme->asset()->usePath()->add('agents-css', 'css/agents.css', [], [], $version);
 
             if (BaseHelper::isRtlEnabled()) {
                 $theme->asset()->usePath()->add('rtl-style', 'css/rtl-style.css', [], [], $version);
@@ -79,6 +80,7 @@ return [
             $theme->asset()->container('footer')->usePath()->add('project-carousel-js', 'js/project-carousel.js', [], [], $version);
             $theme->asset()->container('footer')->usePath()->add('wishlist', 'js/wishlist.js', [], [], $version);
             $theme->asset()->container('footer')->usePath()->add('index-sections-js', 'js/index-sections.js', ['jquery'], [], $version);
+            $theme->asset()->container('footer')->usePath()->add('agents-js', 'js/agents.js', [], [], $version);
 
             if (function_exists('shortcode')) {
                 $theme->composer([

@@ -62,6 +62,7 @@ return [
             $theme->asset()->usePath()->add('index-sections-css', 'css/index-sections.css', [], [], $version);
             $theme->asset()->usePath()->add('agents-css', 'css/agents.css', [], [], $version);
             $theme->asset()->usePath()->add('contact-css', 'css/contact.css', [], [], $version);
+            $theme->asset()->usePath()->add('client-board-css', 'css/client-board.css', [], [], $version);
 
             if (BaseHelper::isRtlEnabled()) {
                 $theme->asset()->usePath()->add('rtl-style', 'css/rtl-style.css', [], [], $version);
@@ -83,6 +84,7 @@ return [
             $theme->asset()->container('footer')->usePath()->add('index-sections-js', 'js/index-sections.js', ['jquery'], [], $version);
             $theme->asset()->container('footer')->usePath()->add('agents-js', 'js/agents.js', [], [], $version);
             $theme->asset()->container('footer')->usePath()->add('contact-js', 'js/contact.js', [], [], $version);
+            $theme->asset()->container('footer')->usePath()->add('client-board-js', 'js/client-board.js', [], [], $version);
 
             if (function_exists('shortcode')) {
                 $theme->composer([

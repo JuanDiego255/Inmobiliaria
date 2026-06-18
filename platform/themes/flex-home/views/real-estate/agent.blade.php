@@ -53,6 +53,19 @@
     ));
 @endphp
 
+{{-- Dark hero banner --}}
+<div class="ag-banner">
+    <div class="ag-banner__inner">
+        <span class="ag-banner__eyebrow">{{ __('Perfil de agente') }}</span>
+        <h1 class="ag-banner__title">{{ __('Conocé a:') }} <em>{{ $account->name }}</em></h1>
+        <p class="ag-banner__text">{{ __('Asesor inmobiliario con') }} {{ $properties->total() }} {{ $properties->total() == 1 ? __('propiedad activa') : __('propiedades activas') }}.</p>
+        <div class="ag-banner__scroll">
+            <span class="ag-banner__dot"><span class="material-icons">arrow_downward</span></span>
+            {{ __('Ver perfil completo') }}
+        </div>
+    </div>
+</div>
+
 {{-- Breadcrumb --}}
 <div class="ag-wrap ag-crumb">
     <nav>

@@ -9,12 +9,24 @@
     };
 @endphp
 
+{{-- Dark hero banner --}}
+<div class="ag-banner">
+    <div class="ag-banner__inner">
+        <span class="ag-banner__eyebrow">{{ __('Nuestro equipo') }}</span>
+        <h1 class="ag-banner__title">{{ __('Conocé a nuestros') }} <em>{{ __('Agentes') }}</em></h1>
+        <p class="ag-banner__text">{{ __('Profesionales con experiencia local listos para ayudarte a comprar, vender o invertir.') }}</p>
+        <div class="ag-banner__scroll">
+            <span class="ag-banner__dot"><span class="material-icons">arrow_downward</span></span>
+            {{ __('Explorar agentes') }}
+        </div>
+    </div>
+</div>
+
 <section class="ag-sec" id="agAgentsList">
     <div class="ag-wrap">
         <div class="ag-sec-head ag-reveal-up">
-            <span class="ag-eyebrow">{{ __('Nuestro equipo') }}</span>
-            <h1>{{ __('Agentes inmobiliarios') }}</h1>
-            <p class="ag-lead">{{ __('Conocé a los asesores que te acompañan en cada paso. Profesionales con experiencia local listos para ayudarte a comprar, vender o invertir.') }}</p>
+            <span class="ag-eyebrow">{{ __('Agentes inmobiliarios') }}</span>
+            <h2>{{ __('Encontrá al asesor ideal') }}</h2>
         </div>
 
         @if($accounts->isNotEmpty())

@@ -378,4 +378,36 @@ return [
         'flag' => 'crm-activity.create',
         'parent_flag' => 'crm-activity.index',
     ],
+
+    [
+        'name' => 'CRM Tasks',
+        'flag' => 'crm-task.index',
+        'parent_flag' => 'plugins.real-estate',
+    ],
+    [
+        'name' => 'Create',
+        'flag' => 'crm-task.create',
+        'parent_flag' => 'crm-task.index',
+    ],
+    [
+        'name' => 'Edit',
+        'flag' => 'crm-task.edit',
+        'parent_flag' => 'crm-task.index',
+    ],
+    [
+        'name' => 'Delete',
+        'flag' => 'crm-task.destroy',
+        'parent_flag' => 'crm-task.index',
+    ],
+
+    [
+        'name' => 'CRM Reminders',
+        'flag' => 'crm-reminder.index',
+        'parent_flag' => 'plugins.real-estate',
+    ],
+    [
+        'name' => 'Create',
+        'flag' => 'crm-reminder.create',
+        'parent_flag' => 'crm-reminder.index',
+    ],
 ];

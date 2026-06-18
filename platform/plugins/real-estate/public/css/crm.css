@@ -283,6 +283,60 @@
 .crm-toast.success { background: #28a745; }
 .crm-toast.error { background: #dc3545; }
 
+/* ============================================
+   Tasks
+   ============================================ */
+.crm-tasks-list { max-height: 400px; overflow-y: auto; }
+.crm-task-item {
+    display: flex; align-items: flex-start; gap: .75rem;
+    padding: .75rem 1rem;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background var(--crm-transition);
+}
+.crm-task-item:last-child { border-bottom: none; }
+.crm-task-item:hover { background: #f8f9ff; }
+.crm-task-item.overdue { background: #fff8f8; }
+.crm-task-item.overdue .crm-task-title { color: #dc3545; }
+
+.crm-task-check { flex-shrink: 0; padding-top: 2px; }
+.crm-task-check .btn { width: 30px; height: 30px; padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
+
+.crm-task-content { flex: 1; min-width: 0; }
+.crm-task-title { font-weight: 500; font-size: .9rem; margin-bottom: 4px; }
+.crm-task-meta {
+    display: flex; align-items: center; gap: .5rem; flex-wrap: wrap;
+    font-size: .78rem;
+}
+.crm-task-due { display: inline-flex; align-items: center; gap: .2rem; }
+.crm-task-lead {
+    cursor: pointer; color: var(--crm-accent);
+    display: inline-flex; align-items: center; gap: .2rem;
+}
+.crm-task-lead:hover { text-decoration: underline; }
+
+/* ============================================
+   Reminder Notification Bell
+   ============================================ */
+.crm-reminders-dropdown .crm-reminder-count {
+    position: absolute; top: -2px; right: -6px;
+    font-size: .65rem; min-width: 16px; height: 16px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%; background: #dc3545; color: #fff;
+    padding: 0 3px;
+}
+.crm-reminders-dropdown .dropdown-toggle { position: relative; }
+.crm-reminders-dropdown .fa-bell { font-size: 1.1rem; }
+
+.crm-reminder-item { position: relative; }
+.crm-reminder-item .crm-dismiss-reminder {
+    position: absolute; top: 8px; right: 8px;
+    width: 22px; height: 22px; padding: 0;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%; font-size: .65rem;
+    opacity: 0; transition: opacity .2s;
+}
+.crm-reminder-item:hover .crm-dismiss-reminder { opacity: 1; }
+
 /* -- Loading overlay -- */
 .crm-loading {
     position: relative;

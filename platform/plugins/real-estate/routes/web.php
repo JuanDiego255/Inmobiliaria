@@ -336,6 +336,70 @@ Route::group(['namespace' => 'Botble\RealEstate\Http\Controllers', 'middleware' 
                     'permission' => 'crm-activity.create',
                 ])->wherePrimaryKey();
             });
+
+            Route::group(['prefix' => 'tasks', 'as' => 'tasks.'], function () {
+                Route::get('/', [
+                    'as' => 'index',
+                    'uses' => 'CrmTaskController@index',
+                    'permission' => 'crm-task.index',
+                ]);
+
+                Route::post('/', [
+                    'as' => 'store',
+                    'uses' => 'CrmTaskController@store',
+                    'permission' => 'crm-task.create',
+                ]);
+
+                Route::put('{id}', [
+                    'as' => 'update',
+                    'uses' => 'CrmTaskController@update',
+                    'permission' => 'crm-task.edit',
+                ])->wherePrimaryKey();
+
+                Route::delete('{id}', [
+                    'as' => 'destroy',
+                    'uses' => 'CrmTaskController@destroy',
+                    'permission' => 'crm-task.destroy',
+                ])->wherePrimaryKey();
+
+                Route::patch('{id}/status', [
+                    'as' => 'update-status',
+                    'uses' => 'CrmTaskController@updateStatus',
+                    'permission' => 'crm-task.edit',
+                ])->wherePrimaryKey();
+
+                Route::get('my-tasks', [
+                    'as' => 'my-tasks',
+                    'uses' => 'CrmTaskController@myTasks',
+                    'permission' => 'crm-task.index',
+                ]);
+            });
+
+            Route::group(['prefix' => 'reminders', 'as' => 'reminders.'], function () {
+                Route::post('/', [
+                    'as' => 'store',
+                    'uses' => 'CrmReminderController@store',
+                    'permission' => 'crm-reminder.create',
+                ]);
+
+                Route::get('pending', [
+                    'as' => 'pending',
+                    'uses' => 'CrmReminderController@pending',
+                    'permission' => 'crm-reminder.index',
+                ]);
+
+                Route::patch('{id}/dismiss', [
+                    'as' => 'dismiss',
+                    'uses' => 'CrmReminderController@dismiss',
+                    'permission' => 'crm-reminder.index',
+                ])->wherePrimaryKey();
+
+                Route::post('dismiss-all', [
+                    'as' => 'dismiss-all',
+                    'uses' => 'CrmReminderController@dismissAll',
+                    'permission' => 'crm-reminder.index',
+                ]);
+            });
         });
 
         Route::group(['prefix' => 'boards', 'as' => 'board.'], function () {

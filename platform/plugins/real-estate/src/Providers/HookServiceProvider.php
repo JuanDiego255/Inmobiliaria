@@ -25,6 +25,8 @@ use Botble\RealEstate\Facades\RealEstateHelper;
 use Botble\RealEstate\Models\Account;
 use Botble\RealEstate\Models\Category;
 use Botble\RealEstate\Models\Consult;
+use Botble\RealEstate\Models\CrmReminder;
+use Carbon\Carbon;
 use Botble\RealEstate\Models\Invoice;
 use Botble\RealEstate\Models\Package;
 use Botble\RealEstate\Models\Property;
@@ -619,7 +621,22 @@ class HookServiceProvider extends ServiceProvider
                 return $options;
             }
 
-            return $options . view('plugins/real-estate::notification', compact('consults'))->render();
+            $options = $options . view('plugins/real-estate::notification', compact('consults'))->render();
+        }
+
+        if (Auth::user()->hasPermission('crm-reminder.index')) {
+            $reminders = CrmReminder::query()
+                ->with('lead')
+                ->where('user_id', Auth::id())
+                ->where('is_dismissed', false)
+                ->where('remind_at', '<=', Carbon::now())
+                ->orderByDesc('remind_at')
+                ->limit(20)
+                ->get();
+
+            $reminderCount = $reminders->count();
+
+            $options = $options . view('plugins/real-estate::crm.partials.reminder-notification', compact('reminders', 'reminderCount'))->render();
         }
 
         return $options;

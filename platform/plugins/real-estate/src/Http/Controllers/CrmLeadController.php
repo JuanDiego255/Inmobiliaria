@@ -41,6 +41,7 @@ class CrmLeadController extends BaseController
         ]);
         Assets::addScriptsDirectly([
             'vendor/core/plugins/real-estate/js/crm-modals.js',
+            'vendor/core/plugins/real-estate/js/crm-tasks.js',
             'vendor/core/plugins/real-estate/js/crm-pipeline.js',
         ]);
 
@@ -160,7 +161,7 @@ class CrmLeadController extends BaseController
     public function importConsults(BaseHttpResponse $response)
     {
         $consults = Consult::query()
-            ->where('status', 'unread')
+            ->where('status', \Botble\RealEstate\Enums\ConsultStatusEnum::UNREAD)
             ->whereNotExists(function ($query) {
                 $query->select('id')
                     ->from('re_crm_leads')
@@ -180,7 +181,7 @@ class CrmLeadController extends BaseController
                 'notes' => $consult->content,
             ]);
 
-            $consult->update(['status' => 'read']);
+            $consult->update(['status' => \Botble\RealEstate\Enums\ConsultStatusEnum::READ]);
             $count++;
         }
 

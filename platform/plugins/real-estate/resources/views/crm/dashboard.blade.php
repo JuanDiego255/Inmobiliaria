@@ -6,7 +6,11 @@
 
     <div class="row mt-4">
         <div class="col-lg-8">
-            @include('plugins/real-estate::crm.dashboard.recent-leads')
+            @include('plugins/real-estate::crm.dashboard.my-tasks-today')
+
+            <div class="mt-4">
+                @include('plugins/real-estate::crm.dashboard.recent-leads')
+            </div>
 
             <div class="mt-4">
                 @include('plugins/real-estate::crm.dashboard.activity-timeline')
@@ -39,4 +43,6 @@
 @include('plugins/real-estate::crm.modals.lead-form-modal', ['agents' => $agents])
 @include('plugins/real-estate::crm.modals.lead-detail-modal')
 @include('plugins/real-estate::crm.modals.activity-form-modal')
+@include('plugins/real-estate::crm.modals.task-form-modal', ['adminUsers' => $adminUsers])
+@include('plugins/real-estate::crm.modals.reminder-form-modal')
 @endsection

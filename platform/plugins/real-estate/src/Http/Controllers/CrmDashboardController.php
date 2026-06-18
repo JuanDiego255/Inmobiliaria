@@ -2,12 +2,15 @@
 
 namespace Botble\RealEstate\Http\Controllers;
 
+use Botble\ACL\Models\User;
 use Botble\Base\Facades\Assets;
 use Botble\Base\Facades\PageTitle;
 use Botble\Base\Http\Controllers\BaseController;
 use Botble\RealEstate\Enums\CrmLeadStageEnum;
+use Botble\RealEstate\Enums\CrmTaskStatusEnum;
 use Botble\RealEstate\Models\CrmActivity;
 use Botble\RealEstate\Models\CrmLead;
+use Botble\RealEstate\Models\CrmTask;
 use Carbon\Carbon;
 
 class CrmDashboardController extends BaseController
@@ -21,6 +24,7 @@ class CrmDashboardController extends BaseController
         ]);
         Assets::addScriptsDirectly([
             'vendor/core/plugins/real-estate/js/crm-modals.js',
+            'vendor/core/plugins/real-estate/js/crm-tasks.js',
             'vendor/core/plugins/real-estate/js/crm-dashboard.js',
         ]);
 
@@ -67,12 +71,27 @@ class CrmDashboardController extends BaseController
             ->orderBy('first_name')
             ->get();
 
+        $myTasks = CrmTask::query()
+            ->with(['lead'])
+            ->where('assigned_to', auth()->id())
+            ->whereIn('status', [CrmTaskStatusEnum::PENDING, CrmTaskStatusEnum::IN_PROGRESS])
+            ->orderByRaw('CASE WHEN due_date IS NULL THEN 1 ELSE 0 END, due_date ASC')
+            ->limit(15)
+            ->get();
+
+        $adminUsers = User::query()
+            ->select('id', 'first_name', 'last_name', 'username')
+            ->orderBy('first_name')
+            ->get();
+
         return view('plugins/real-estate::crm.dashboard', compact(
             'stats',
             'recentLeads',
             'recentActivities',
             'pipelineSummary',
-            'agents'
+            'agents',
+            'myTasks',
+            'adminUsers'
         ));
     }
 }

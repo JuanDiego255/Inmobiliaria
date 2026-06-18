@@ -91,3 +91,11 @@ if (! defined('CRM_LEAD_MODULE_SCREEN_NAME')) {
 if (! defined('CRM_ACTIVITY_MODULE_SCREEN_NAME')) {
     define('CRM_ACTIVITY_MODULE_SCREEN_NAME', 'crm-activity');
 }
+
+if (! defined('CRM_TASK_MODULE_SCREEN_NAME')) {
+    define('CRM_TASK_MODULE_SCREEN_NAME', 'crm-task');
+}
+
+if (! defined('CRM_REMINDER_MODULE_SCREEN_NAME')) {
+    define('CRM_REMINDER_MODULE_SCREEN_NAME', 'crm-reminder');
+}

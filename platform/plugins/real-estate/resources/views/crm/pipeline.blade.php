@@ -54,4 +54,6 @@
 @include('plugins/real-estate::crm.modals.lead-form-modal', ['agents' => $agents])
 @include('plugins/real-estate::crm.modals.lead-detail-modal')
 @include('plugins/real-estate::crm.modals.activity-form-modal')
+@include('plugins/real-estate::crm.modals.task-form-modal')
+@include('plugins/real-estate::crm.modals.reminder-form-modal')
 @endsection

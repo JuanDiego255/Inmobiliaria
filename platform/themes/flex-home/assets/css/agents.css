@@ -474,9 +474,8 @@
 }
 .ag-id-row .ag-v a {
     color: var(--ag-accent); text-decoration: none;
-    transition: text-decoration .2s;
 }
-.ag-id-row .ag-v a:hover { text-decoration: underline; }
+.ag-id-row .ag-v a:hover { text-decoration: none; }
 
 /* ID actions */
 .ag-id-actions {

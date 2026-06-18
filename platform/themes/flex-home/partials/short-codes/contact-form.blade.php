@@ -6,9 +6,16 @@
     $aboutUs   = theme_option('about-us');
 
     $socialLinks = json_decode(theme_option('social_links'), true) ?: [];
+
+    // Ensure contact CSS is loaded even if config.php wasn't updated on the server
+    Theme::asset()->usePath()->add('contact-css', 'css/contact.css');
+    Theme::asset()->container('footer')->usePath()->add('contact-js', 'js/contact.js');
 @endphp
 
-{{-- Override page template wrappers inline so styles work regardless of page.blade.php version --}}
+{{-- Force-load contact CSS via link tag (fallback if asset system already flushed head) --}}
+<link rel="stylesheet" href="{{ Theme::asset()->url('css/contact.css') }}">
+
+{{-- Override page template wrappers --}}
 <style>
     .bgheadproject { display: none !important; }
     .padtop50, .container.padtop50 {

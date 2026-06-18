@@ -346,4 +346,36 @@ return [
         'flag' => 'board.destroy',
         'parent_flag' => 'board.index',
     ],
+
+    [
+        'name' => 'CRM Leads',
+        'flag' => 'crm-lead.index',
+        'parent_flag' => 'plugins.real-estate',
+    ],
+    [
+        'name' => 'Create',
+        'flag' => 'crm-lead.create',
+        'parent_flag' => 'crm-lead.index',
+    ],
+    [
+        'name' => 'Edit',
+        'flag' => 'crm-lead.edit',
+        'parent_flag' => 'crm-lead.index',
+    ],
+    [
+        'name' => 'Delete',
+        'flag' => 'crm-lead.destroy',
+        'parent_flag' => 'crm-lead.index',
+    ],
+
+    [
+        'name' => 'CRM Activities',
+        'flag' => 'crm-activity.index',
+        'parent_flag' => 'plugins.real-estate',
+    ],
+    [
+        'name' => 'Create',
+        'flag' => 'crm-activity.create',
+        'parent_flag' => 'crm-activity.index',
+    ],
 ];

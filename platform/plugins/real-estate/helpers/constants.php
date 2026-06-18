@@ -83,3 +83,11 @@ if (! defined('CLIENT_MODULE_SCREEN_NAME')) {
 if (! defined('BOARD_MODULE_SCREEN_NAME')) {
     define('BOARD_MODULE_SCREEN_NAME', 'board');
 }
+
+if (! defined('CRM_LEAD_MODULE_SCREEN_NAME')) {
+    define('CRM_LEAD_MODULE_SCREEN_NAME', 'crm-lead');
+}
+
+if (! defined('CRM_ACTIVITY_MODULE_SCREEN_NAME')) {
+    define('CRM_ACTIVITY_MODULE_SCREEN_NAME', 'crm-activity');
+}

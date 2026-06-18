@@ -342,6 +342,38 @@ class RealEstateServiceProvider extends ServiceProvider
                     'name' => 'plugins/real-estate::board.name',
                     'url' => route('board.index'),
                     'permissions' => ['board.index'],
+                ])
+                ->registerItem([
+                    'id' => 'cms-plugins-crm',
+                    'priority' => 4,
+                    'parent_id' => null,
+                    'name' => 'CRM',
+                    'icon' => 'fas fa-handshake',
+                    'permissions' => ['crm-lead.index'],
+                ])
+                ->registerItem([
+                    'id' => 'cms-plugins-crm-dashboard',
+                    'priority' => 0,
+                    'parent_id' => 'cms-plugins-crm',
+                    'name' => 'Dashboard',
+                    'url' => route('crm.dashboard'),
+                    'permissions' => ['crm-lead.index'],
+                ])
+                ->registerItem([
+                    'id' => 'cms-plugins-crm-leads',
+                    'priority' => 1,
+                    'parent_id' => 'cms-plugins-crm',
+                    'name' => 'Leads',
+                    'url' => route('crm.leads.index'),
+                    'permissions' => ['crm-lead.index'],
+                ])
+                ->registerItem([
+                    'id' => 'cms-plugins-crm-pipeline',
+                    'priority' => 2,
+                    'parent_id' => 'cms-plugins-crm',
+                    'name' => 'Pipeline',
+                    'url' => route('crm.pipeline'),
+                    'permissions' => ['crm-lead.index'],
                 ]);
 
             if (RealEstateHelper::isEnabledCustomFields()) {

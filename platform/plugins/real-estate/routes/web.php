@@ -242,6 +242,102 @@ Route::group(['namespace' => 'Botble\RealEstate\Http\Controllers', 'middleware' 
                 ->parameters(['' => 'client']);
         });
 
+        Route::group(['prefix' => 'crm', 'as' => 'crm.'], function () {
+            Route::get('dashboard', [
+                'as' => 'dashboard',
+                'uses' => 'CrmDashboardController@index',
+                'permission' => 'crm-lead.index',
+            ]);
+
+            Route::get('pipeline', [
+                'as' => 'pipeline',
+                'uses' => 'CrmLeadController@pipeline',
+                'permission' => 'crm-lead.index',
+            ]);
+
+            Route::get('pipeline-data', [
+                'as' => 'pipeline-data',
+                'uses' => 'CrmLeadController@getPipelineData',
+                'permission' => 'crm-lead.index',
+            ]);
+
+            Route::group(['prefix' => 'leads', 'as' => 'leads.'], function () {
+                Route::get('/', [
+                    'as' => 'index',
+                    'uses' => 'CrmLeadController@index',
+                    'permission' => 'crm-lead.index',
+                ]);
+
+                Route::post('/', [
+                    'as' => 'store',
+                    'uses' => 'CrmLeadController@store',
+                    'permission' => 'crm-lead.create',
+                ]);
+
+                Route::put('{id}', [
+                    'as' => 'update',
+                    'uses' => 'CrmLeadController@update',
+                    'permission' => 'crm-lead.edit',
+                ])->wherePrimaryKey();
+
+                Route::delete('{id}', [
+                    'as' => 'destroy',
+                    'uses' => 'CrmLeadController@destroy',
+                    'permission' => 'crm-lead.destroy',
+                ])->wherePrimaryKey();
+
+                Route::get('{id}/detail', [
+                    'as' => 'detail',
+                    'uses' => 'CrmLeadController@detail',
+                    'permission' => 'crm-lead.index',
+                ])->wherePrimaryKey();
+
+                Route::patch('{id}/stage', [
+                    'as' => 'update-stage',
+                    'uses' => 'CrmLeadController@updateStage',
+                    'permission' => 'crm-lead.edit',
+                ])->wherePrimaryKey();
+
+                Route::post('{id}/properties', [
+                    'as' => 'add-property',
+                    'uses' => 'CrmLeadController@addProperty',
+                    'permission' => 'crm-lead.edit',
+                ])->wherePrimaryKey();
+
+                Route::delete('{id}/properties/{propertyId}', [
+                    'as' => 'remove-property',
+                    'uses' => 'CrmLeadController@removeProperty',
+                    'permission' => 'crm-lead.edit',
+                ])->where('propertyId', '[0-9]+');
+            });
+
+            Route::post('import-consults', [
+                'as' => 'import-consults',
+                'uses' => 'CrmLeadController@importConsults',
+                'permission' => 'crm-lead.create',
+            ]);
+
+            Route::group(['prefix' => 'activities', 'as' => 'activities.'], function () {
+                Route::post('/', [
+                    'as' => 'store',
+                    'uses' => 'CrmActivityController@store',
+                    'permission' => 'crm-activity.create',
+                ]);
+
+                Route::get('lead/{id}', [
+                    'as' => 'list-for-lead',
+                    'uses' => 'CrmActivityController@listForLead',
+                    'permission' => 'crm-activity.index',
+                ])->wherePrimaryKey();
+
+                Route::patch('{id}/complete', [
+                    'as' => 'complete',
+                    'uses' => 'CrmActivityController@markComplete',
+                    'permission' => 'crm-activity.create',
+                ])->wherePrimaryKey();
+            });
+        });
+
         Route::group(['prefix' => 'boards', 'as' => 'board.'], function () {
             Route::resource('', 'BoardController')
                 ->parameters(['' => 'board']);

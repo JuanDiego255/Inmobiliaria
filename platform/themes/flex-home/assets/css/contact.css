@@ -340,69 +340,29 @@
 }
 
 /* ══════════════════════════════════════════════════════
-   MAP SECTION
+   GOOGLE MAP SHORTCODE STYLING
+   Styles the [google-map] shortcode rendered by the CMS
    ══════════════════════════════════════════════════════ */
-.ct-map-sec {
-    padding: 0 0 clamp(56px, 9vh, 96px);
-    background: var(--ct-page);
+.ct-sec ~ .gmap_canvas,
+.scontent .gmap_canvas {
+    max-width: 1280px;
+    margin: 0 auto clamp(56px, 9vh, 96px);
+    padding: 0 clamp(20px, 5vw, 64px);
+    border-radius: 20px;
+    overflow: hidden;
 }
 
-.ct-map-sec__title {
-    font-family: 'Playfair Display', Georgia, serif;
-    font-weight: 500;
-    font-size: clamp(26px, 3.2vw, 42px);
-    line-height: 1.1;
-    margin: 14px 0 clamp(22px, 3vh, 36px);
-    color: var(--ct-ink-900);
-}
-
-.ct-map {
-    position: relative;
+.ct-sec ~ .gmap_canvas > div,
+.scontent .gmap_canvas > div {
     border-radius: 20px;
     overflow: hidden;
     border: 1px solid var(--ct-line);
     box-shadow: 0 1px 3px rgba(0,0,0,.05), 0 16px 40px rgba(0,0,0,.06);
 }
 
-.ct-map__tooltip {
-    position: absolute; top: 18px; left: 18px; z-index: 10;
-    display: flex; align-items: flex-start; gap: 10px;
-    background: var(--ct-page);
-    border-radius: 14px;
-    padding: 16px 20px;
-    box-shadow: 0 4px 18px rgba(0,0,0,.12);
-    max-width: 280px;
-}
-
-.ct-map__pin {
-    color: var(--ct-accent);
-    font-size: 22px;
-    margin-top: 2px;
-}
-
-.ct-map__tooltip strong {
+.ct-sec ~ .gmap_canvas iframe,
+.scontent .gmap_canvas iframe {
     display: block;
-    font-size: 15px; font-weight: 600;
-    color: var(--ct-ink-900);
-}
-.ct-map__tooltip p {
-    font-size: 13px; font-weight: 300;
-    color: var(--ct-ink-400);
-    margin: 3px 0 8px;
-    line-height: 1.4;
-}
-.ct-map__tooltip a {
-    font-size: 13px; font-weight: 600;
-    color: var(--ct-accent);
-    text-decoration: none;
-    display: inline-flex; align-items: center; gap: 4px;
-    transition: color .2s;
-}
-.ct-map__tooltip a:hover { color: var(--ct-accent-ink); text-decoration: none; }
-
-.ct-map__iframe {
-    display: block;
-    width: 100%;
     min-height: 420px;
     border: 0;
 }
@@ -422,11 +382,41 @@
 
 /* ══════════════════════════════════════════════════════
    PAGE TEMPLATE OVERRIDES
-   Hide the old theme wrapper when our banner is present
+   Hide the old theme banner when our contact banner is present.
+   The page.blade.php wraps content in .bgheadproject + .padtop50;
+   we need to override that structure.
    ══════════════════════════════════════════════════════ */
-body:has(.ct-banner) .bgheadproject { display: none; }
-body:has(.ct-banner) .padtop50 { padding-top: 0 !important; }
-body:has(.ct-banner) .padtop50 > .row > .col-sm-12 > .scontent { max-width: none; }
+
+/* Hide old page banner */
+body:has(.ct-banner) .bgheadproject { display: none !important; }
+
+/* Remove padding/margin from the page wrapper */
+body:has(.ct-banner) .padtop50 { padding-top: 0 !important; margin-top: 0 !important; }
+body:has(.ct-banner) .container.padtop50,
+body:has(.ct-banner) .container-fluid.padtop50 {
+    max-width: none !important;
+    width: 100% !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+}
+
+/* Remove Bootstrap row/col constraints so content goes full-width */
+body:has(.ct-banner) .padtop50 > .row {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+body:has(.ct-banner) .padtop50 > .row > .col-sm-12 {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    max-width: none !important;
+    flex: 0 0 100% !important;
+}
+body:has(.ct-banner) .padtop50 > .row > .col-sm-12 > .scontent {
+    max-width: none !important;
+}
+
+/* Remove trailing br/spacing after the page content */
+body:has(.ct-banner) .padtop50 + br { display: none; }
 
 /* ══════════════════════════════════════════════════════
    RESPONSIVE

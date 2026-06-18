@@ -6,9 +6,6 @@
     $aboutUs   = theme_option('about-us');
 
     $socialLinks = json_decode(theme_option('social_links'), true) ?: [];
-
-    $mapLocation = $address ?: 'Costa Rica';
-    $mapQuery    = urlencode($mapLocation);
 @endphp
 
 {{-- ── DARK HERO BANNER ─────────────────────────────── --}}
@@ -160,34 +157,6 @@
                 </form>
             </div>
 
-        </div>
-    </div>
-</section>
-
-{{-- ── MAP SECTION ──────────────────────────────────── --}}
-<section class="ct-map-sec">
-    <div class="ct-wrap">
-        <span class="ct-eyebrow ct-reveal-up">{{ __('Ubicación') }}</span>
-        <h2 class="ct-map-sec__title ct-reveal-up">{{ __('Cómo llegar') }}</h2>
-        <div class="ct-map ct-reveal-up">
-            <div class="ct-map__tooltip">
-                <span class="material-icons ct-map__pin">place</span>
-                <div>
-                    <strong>{{ $company ?: __('Elite Properties') }}</strong>
-                    <p>{{ $address ?: __('Costa Rica') }}</p>
-                    <a href="https://www.google.com/maps/search/?api=1&query={{ $mapQuery }}" target="_blank" rel="noopener">
-                        {{ __('Ver en Google Maps') }}&nbsp;<span class="material-icons" style="font-size:14px;vertical-align:middle;">open_in_new</span>
-                    </a>
-                </div>
-            </div>
-            <iframe
-                class="ct-map__iframe"
-                src="https://maps.google.com/maps?q={{ $mapQuery }}&t=&z=13&ie=UTF8&iwloc=&output=embed"
-                width="100%" height="420"
-                frameborder="0" scrolling="no"
-                loading="lazy"
-                allowfullscreen
-            ></iframe>
         </div>
     </div>
 </section>

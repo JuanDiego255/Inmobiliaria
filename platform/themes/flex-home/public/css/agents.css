@@ -202,10 +202,17 @@
     box-shadow: 0 1px 3px rgba(0,0,0,.05), 0 14px 36px rgba(0,0,0,.06);
     transition: transform .4s var(--ag-ease), box-shadow .4s ease, border-color .4s ease;
 }
-.ag-agent-card:hover {
+.ag-agent-card:hover,
+.ag-agent-card:focus {
     transform: translateY(-6px);
     box-shadow: 0 1px 3px rgba(0,0,0,.06), 0 26px 56px rgba(0,0,0,.16);
     border-color: color-mix(in srgb, var(--c, var(--ag-accent)) 40%, var(--ag-line));
+    text-decoration: none; color: inherit;
+}
+.ag-agent-card *,
+.ag-agent-card:hover *,
+.ag-agent-card:focus * {
+    text-decoration: none;
 }
 
 /* ── Card cover (gradient header) ───────────────────── */

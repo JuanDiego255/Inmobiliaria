@@ -1,14 +1,8 @@
 @php
   Theme::set('page', $page);
-  $isContactPage = $page->template === 'default'
-      && is_plugin_active('contact')
-      && str_contains($page->content ?? '', '[contact-form]');
 @endphp
 
-@if ($isContactPage)
-    {{-- Contact page: render shortcodes full-width, no old banner --}}
-    {!! apply_filters(PAGE_FILTER_FRONT_PAGE_CONTENT, Html::tag('div', BaseHelper::clean($page->content), ['class' => 'ck-content'])->toHtml(), $page) !!}
-@elseif (in_array($page->template, ['default', 'full-width']))
+@if (in_array($page->template, ['default', 'full-width']))
     <div class="bgheadproject hidden-xs" style="background: url('{{ theme_option('breadcrumb_background') ? RvMedia::url(theme_option('breadcrumb_background')) : Theme::asset()->url('images/banner-du-an.jpg') }}')">
         <div class="description">
             <div class="container-fluid w90">

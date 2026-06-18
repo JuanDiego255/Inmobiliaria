@@ -8,6 +8,19 @@
     $socialLinks = json_decode(theme_option('social_links'), true) ?: [];
 @endphp
 
+{{-- Override page template wrappers inline so styles work regardless of page.blade.php version --}}
+<style>
+    .bgheadproject { display: none !important; }
+    .padtop50, .container.padtop50 {
+        max-width: none !important; width: 100% !important;
+        padding: 0 !important; margin: 0 !important;
+    }
+    .padtop50 > .row { margin: 0 !important; }
+    .padtop50 > .row > .col-sm-12 { padding: 0 !important; max-width: none !important; flex: 0 0 100% !important; }
+    .padtop50 > .row > .col-sm-12 > .scontent { max-width: none !important; }
+    .padtop50 + br { display: none !important; }
+</style>
+
 {{-- ── DARK HERO BANNER ─────────────────────────────── --}}
 <div class="ct-banner">
     <div class="ct-banner__bg" style="background-image: url('{{ theme_option('breadcrumb_background') ? RvMedia::url(theme_option('breadcrumb_background')) : Theme::asset()->url('images/banner-du-an.jpg') }}');"></div>

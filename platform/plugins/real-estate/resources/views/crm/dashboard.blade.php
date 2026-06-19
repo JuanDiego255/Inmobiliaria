@@ -25,7 +25,6 @@
                 </div>
                 <div class="crm-card-body">
                     @foreach ($pipelineSummary as $stage => $count)
-                        @php $enum = \Botble\RealEstate\Enums\CrmLeadStageEnum::from($stage); @endphp
                         <div class="crm-pipeline-bar-row">
                             <span class="crm-pipeline-bar-label">{{ \Botble\RealEstate\Enums\CrmLeadStageEnum::labels()[$stage] }}</span>
                             <div class="crm-pipeline-bar-track">

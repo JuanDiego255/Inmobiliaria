@@ -203,7 +203,7 @@ class PropertyController extends BaseController
             try {
                 $typeLabel = $property->type->label();
             } catch (\Throwable $e) {
-                $typeLabel = (string) $property->type->value;
+                $typeLabel = (string) $property->type->getValue();
             }
 
             return [
@@ -212,10 +212,10 @@ class PropertyController extends BaseController
                 'image' => $image,
                 'price' => $price,
                 'type' => $typeLabel,
-                'type_value' => $property->type->value ?? '',
-                'status' => $property->status->value ?? '',
+                'type_value' => $property->type->getValue() ?? '',
+                'status' => $property->status->getValue() ?? '',
                 'status_html' => $property->status->toHtml(),
-                'moderation_status' => $property->moderation_status->value ?? '',
+                'moderation_status' => $property->moderation_status->getValue() ?? '',
                 'moderation_html' => $property->moderation_status->toHtml(),
                 'unique_id' => $property->unique_id ?: '',
                 'location' => $property->location ?: '',

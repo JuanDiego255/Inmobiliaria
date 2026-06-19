@@ -6,7 +6,7 @@
         <div class="crm-timeline">
             @forelse ($recentActivities as $activity)
                 <div class="crm-timeline-item {{ $activity->completed_at ? 'completed' : '' }}">
-                    <div class="crm-timeline-icon crm-activity-{{ $activity->type->value }}">
+                    <div class="crm-timeline-icon crm-activity-{{ $activity->type->getValue() }}">
                         <i class="{{ $activity->type->icon() }}"></i>
                     </div>
                     <div class="crm-timeline-content">

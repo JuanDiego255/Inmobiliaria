@@ -10,8 +10,8 @@ use Botble\Table\Actions\DeleteAction;
 use Botble\Table\BulkActions\DeleteBulkAction;
 use Botble\Table\Columns\Column;
 use Botble\Table\Columns\CreatedAtColumn;
+use Botble\Table\Columns\EnumColumn;
 use Botble\Table\Columns\IdColumn;
-use Botble\Table\Columns\NameColumn;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Query\Builder as QueryBuilder;
@@ -51,19 +51,23 @@ class CrmLeadTable extends TableAbstract
     {
         return [
             IdColumn::make(),
-            NameColumn::make()
-                ->route('')
+            Column::make('name')
+                ->title('Nombre')
                 ->alignStart(),
             Column::make('phone')
                 ->title('Teléfono'),
-            Column::make('stage')
+            EnumColumn::make('stage')
                 ->title('Etapa'),
-            Column::make('source')
+            EnumColumn::make('source')
                 ->title('Fuente'),
             Column::make('assigned_agent_id')
                 ->title('Agente')
                 ->searchable(false)
-                ->orderable(false),
+                ->orderable(false)
+                ->getValueUsing(function (Column $column) {
+                    $item = $column->getItem();
+                    return $item->assignedAgent ? ($item->assignedAgent->first_name . ' ' . $item->assignedAgent->last_name) : '—';
+                }),
             CreatedAtColumn::make(),
         ];
     }

@@ -21,8 +21,8 @@
 
     <div class="crm-pipeline-board" id="crmPipelineBoard">
         @php
-            $stages = \Botble\RealEstate\Enums\CrmLeadStageEnum::values();
             $stageLabels = \Botble\RealEstate\Enums\CrmLeadStageEnum::labels();
+            $stages = array_keys($stageLabels);
             $stageColors = [
                 'nuevo' => '#17a2b8',
                 'contactado' => '#6f42c1',

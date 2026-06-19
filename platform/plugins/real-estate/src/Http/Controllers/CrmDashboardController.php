@@ -62,8 +62,8 @@ class CrmDashboardController extends BaseController
             ->get();
 
         $pipelineSummary = [];
-        foreach (CrmLeadStageEnum::values() as $stage) {
-            $pipelineSummary[$stage] = CrmLead::query()->where('stage', $stage)->count();
+        foreach (CrmLeadStageEnum::labels() as $value => $label) {
+            $pipelineSummary[$value] = CrmLead::query()->where('stage', $value)->count();
         }
 
         $agents = \Botble\RealEstate\Models\Account::query()

@@ -62,8 +62,8 @@ class CrmLeadController extends BaseController
             ->groupBy('stage');
 
         $pipeline = [];
-        foreach (CrmLeadStageEnum::values() as $stage) {
-            $pipeline[$stage] = $leads->get($stage, collect())->values();
+        foreach (CrmLeadStageEnum::labels() as $value => $label) {
+            $pipeline[$value] = $leads->get($value, collect())->values();
         }
 
         return $response->setData($pipeline);
@@ -115,7 +115,7 @@ class CrmLeadController extends BaseController
     public function updateStage(int|string $id, Request $request, BaseHttpResponse $response)
     {
         $request->validate([
-            'stage' => ['required', 'in:' . implode(',', CrmLeadStageEnum::values())],
+            'stage' => ['required', 'in:' . implode(',', array_keys(CrmLeadStageEnum::labels()))],
         ]);
 
         $lead = CrmLead::query()->findOrFail($id);

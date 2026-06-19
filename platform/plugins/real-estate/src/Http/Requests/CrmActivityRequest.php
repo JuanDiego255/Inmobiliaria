@@ -12,7 +12,7 @@ class CrmActivityRequest extends Request
     {
         return [
             'lead_id' => ['required', 'exists:re_crm_leads,id'],
-            'type' => ['required', Rule::in(CrmActivityTypeEnum::values())],
+            'type' => ['required', Rule::in(array_keys(CrmActivityTypeEnum::labels()))],
             'description' => ['required', 'string', 'max:5000'],
             'scheduled_at' => ['nullable', 'date'],
         ];

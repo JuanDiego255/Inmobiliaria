@@ -71,7 +71,7 @@ class CrmTaskController extends BaseController
     public function updateStatus(int|string $id, Request $request, BaseHttpResponse $response)
     {
         $request->validate([
-            'status' => ['required', 'in:' . implode(',', CrmTaskStatusEnum::values())],
+            'status' => ['required', 'in:' . implode(',', array_keys(CrmTaskStatusEnum::labels()))],
         ]);
 
         $task = CrmTask::query()->findOrFail($id);

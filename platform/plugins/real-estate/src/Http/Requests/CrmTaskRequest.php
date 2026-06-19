@@ -17,8 +17,8 @@ class CrmTaskRequest extends Request
             'assigned_to' => ['nullable', 'exists:users,id'],
             'lead_id' => ['nullable', 'exists:re_crm_leads,id'],
             'property_id' => ['nullable', 'exists:re_properties,id'],
-            'priority' => ['nullable', Rule::in(CrmTaskPriorityEnum::values())],
-            'status' => ['nullable', Rule::in(CrmTaskStatusEnum::values())],
+            'priority' => ['nullable', Rule::in(array_keys(CrmTaskPriorityEnum::labels()))],
+            'status' => ['nullable', Rule::in(array_keys(CrmTaskStatusEnum::labels()))],
             'due_date' => ['nullable', 'date'],
         ];
     }

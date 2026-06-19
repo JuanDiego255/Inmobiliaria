@@ -108,13 +108,13 @@ class CrmLeadTable extends TableAbstract
                 'title' => 'Etapa',
                 'type' => 'select',
                 'choices' => CrmLeadStageEnum::labels(),
-                'validate' => 'required|in:' . implode(',', CrmLeadStageEnum::values()),
+                'validate' => 'required|in:' . implode(',', array_keys(CrmLeadStageEnum::labels())),
             ],
             'source' => [
                 'title' => 'Fuente',
                 'type' => 'select',
                 'choices' => CrmLeadSourceEnum::labels(),
-                'validate' => 'required|in:' . implode(',', CrmLeadSourceEnum::values()),
+                'validate' => 'required|in:' . implode(',', array_keys(CrmLeadSourceEnum::labels())),
             ],
             'created_at' => [
                 'title' => 'Fecha de creación',

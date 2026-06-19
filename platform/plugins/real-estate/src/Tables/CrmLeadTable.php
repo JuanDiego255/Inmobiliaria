@@ -2,6 +2,7 @@
 
 namespace Botble\RealEstate\Tables;
 
+use Botble\Base\Facades\BaseHelper;
 use Botble\RealEstate\Enums\CrmLeadSourceEnum;
 use Botble\RealEstate\Enums\CrmLeadStageEnum;
 use Botble\RealEstate\Models\CrmLead;
@@ -10,11 +11,11 @@ use Botble\Table\Actions\DeleteAction;
 use Botble\Table\BulkActions\DeleteBulkAction;
 use Botble\Table\Columns\Column;
 use Botble\Table\Columns\CreatedAtColumn;
-use Botble\Table\Columns\EnumColumn;
 use Botble\Table\Columns\IdColumn;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Query\Builder as QueryBuilder;
+use Illuminate\Http\JsonResponse;
 
 class CrmLeadTable extends TableAbstract
 {
@@ -25,6 +26,30 @@ class CrmLeadTable extends TableAbstract
             ->addActions([
                 DeleteAction::make()->route('crm.leads.destroy'),
             ]);
+    }
+
+    public function ajax(): JsonResponse
+    {
+        $data = $this->table
+            ->eloquent($this->query())
+            ->editColumn('name', function (CrmLead $item) {
+                return BaseHelper::clean($item->name);
+            })
+            ->editColumn('stage', function (CrmLead $item) {
+                return $item->stage->toHtml();
+            })
+            ->editColumn('source', function (CrmLead $item) {
+                return $item->source->toHtml();
+            })
+            ->editColumn('assigned_agent_id', function (CrmLead $item) {
+                if (! $item->assigned_agent_id || ! $item->assignedAgent) {
+                    return '&mdash;';
+                }
+
+                return BaseHelper::clean($item->assignedAgent->first_name . ' ' . $item->assignedAgent->last_name);
+            });
+
+        return $this->toJson($data);
     }
 
     public function query(): Relation|Builder|QueryBuilder
@@ -56,18 +81,14 @@ class CrmLeadTable extends TableAbstract
                 ->alignStart(),
             Column::make('phone')
                 ->title('Teléfono'),
-            EnumColumn::make('stage')
+            Column::make('stage')
                 ->title('Etapa'),
-            EnumColumn::make('source')
+            Column::make('source')
                 ->title('Fuente'),
             Column::make('assigned_agent_id')
                 ->title('Agente')
                 ->searchable(false)
-                ->orderable(false)
-                ->getValueUsing(function (Column $column) {
-                    $item = $column->getItem();
-                    return $item->assignedAgent ? ($item->assignedAgent->first_name . ' ' . $item->assignedAgent->last_name) : '—';
-                }),
+                ->orderable(false),
             CreatedAtColumn::make(),
         ];
     }

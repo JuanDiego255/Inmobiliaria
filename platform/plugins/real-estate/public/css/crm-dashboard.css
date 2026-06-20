@@ -744,6 +744,202 @@
 /* ── Spin animation for loading states ─────────────── */
 @keyframes spin { to { transform: rotate(360deg); } }
 
+/* ── LEADS TABLE (editorial DataTables) ────────────── */
+.cd-leads-page .cd-leads-nav {
+    display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+}
+
+.cd-table-card {
+    margin-bottom: 40px;
+}
+
+.cd-table-card .table-wrapper { margin: 0; }
+
+.cd-table-card .portlet {
+    margin: 0; border: none; box-shadow: none; background: transparent;
+}
+.cd-table-card .portlet-title {
+    padding: 14px 20px 10px;
+    border-bottom: 1px solid var(--cd-line-soft);
+    background: var(--cd-soft-bg);
+}
+.cd-table-card .portlet-body { padding: 0; }
+
+.cd-table-card .wrapper-action {
+    display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+}
+
+.cd-table-card .wrapper-action .btn {
+    font-family: 'Poppins', system-ui, sans-serif;
+    font-size: 12.5px; font-weight: 500;
+    border-radius: 8px; padding: 7px 14px;
+    border: 1px solid var(--cd-line);
+    background: var(--cd-card-bg);
+    color: var(--cd-ink-900);
+    transition: all .18s ease;
+}
+.cd-table-card .wrapper-action .btn:hover {
+    border-color: var(--cd-accent); color: var(--cd-accent);
+}
+.cd-table-card .wrapper-action .btn-primary {
+    background: var(--cd-accent); border-color: var(--cd-accent);
+    color: #fff;
+}
+.cd-table-card .wrapper-action .btn-primary:hover {
+    background: var(--cd-accent-ink); border-color: var(--cd-accent-ink);
+}
+
+.cd-table-card .dropdown-menu {
+    font-family: 'Poppins', system-ui, sans-serif;
+    font-size: 13px; border-radius: 10px;
+    border: 1px solid var(--cd-line);
+    box-shadow: var(--cd-shadow-card);
+}
+
+.cd-table-card table.dataTable {
+    font-family: 'Poppins', system-ui, sans-serif;
+    font-size: 13px;
+    border-collapse: collapse;
+    width: 100% !important;
+}
+
+.cd-table-card table.dataTable thead th {
+    font-size: 11.5px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: .06em;
+    color: var(--cd-ink-400);
+    background: var(--cd-soft-bg);
+    border-bottom: 1px solid var(--cd-line);
+    padding: 11px 14px;
+    white-space: nowrap;
+}
+
+.cd-table-card table.dataTable tbody td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--cd-line-soft);
+    color: var(--cd-ink-900);
+    vertical-align: middle;
+}
+.cd-table-card table.dataTable tbody tr:last-child td {
+    border-bottom: none;
+}
+.cd-table-card table.dataTable tbody tr:hover td {
+    background: var(--cd-accent-tint);
+}
+
+.cd-table-card table.dataTable .status-label {
+    font-family: 'Poppins', system-ui, sans-serif;
+    font-size: 11px; font-weight: 600;
+    letter-spacing: .04em;
+    padding: 4px 10px; border-radius: 6px;
+    display: inline-block;
+}
+
+.cd-table-card .dataTables_wrapper .dataTables_filter {
+    padding: 14px 20px 0;
+}
+.cd-table-card .dataTables_wrapper .dataTables_filter input {
+    font-family: 'Poppins', system-ui, sans-serif;
+    font-size: 13px; padding: 8px 14px;
+    border: 1px solid var(--cd-line);
+    border-radius: 8px;
+    background: var(--cd-card-bg);
+    transition: border-color .2s ease;
+}
+.cd-table-card .dataTables_wrapper .dataTables_filter input:focus {
+    border-color: var(--cd-accent);
+    outline: none;
+    box-shadow: 0 0 0 3px var(--cd-accent-tint);
+}
+
+.cd-table-card .dataTables_wrapper .dataTables_length {
+    padding: 14px 20px 0;
+}
+.cd-table-card .dataTables_wrapper .dataTables_length select {
+    font-family: 'Poppins', system-ui, sans-serif;
+    font-size: 13px; padding: 6px 10px;
+    border: 1px solid var(--cd-line);
+    border-radius: 8px;
+    background: var(--cd-card-bg);
+}
+
+.cd-table-card .dataTables_wrapper .dataTables_info {
+    font-family: 'Poppins', system-ui, sans-serif;
+    font-size: 12px; color: var(--cd-ink-400);
+    padding: 12px 20px;
+}
+
+.cd-table-card .dataTables_wrapper .dataTables_paginate {
+    padding: 10px 20px 16px;
+}
+.cd-table-card .dataTables_wrapper .dataTables_paginate .paginate_button {
+    font-family: 'Poppins', system-ui, sans-serif;
+    font-size: 12.5px; font-weight: 500;
+    padding: 6px 12px; margin: 0 2px;
+    border-radius: 8px !important;
+    border: 1px solid var(--cd-line) !important;
+    background: var(--cd-card-bg) !important;
+    color: var(--cd-ink-600) !important;
+    transition: all .15s ease;
+}
+.cd-table-card .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+    border-color: var(--cd-accent) !important;
+    color: var(--cd-accent) !important;
+    background: var(--cd-accent-tint) !important;
+}
+.cd-table-card .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+    background: var(--cd-accent) !important;
+    border-color: var(--cd-accent) !important;
+    color: #fff !important;
+}
+.cd-table-card .dataTables_wrapper .dataTables_paginate .paginate_button.disabled {
+    opacity: .4; pointer-events: none;
+}
+
+.cd-table-card .dt-buttons {
+    padding: 14px 20px 0;
+}
+.cd-table-card .dt-buttons .action-item {
+    font-family: 'Poppins', system-ui, sans-serif;
+    font-size: 12.5px; font-weight: 500;
+    border-radius: 8px; padding: 7px 14px;
+    border: 1px solid var(--cd-line);
+    background: var(--cd-card-bg);
+    color: var(--cd-ink-900);
+    transition: all .18s ease;
+}
+.cd-table-card .dt-buttons .action-item:hover {
+    border-color: var(--cd-accent); color: var(--cd-accent);
+}
+.cd-table-card .dt-buttons .action-item.btn-primary {
+    background: var(--cd-accent); border-color: var(--cd-accent);
+    color: #fff;
+}
+.cd-table-card .dt-buttons .action-item.btn-primary:hover {
+    background: var(--cd-accent-ink); border-color: var(--cd-accent-ink);
+    color: #fff;
+}
+
+.cd-table-card .table-actions .btn {
+    font-size: 12px; padding: 4px 10px;
+    border-radius: 6px;
+}
+.cd-table-card .table-actions .btn-danger {
+    background: transparent; color: var(--cd-s-perdido);
+    border: 1px solid var(--cd-s-perdido);
+}
+.cd-table-card .table-actions .btn-danger:hover {
+    background: var(--cd-s-perdido); color: #fff;
+}
+
+.cd-table-card .table-configuration-wrap {
+    padding: 16px 20px;
+    background: var(--cd-soft-bg);
+    border-bottom: 1px solid var(--cd-line-soft);
+}
+.cd-table-card .table-configuration-wrap .configuration-close-btn {
+    border-radius: 8px;
+}
+
 /* ── RESPONSIVE ────────────────────────────────────── */
 @media (max-width: 1200px) {
     .cd-pipeline-board { grid-template-columns: repeat(3, 1fr); }

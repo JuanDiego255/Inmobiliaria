@@ -118,23 +118,7 @@ class CrmLeadTable extends TableAbstract
 
     public function buttons(): array
     {
-        return [
-            'create' => [
-                'link' => '#',
-                'text' => '<i class="fa fa-plus"></i> Nuevo Lead',
-                'class' => 'btn-primary btn-crm-new-lead',
-            ],
-            'pipeline' => [
-                'link' => route('crm.pipeline'),
-                'text' => '<i class="fas fa-columns"></i> Pipeline',
-                'class' => 'btn-outline-primary',
-            ],
-            'dashboard' => [
-                'link' => route('crm.dashboard'),
-                'text' => '<i class="fas fa-tachometer-alt"></i> Dashboard',
-                'class' => 'btn-outline-info',
-            ],
-        ];
+        return [];
     }
 
     public function bulkActions(): array

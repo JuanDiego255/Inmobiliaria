@@ -28,9 +28,17 @@ class CrmLeadController extends BaseController
         ]);
         Assets::addScriptsDirectly([
             'vendor/core/plugins/real-estate/js/crm-modals.js',
+            'vendor/core/plugins/real-estate/js/crm-tasks.js',
         ]);
 
-        return $table->renderTable();
+        $agents = Account::query()
+            ->select('id', 'first_name', 'last_name')
+            ->orderBy('first_name')
+            ->get();
+
+        $table->setView('plugins/real-estate::crm.leads');
+
+        return $table->renderTable(compact('agents'));
     }
 
     public function list(BaseHttpResponse $response)

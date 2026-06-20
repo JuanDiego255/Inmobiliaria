@@ -1,4 +1,4 @@
-<div class="modal fade" id="crmReminderFormModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade cd-modal" id="crmReminderFormModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -25,9 +25,9 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-warning" id="crmReminderFormSubmit">
-                        <i class="fas fa-bell me-1"></i>Crear Recordatorio
+                    <button type="button" class="cd-btn-ghost" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="cd-btn-primary" id="crmReminderFormSubmit">
+                        <span class="material-icons">notifications</span> Crear Recordatorio
                     </button>
                 </div>
             </form>

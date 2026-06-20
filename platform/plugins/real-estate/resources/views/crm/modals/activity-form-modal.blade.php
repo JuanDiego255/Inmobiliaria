@@ -1,4 +1,14 @@
-<div class="modal fade" id="crmActivityFormModal" tabindex="-1" aria-hidden="true">
+@php
+    $activityMaterialIcons = [
+        'note' => 'sticky_note_2',
+        'call' => 'call',
+        'email' => 'mail_outline',
+        'whatsapp' => 'chat',
+        'visit' => 'event_available',
+        'meeting' => 'groups',
+    ];
+@endphp
+<div class="modal fade cd-modal" id="crmActivityFormModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -17,13 +27,12 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Tipo <span class="text-danger">*</span></label>
-                        <div class="crm-activity-type-grid">
+                        <div class="cd-type-grid">
                             @foreach (\Botble\RealEstate\Enums\CrmActivityTypeEnum::labels() as $val => $label)
-                                @php $icon = \Botble\RealEstate\Enums\CrmActivityTypeEnum::icons()[$val] ?? 'fas fa-circle'; @endphp
-                                <label class="crm-activity-type-option">
+                                <label class="cd-type-option">
                                     <input type="radio" name="type" value="{{ $val }}" {{ $loop->first ? 'checked' : '' }}>
-                                    <span class="crm-activity-type-btn">
-                                        <i class="{{ $icon }}"></i>
+                                    <span class="cd-type-btn">
+                                        <span class="material-icons">{{ $activityMaterialIcons[$val] ?? 'notes' }}</span>
                                         <span>{{ $label }}</span>
                                     </span>
                                 </label>
@@ -40,9 +49,9 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary" id="crmActivityFormSubmit">
-                        <i class="fas fa-save me-1"></i>Guardar
+                    <button type="button" class="cd-btn-ghost" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="cd-btn-primary" id="crmActivityFormSubmit">
+                        <span class="material-icons">save</span> Guardar
                     </button>
                 </div>
             </form>

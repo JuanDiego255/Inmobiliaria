@@ -130,13 +130,13 @@
 
         var submitBtn = document.getElementById('crmTaskFormSubmit');
         submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Guardando...';
+        submitBtn.innerHTML = '<span class="material-icons" style="font-size:16px;animation:spin 1s linear infinite">refresh</span> Guardando...';
 
         if (typeof window.CRM_ajaxRequest !== 'function') return;
 
         window.CRM_ajaxRequest(method, url, data, function (err, resp) {
             submitBtn.disabled = false;
-            submitBtn.innerHTML = '<i class="fas fa-save me-1"></i>Guardar';
+            submitBtn.innerHTML = '<span class="material-icons" style="font-size:16px">save</span> Guardar';
 
             if (err) {
                 window.CRM_showToast(err, 'error');
@@ -164,20 +164,19 @@
         if (typeof window.CRM_ajaxRequest !== 'function') return;
 
         btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        btn.innerHTML = '<span class="material-icons" style="font-size:14px;animation:spin 1s linear infinite">refresh</span>';
 
         window.CRM_ajaxRequest('PATCH', getRoute('tasksUpdateStatus', { id: taskId }), { status: 'completed' }, function (err) {
             if (err) {
                 btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-check"></i>';
+                btn.innerHTML = '<span class="material-icons" style="font-size:14px">check</span>';
                 window.CRM_showToast(err, 'error');
                 return;
             }
 
-            var item = btn.closest('.crm-task-item');
+            var item = btn.closest('.cd-task') || btn.closest('.crm-task-item');
             if (item) {
-                item.style.opacity = '0.4';
-                item.style.textDecoration = 'line-through';
+                item.classList.add('cd-done');
                 setTimeout(function () { item.remove(); updateTaskCount(); }, 500);
             }
             window.CRM_showToast('Tarea completada', 'success');
@@ -188,7 +187,7 @@
         var countBadge = document.getElementById('myTasksCount');
         var list = document.getElementById('myTasksList');
         if (countBadge && list) {
-            var items = list.querySelectorAll('.crm-task-item');
+            var items = list.querySelectorAll('.cd-task');
             countBadge.textContent = items.length;
         }
     }
@@ -231,13 +230,13 @@
 
         var submitBtn = document.getElementById('crmReminderFormSubmit');
         submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Creando...';
+        submitBtn.innerHTML = '<span class="material-icons" style="font-size:16px;animation:spin 1s linear infinite">refresh</span> Creando...';
 
         if (typeof window.CRM_ajaxRequest !== 'function') return;
 
         window.CRM_ajaxRequest('POST', getRoute('remindersStore'), data, function (err, resp) {
             submitBtn.disabled = false;
-            submitBtn.innerHTML = '<i class="fas fa-bell me-1"></i>Crear Recordatorio';
+            submitBtn.innerHTML = '<span class="material-icons" style="font-size:16px">notifications</span> Crear Recordatorio';
 
             if (err) {
                 window.CRM_showToast(err, 'error');

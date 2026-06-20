@@ -1,4 +1,4 @@
-<div class="modal fade" id="crmTaskFormModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade cd-modal" id="crmTaskFormModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
@@ -62,14 +62,14 @@
                     <div class="form-check">
                         <input class="form-check-input" type="checkbox" id="taskCreateReminder" name="create_reminder">
                         <label class="form-check-label" for="taskCreateReminder">
-                            <i class="fas fa-bell me-1 text-warning"></i>Crear recordatorio automático al vencer
+                            <span class="material-icons" style="font-size:16px;color:var(--cd-s-calificado)">notifications</span> Crear recordatorio automático al vencer
                         </label>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary" id="crmTaskFormSubmit">
-                        <i class="fas fa-save me-1"></i>Guardar
+                    <button type="button" class="cd-btn-ghost" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="cd-btn-primary" id="crmTaskFormSubmit">
+                        <span class="material-icons">save</span> Guardar
                     </button>
                 </div>
             </form>

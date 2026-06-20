@@ -28,18 +28,17 @@
     function renderPipeline(data) {
         var stages = Object.keys(data);
         stages.forEach(function (stage) {
-            var col = document.querySelector('.crm-drop-zone[data-stage="' + stage + '"]');
+            var col = document.querySelector('.cd-drop-zone[data-stage="' + stage + '"]');
             if (!col) return;
 
             col.innerHTML = '';
             var leads = data[stage] || [];
 
-            // Update count
             var countBadge = document.querySelector('[data-stage-count="' + stage + '"]');
             if (countBadge) countBadge.textContent = leads.length;
 
             if (leads.length === 0) {
-                col.innerHTML = '<div class="crm-pipeline-empty" style="display:block"><i class="fas fa-inbox d-block mb-2" style="font-size:1.5rem;opacity:.3"></i>Sin leads</div>';
+                col.innerHTML = '<div class="cd-pipeline-empty" style="display:block"><span class="material-icons">inbox</span>Sin leads</div>';
                 return;
             }
 
@@ -52,7 +51,7 @@
 
     function createLeadCard(lead) {
         var card = document.createElement('div');
-        card.className = 'crm-lead-card';
+        card.className = 'cd-lead-card';
         card.draggable = true;
         card.dataset.leadId = lead.id;
 
@@ -64,23 +63,22 @@
         var date = lead.created_at ? lead.created_at.substring(0, 10) : '';
         var source = sourceLabels[lead.source] || lead.source || '';
 
-        card.innerHTML = '<div class="crm-lead-card-header">'
-            + '<span class="crm-lead-card-name">' + escapeHtml(lead.name) + '</span>'
-            + '<span class="crm-lead-card-grab"><i class="fas fa-grip-vertical"></i></span>'
+        card.innerHTML = '<div class="cd-lead-card-header">'
+            + '<span class="cd-lead-card-name">' + escapeHtml(lead.name) + '</span>'
+            + '<span class="cd-lead-card-grab"><span class="material-icons">drag_indicator</span></span>'
             + '</div>'
-            + '<div class="crm-lead-card-body">'
-            + '<div class="crm-lead-card-info" title="Teléfono"><i class="fas fa-phone fa-sm"></i> <span>' + escapeHtml(phone) + '</span></div>'
-            + '<div class="crm-lead-card-info" title="Agente"><i class="fas fa-user fa-sm"></i> <span>' + escapeHtml(agentName) + '</span></div>'
-            + (budget !== '—' ? '<div class="crm-lead-card-info crm-lead-card-budget" title="Presupuesto"><i class="fas fa-dollar-sign fa-sm"></i> <span>' + budget + '</span></div>' : '')
+            + '<div class="cd-lead-card-body">'
+            + '<div class="cd-lead-card-info" title="Teléfono"><span class="material-icons">call</span> <span>' + escapeHtml(phone) + '</span></div>'
+            + '<div class="cd-lead-card-info" title="Agente"><span class="material-icons">person</span> <span>' + escapeHtml(agentName) + '</span></div>'
+            + (budget !== '—' ? '<div class="cd-lead-card-info cd-lead-card-budget" title="Presupuesto"><span class="material-icons">payments</span> <span>' + budget + '</span></div>' : '')
             + '</div>'
-            + '<div class="crm-lead-card-footer">'
-            + '<span class="crm-lead-card-date"><i class="far fa-calendar fa-sm"></i> ' + date + '</span>'
-            + '<span class="crm-lead-card-source">' + source + '</span>'
+            + '<div class="cd-lead-card-footer">'
+            + '<span class="cd-lead-card-date"><span class="material-icons">calendar_today</span> ' + date + '</span>'
+            + '<span class="cd-lead-card-source">' + source + '</span>'
             + '</div>';
 
-        // Click to open detail
         card.addEventListener('click', function (e) {
-            if (e.target.closest('.crm-lead-card-grab')) return;
+            if (e.target.closest('.cd-lead-card-grab')) return;
             if (typeof window.CRM_openLeadDetail === 'function') {
                 window.CRM_openLeadDetail(lead.id);
             }
@@ -96,7 +94,7 @@
         var draggedCard = null;
 
         board.addEventListener('dragstart', function (e) {
-            var card = e.target.closest('.crm-lead-card');
+            var card = e.target.closest('.cd-lead-card');
             if (!card) return;
             draggedCard = card;
             card.classList.add('dragging');
@@ -105,15 +103,15 @@
         });
 
         board.addEventListener('dragend', function (e) {
-            var card = e.target.closest('.crm-lead-card');
+            var card = e.target.closest('.cd-lead-card');
             if (card) card.classList.remove('dragging');
-            document.querySelectorAll('.crm-drop-zone').forEach(function (z) {
+            document.querySelectorAll('.cd-drop-zone').forEach(function (z) {
                 z.classList.remove('drag-over');
             });
             draggedCard = null;
         });
 
-        document.querySelectorAll('.crm-drop-zone').forEach(function (zone) {
+        document.querySelectorAll('.cd-drop-zone').forEach(function (zone) {
             zone.addEventListener('dragover', function (e) {
                 e.preventDefault();
                 e.dataTransfer.dropEffect = 'move';
@@ -134,18 +132,15 @@
                 var newStage = zone.dataset.stage;
                 if (!leadId || !newStage) return;
 
-                // Move card visually
                 if (draggedCard) {
-                    var empty = zone.querySelector('.crm-pipeline-empty');
+                    var empty = zone.querySelector('.cd-pipeline-empty');
                     if (empty) empty.remove();
                     zone.appendChild(draggedCard);
                     draggedCard.classList.remove('dragging');
                 }
 
-                // Update counts
                 updateColumnCounts();
 
-                // AJAX update
                 var url = updateStageUrl.replace('{id}', leadId);
                 if (typeof window.CRM_ajaxRequest === 'function') {
                     window.CRM_ajaxRequest('PATCH', url, { stage: newStage }, function (err) {
@@ -158,11 +153,10 @@
             });
         });
 
-        // Touch support for mobile
         var touchCard = null, touchStartX, touchStartY;
 
         board.addEventListener('touchstart', function (e) {
-            var card = e.target.closest('.crm-lead-card');
+            var card = e.target.closest('.cd-lead-card');
             if (!card) return;
             touchCard = card;
             var touch = e.touches[0];
@@ -176,14 +170,14 @@
             var dx = touch.clientX - touchStartX;
             if (Math.abs(dx) < 50) { touchCard = null; return; }
 
-            var currentZone = touchCard.closest('.crm-drop-zone');
-            var zones = Array.from(document.querySelectorAll('.crm-drop-zone'));
+            var currentZone = touchCard.closest('.cd-drop-zone');
+            var zones = Array.from(document.querySelectorAll('.cd-drop-zone'));
             var idx = zones.indexOf(currentZone);
             var targetIdx = dx > 0 ? idx + 1 : idx - 1;
 
             if (targetIdx >= 0 && targetIdx < zones.length) {
                 var targetZone = zones[targetIdx];
-                var empty = targetZone.querySelector('.crm-pipeline-empty');
+                var empty = targetZone.querySelector('.cd-pipeline-empty');
                 if (empty) empty.remove();
                 targetZone.appendChild(touchCard);
                 updateColumnCounts();
@@ -202,9 +196,9 @@
     }
 
     function updateColumnCounts() {
-        document.querySelectorAll('.crm-drop-zone').forEach(function (zone) {
+        document.querySelectorAll('.cd-drop-zone').forEach(function (zone) {
             var stage = zone.dataset.stage;
-            var cards = zone.querySelectorAll('.crm-lead-card').length;
+            var cards = zone.querySelectorAll('.cd-lead-card').length;
             var badge = document.querySelector('[data-stage-count="' + stage + '"]');
             if (badge) badge.textContent = cards;
         });
@@ -225,7 +219,6 @@
         return div.innerHTML;
     }
 
-    // Callback: reload pipeline after lead is saved
     window.CRM_onLeadSaved = function () {
         loadPipelineData();
     };

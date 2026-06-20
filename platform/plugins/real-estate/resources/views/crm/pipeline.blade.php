@@ -1,48 +1,62 @@
 @extends(BaseHelper::getAdminMasterLayoutTemplate())
 
 @section('content')
-<div class="crm-pipeline-wrapper">
-    <div class="crm-pipeline-header">
-        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-            <div class="d-flex align-items-center gap-3">
-                <h4 class="mb-0">Pipeline de Ventas</h4>
-                <a href="{{ route('crm.dashboard') }}" class="btn btn-sm btn-outline-secondary">
-                    <i class="fas fa-tachometer-alt me-1"></i>Dashboard
-                </a>
-                <a href="{{ route('crm.leads.index') }}" class="btn btn-sm btn-outline-secondary">
-                    <i class="fas fa-list me-1"></i>Tabla
-                </a>
+<div class="cd-wrap">
+
+    {{-- ═══════════ PAGE HEADER ═══════════ --}}
+    <header class="cd-head">
+        <nav class="cd-crumb">
+            <a href="{{ route('dashboard.index') }}">Inicio</a>
+            <span class="material-icons">chevron_right</span>
+            <a href="{{ route('crm.dashboard') }}">CRM</a>
+            <span class="material-icons">chevron_right</span>
+            <span class="cd-cur">Pipeline</span>
+        </nav>
+        <div class="cd-head-row">
+            <div>
+                <span class="cd-eyebrow">CRM · Embudo de ventas</span>
+                <h1>Pipeline de Ventas</h1>
+                <p class="cd-head-sub">Arrastrá los leads entre etapas para actualizar su estado.</p>
             </div>
-            <button type="button" class="btn btn-primary btn-sm btn-crm-new-lead">
-                <i class="fas fa-user-plus me-1"></i>Nuevo Lead
-            </button>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+                <a class="cd-qbtn" href="{{ route('crm.dashboard') }}" style="width:auto;padding:9px 16px">
+                    <span class="cd-qi"><span class="material-icons">dashboard</span></span> Dashboard
+                </a>
+                <a class="cd-qbtn" href="{{ route('crm.leads.index') }}" style="width:auto;padding:9px 16px">
+                    <span class="cd-qi"><span class="material-icons">list_alt</span></span> Tabla
+                </a>
+                <button type="button" class="cd-qbtn cd-primary btn-crm-new-lead" style="width:auto;padding:9px 16px">
+                    <span class="cd-qi"><span class="material-icons">person_add</span></span> Nuevo Lead
+                </button>
+            </div>
         </div>
-    </div>
+    </header>
 
-    <div class="crm-pipeline-board" id="crmPipelineBoard">
-        @php
-            $stageLabels = \Botble\RealEstate\Enums\CrmLeadStageEnum::labels();
-            $stages = array_keys($stageLabels);
-            $stageColors = [
-                'nuevo' => '#17a2b8',
-                'contactado' => '#6f42c1',
-                'calificado' => '#fd7e14',
-                'en_negociacion' => '#ffc107',
-                'ganado' => '#28a745',
-                'perdido' => '#dc3545',
-            ];
-        @endphp
+    {{-- ═══════════ PIPELINE BOARD ═══════════ --}}
+    @php
+        $stageLabels = \Botble\RealEstate\Enums\CrmLeadStageEnum::labels();
+        $stages = array_keys($stageLabels);
+        $stageColors = [
+            'nuevo' => '--cd-s-nuevo',
+            'contactado' => '--cd-s-contactado',
+            'calificado' => '--cd-s-calificado',
+            'en_negociacion' => '--cd-s-negociacion',
+            'ganado' => '--cd-s-ganado',
+            'perdido' => '--cd-s-perdido',
+        ];
+    @endphp
 
+    <div class="cd-pipeline-board cd-reveal-up" id="crmPipelineBoard">
         @foreach ($stages as $stage)
-            <div class="crm-pipeline-column" data-stage="{{ $stage }}">
-                <div class="crm-pipeline-column-header" style="border-top-color: {{ $stageColors[$stage] ?? '#6c757d' }}">
-                    <span class="crm-pipeline-column-dot" style="background: {{ $stageColors[$stage] ?? '#6c757d' }}"></span>
-                    <span class="crm-pipeline-column-title">{{ $stageLabels[$stage] }}</span>
-                    <span class="crm-pipeline-column-count badge bg-light text-dark" data-stage-count="{{ $stage }}">0</span>
+            <div class="cd-pipeline-col" data-stage="{{ $stage }}">
+                <div class="cd-pipeline-col-head">
+                    <span class="cd-pipeline-col-dot" style="background:var({{ $stageColors[$stage] ?? '--cd-s-nuevo' }})"></span>
+                    <span class="cd-pipeline-col-title">{{ $stageLabels[$stage] }}</span>
+                    <span class="cd-pipeline-col-count cd-tnum" data-stage-count="{{ $stage }}">0</span>
                 </div>
-                <div class="crm-pipeline-column-body crm-drop-zone" data-stage="{{ $stage }}">
-                    <div class="crm-pipeline-empty text-muted text-center py-4">
-                        <i class="fas fa-inbox d-block mb-2" style="font-size:1.5rem;opacity:.3"></i>
+                <div class="cd-pipeline-col-body cd-drop-zone" data-stage="{{ $stage }}">
+                    <div class="cd-pipeline-empty">
+                        <span class="material-icons">inbox</span>
                         Sin leads
                     </div>
                 </div>

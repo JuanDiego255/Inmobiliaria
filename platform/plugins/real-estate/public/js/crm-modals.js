@@ -28,10 +28,10 @@
     }
 
     function showToast(message, type) {
-        var existing = document.querySelector('.crm-toast');
+        var existing = document.querySelector('.cd-toast');
         if (existing) existing.remove();
         var toast = document.createElement('div');
-        toast.className = 'crm-toast ' + (type || 'success');
+        toast.className = 'cd-toast ' + (type || 'success');
         toast.textContent = message;
         document.body.appendChild(toast);
         setTimeout(function () { toast.classList.add('show'); }, 50);
@@ -174,11 +174,11 @@
 
         var submitBtn = document.getElementById('crmLeadFormSubmit');
         submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Guardando...';
+        submitBtn.innerHTML = '<span class="material-icons" style="font-size:16px;animation:spin 1s linear infinite">refresh</span> Guardando...';
 
         ajaxRequest(method, url, data, function (err, resp) {
             submitBtn.disabled = false;
-            submitBtn.innerHTML = '<i class="fas fa-save me-1"></i>Guardar';
+            submitBtn.innerHTML = '<span class="material-icons" style="font-size:16px">save</span> Guardar';
 
             if (err) {
                 showToast(err, 'error');
@@ -243,12 +243,11 @@
             propEmpty.style.display = 'none';
             lead.properties.forEach(function (p) {
                 var level = p.pivot ? p.pivot.interest_level : 'medium';
-                var html = '<div class="crm-property-item">'
-                    + '<div class="flex-grow-1">'
-                    + '<div class="crm-property-item-name">' + escapeHtml(p.name) + '</div>'
-                    + (p.pivot && p.pivot.notes ? '<small class="text-muted">' + escapeHtml(p.pivot.notes) + '</small>' : '')
+                var html = '<div class="cd-property-item">'
+                    + '<div class="cd-property-name">' + escapeHtml(p.name)
+                    + (p.pivot && p.pivot.notes ? '<br><span style="font-size:12px;color:var(--cd-ink-400);font-weight:300">' + escapeHtml(p.pivot.notes) + '</span>' : '')
                     + '</div>'
-                    + '<span class="crm-property-item-interest ' + level + '">' + level + '</span>'
+                    + '<span class="cd-interest-pill ' + level + '">' + level + '</span>'
                     + '</div>';
                 propList.insertAdjacentHTML('beforeend', html);
             });
@@ -262,17 +261,17 @@
         actTimeline.innerHTML = '';
         if (lead.activities && lead.activities.length) {
             actEmpty.style.display = 'none';
+            var materialIconMap = { note:'sticky_note_2', call:'call', email:'mail_outline', whatsapp:'chat', visit:'event_available', meeting:'groups' };
             lead.activities.forEach(function (a) {
-                var iconMap = { note:'fas fa-sticky-note', call:'fas fa-phone', email:'fas fa-envelope', whatsapp:'fab fa-whatsapp', visit:'fas fa-walking', meeting:'fas fa-users' };
-                var icon = iconMap[a.type] || 'fas fa-circle';
-                var html = '<div class="crm-timeline-item ' + (a.completed_at ? 'completed' : '') + '">'
-                    + '<div class="crm-timeline-icon crm-activity-' + a.type + '"><i class="' + icon + '"></i></div>'
-                    + '<div class="crm-timeline-content">'
-                    + '<div class="crm-timeline-header"><strong>' + escapeHtml(a.type) + '</strong>'
-                    + '<span class="crm-timeline-meta">' + (a.user ? escapeHtml(a.user.name || a.user.first_name || '') : 'Sistema') + ' · ' + (a.created_at ? a.created_at.substring(0, 16).replace('T', ' ') : '') + '</span></div>'
-                    + '<p class="crm-timeline-desc">' + escapeHtml(a.description) + '</p>';
+                var mIcon = materialIconMap[a.type] || 'notes';
+                var html = '<div class="cd-act ' + (a.completed_at ? 'cd-completed' : '') + '">'
+                    + '<span class="cd-act-ic" data-k="' + a.type + '"><span class="material-icons">' + mIcon + '</span></span>'
+                    + '<div class="cd-act-main">'
+                    + '<div class="cd-act-top"><span class="cd-act-who">' + escapeHtml(a.type) + '</span>'
+                    + '<span class="cd-act-when">' + (a.user ? escapeHtml(a.user.name || a.user.first_name || '') : 'Sistema') + ' · ' + (a.created_at ? a.created_at.substring(0, 16).replace('T', ' ') : '') + '</span></div>'
+                    + '<div class="cd-act-txt">' + escapeHtml(a.description) + '</div>';
                 if (a.scheduled_at && !a.completed_at) {
-                    html += '<button class="btn btn-sm btn-outline-success mt-1 btn-complete-activity" data-activity-id="' + a.id + '"><i class="fas fa-check me-1"></i>Completar</button>';
+                    html += '<button class="cd-modal-complete-btn btn-complete-activity" data-activity-id="' + a.id + '"><span class="material-icons">check</span> Completar</button>';
                 }
                 html += '</div></div>';
                 actTimeline.insertAdjacentHTML('beforeend', html);
@@ -284,7 +283,7 @@
                     ajaxRequest('PATCH', getRoute('activitiesComplete', { id: actId }), {}, function (err) {
                         if (err) { showToast(err, 'error'); return; }
                         showToast('Actividad completada', 'success');
-                        btn.closest('.crm-timeline-item').classList.add('completed');
+                        btn.closest('.cd-act').classList.add('cd-completed');
                         btn.remove();
                     });
                 });
@@ -338,11 +337,11 @@
 
         var submitBtn = document.getElementById('crmActivityFormSubmit');
         submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Guardando...';
+        submitBtn.innerHTML = '<span class="material-icons" style="font-size:16px;animation:spin 1s linear infinite">refresh</span> Guardando...';
 
         ajaxRequest('POST', getRoute('activitiesStore'), data, function (err, resp) {
             submitBtn.disabled = false;
-            submitBtn.innerHTML = '<i class="fas fa-save me-1"></i>Guardar';
+            submitBtn.innerHTML = '<span class="material-icons" style="font-size:16px">save</span> Guardar';
 
             if (err) { showToast(err, 'error'); return; }
             showToast(resp.message || 'Actividad registrada', 'success');
@@ -359,7 +358,7 @@
     function importConsults(btn) {
         var origText = btn.innerHTML;
         btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Importando...';
+        btn.innerHTML = '<span class="material-icons" style="font-size:16px;animation:spin 1s linear infinite">refresh</span> Importando...';
 
         ajaxRequest('POST', getRoute('importConsults'), {}, function (err, resp) {
             btn.disabled = false;

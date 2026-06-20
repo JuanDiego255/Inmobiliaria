@@ -1,4 +1,4 @@
-<div class="modal fade" id="crmLeadFormModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade cd-modal" id="crmLeadFormModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
@@ -73,9 +73,9 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary" id="crmLeadFormSubmit">
-                        <i class="fas fa-save me-1"></i>Guardar
+                    <button type="button" class="cd-btn-ghost" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="cd-btn-primary" id="crmLeadFormSubmit">
+                        <span class="material-icons">save</span> Guardar
                     </button>
                 </div>
             </form>

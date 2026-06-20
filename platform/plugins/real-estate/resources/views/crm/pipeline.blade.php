@@ -46,7 +46,7 @@
         ];
     @endphp
 
-    <div class="cd-pipeline-board cd-reveal-up" id="crmPipelineBoard">
+    <div class="cd-pipeline-board" id="crmPipelineBoard">
         @foreach ($stages as $stage)
             <div class="cd-pipeline-col" data-stage="{{ $stage }}">
                 <div class="cd-pipeline-col-head">

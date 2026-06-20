@@ -38,6 +38,9 @@
     --cd-gap: 18px;
 }
 
+/* ── Hide admin breadcrumb on CRM editorial pages ── */
+.page-content:has(.cd-wrap) > .breadcrumb { display: none !important; }
+
 /* ── Base overrides ────────────────────────────────── */
 .cd-wrap {
     max-width: 1320px;

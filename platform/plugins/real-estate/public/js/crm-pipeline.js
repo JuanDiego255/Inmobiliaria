@@ -9,6 +9,13 @@
         referral: 'Referido', social: 'Social', phone: 'Tel', other: 'Otro'
     };
 
+    function enumVal(e) {
+        if (!e) return '';
+        if (typeof e === 'string') return e;
+        if (typeof e === 'object' && e.value !== undefined) return e.value;
+        return String(e);
+    }
+
     function init() {
         loadPipelineData();
         setupDragAndDrop();
@@ -61,7 +68,7 @@
         var budget = formatBudget(lead);
         var phone = lead.phone || '—';
         var date = lead.created_at ? lead.created_at.substring(0, 10) : '';
-        var source = sourceLabels[lead.source] || lead.source || '';
+        var source = sourceLabels[enumVal(lead.source)] || enumVal(lead.source) || '';
 
         card.innerHTML = '<div class="cd-lead-card-header">'
             + '<span class="cd-lead-card-name">' + escapeHtml(lead.name) + '</span>'

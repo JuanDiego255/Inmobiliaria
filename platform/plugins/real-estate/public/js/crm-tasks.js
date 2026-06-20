@@ -92,25 +92,33 @@
         var title = document.getElementById('crmTaskFormModalTitle');
         var methodField = document.getElementById('crmTaskFormMethod');
         var idField = document.getElementById('crmTaskFormId');
+        var leadSelect = document.getElementById('taskLeadId');
 
-        if (task) {
-            title.textContent = 'Editar Tarea';
-            methodField.value = 'PUT';
-            idField.value = task.id;
-            document.getElementById('taskTitle').value = task.title || '';
-            document.getElementById('taskDescription').value = task.description || '';
-            document.getElementById('taskAssignedTo').value = task.assigned_to || '';
-            document.getElementById('taskLeadId').value = task.lead_id || '';
-            document.getElementById('taskPriority').value = task.priority || 'medium';
-            document.getElementById('taskStatus').value = task.status || 'pending';
-            document.getElementById('taskDueDate').value = task.due_date || '';
+        var populateDone = function () {
+            if (task) {
+                title.textContent = 'Editar Tarea';
+                methodField.value = 'PUT';
+                idField.value = task.id;
+                document.getElementById('taskTitle').value = task.title || '';
+                document.getElementById('taskDescription').value = task.description || '';
+                document.getElementById('taskAssignedTo').value = task.assigned_to || '';
+                if (leadSelect) leadSelect.value = task.lead_id || '';
+                document.getElementById('taskPriority').value = task.priority || 'medium';
+                document.getElementById('taskStatus').value = task.status || 'pending';
+                document.getElementById('taskDueDate').value = task.due_date || '';
+            } else {
+                title.textContent = 'Nueva Tarea';
+                methodField.value = 'POST';
+                idField.value = '';
+            }
+            taskFormModal.show();
+        };
+
+        if (leadSelect && typeof window.CRM_populateLeadSelect === 'function') {
+            window.CRM_populateLeadSelect(leadSelect, populateDone);
         } else {
-            title.textContent = 'Nueva Tarea';
-            methodField.value = 'POST';
-            idField.value = '';
+            populateDone();
         }
-
-        taskFormModal.show();
     }
 
     function submitTaskForm() {
@@ -200,14 +208,7 @@
 
         var hiddenLeadId = document.getElementById('reminderLeadId');
         var selectGroup = document.getElementById('reminderLeadSelectGroup');
-
-        if (leadId) {
-            hiddenLeadId.value = leadId;
-            selectGroup.style.display = 'none';
-        } else {
-            hiddenLeadId.value = '';
-            selectGroup.style.display = '';
-        }
+        var leadSelect = document.getElementById('reminderLeadSelect');
 
         // Set default remind_at to tomorrow 9am
         var tomorrow = new Date();
@@ -216,7 +217,21 @@
         var iso = tomorrow.toISOString().slice(0, 16);
         document.getElementById('reminderAt').value = iso;
 
-        reminderFormModal.show();
+        if (leadId) {
+            hiddenLeadId.value = leadId;
+            selectGroup.style.display = 'none';
+            reminderFormModal.show();
+        } else {
+            hiddenLeadId.value = '';
+            selectGroup.style.display = '';
+            if (leadSelect && typeof window.CRM_populateLeadSelect === 'function') {
+                window.CRM_populateLeadSelect(leadSelect, function () {
+                    reminderFormModal.show();
+                });
+            } else {
+                reminderFormModal.show();
+            }
+        }
     }
 
     function submitReminderForm() {

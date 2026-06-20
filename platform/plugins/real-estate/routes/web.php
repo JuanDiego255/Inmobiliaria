@@ -262,13 +262,19 @@ Route::group(['namespace' => 'Botble\RealEstate\Http\Controllers', 'middleware' 
             ]);
 
             Route::group(['prefix' => 'leads', 'as' => 'leads.'], function () {
-                Route::get('/', [
+                Route::match(['GET', 'POST'], '/', [
                     'as' => 'index',
                     'uses' => 'CrmLeadController@index',
                     'permission' => 'crm-lead.index',
                 ]);
 
-                Route::post('/', [
+                Route::get('list', [
+                    'as' => 'list',
+                    'uses' => 'CrmLeadController@list',
+                    'permission' => 'crm-lead.index',
+                ]);
+
+                Route::post('store', [
                     'as' => 'store',
                     'uses' => 'CrmLeadController@store',
                     'permission' => 'crm-lead.create',

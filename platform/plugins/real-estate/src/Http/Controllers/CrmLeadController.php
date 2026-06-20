@@ -33,6 +33,16 @@ class CrmLeadController extends BaseController
         return $table->renderTable();
     }
 
+    public function list(BaseHttpResponse $response)
+    {
+        $leads = CrmLead::query()
+            ->select('id', 'name')
+            ->orderBy('name')
+            ->get();
+
+        return $response->setData($leads);
+    }
+
     public function pipeline()
     {
         PageTitle::setTitle('CRM - Pipeline');

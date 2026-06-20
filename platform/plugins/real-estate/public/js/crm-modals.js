@@ -2,7 +2,8 @@
     'use strict';
 
     var CRM_ROUTES = {
-        leadsStore: '/admin/real-estate/crm/leads',
+        leadsStore: '/admin/real-estate/crm/leads/store',
+        leadsList: '/admin/real-estate/crm/leads/list',
         leadsUpdate: '/admin/real-estate/crm/leads/{id}',
         leadsDestroy: '/admin/real-estate/crm/leads/{id}',
         leadsDetail: '/admin/real-estate/crm/leads/{id}/detail',
@@ -143,8 +144,8 @@
             document.getElementById('leadEmail').value = lead.email || '';
             document.getElementById('leadPhone').value = lead.phone || '';
             document.getElementById('leadAgent').value = lead.assigned_agent_id || '';
-            document.getElementById('leadStage').value = lead.stage || 'nuevo';
-            document.getElementById('leadSource').value = lead.source || 'manual';
+            document.getElementById('leadStage').value = enumVal(lead.stage) || 'nuevo';
+            document.getElementById('leadSource').value = enumVal(lead.source) || 'manual';
             document.getElementById('leadBudgetMin').value = lead.budget_min || '';
             document.getElementById('leadBudgetMax').value = lead.budget_max || '';
             document.getElementById('leadCloseDate').value = lead.expected_close_date || '';
@@ -205,6 +206,20 @@
         });
     };
 
+    function enumVal(e) {
+        if (!e) return '';
+        if (typeof e === 'string') return e;
+        if (typeof e === 'object' && e.value !== undefined) return e.value;
+        return String(e);
+    }
+
+    function enumLabel(e) {
+        if (!e) return '—';
+        if (typeof e === 'string') return e;
+        if (typeof e === 'object' && e.label !== undefined) return e.label;
+        return String(e);
+    }
+
     function populateDetailModal(lead) {
         document.getElementById('detailLeadName').textContent = lead.name;
         document.getElementById('detailName').textContent = lead.name;
@@ -219,10 +234,12 @@
 
         // Stage badge
         var stageLabels = { nuevo:'Nuevo', contactado:'Contactado', calificado:'Calificado', en_negociacion:'En Negociación', ganado:'Ganado', perdido:'Perdido' };
-        document.getElementById('detailStage').textContent = stageLabels[lead.stage] || lead.stage;
+        var stageKey = enumVal(lead.stage);
+        document.getElementById('detailStage').textContent = stageLabels[stageKey] || enumLabel(lead.stage);
 
         var sourceLabels = { manual:'Manual', website:'Sitio Web', consult:'Consulta', referral:'Referido', social:'Redes Sociales', phone:'Teléfono', other:'Otro' };
-        document.getElementById('detailSource').textContent = sourceLabels[lead.source] || lead.source;
+        var sourceKey = enumVal(lead.source);
+        document.getElementById('detailSource').textContent = sourceLabels[sourceKey] || enumLabel(lead.source);
 
         // Edit button
         var editBtn = document.getElementById('detailEditBtn');
@@ -263,11 +280,13 @@
             actEmpty.style.display = 'none';
             var materialIconMap = { note:'sticky_note_2', call:'call', email:'mail_outline', whatsapp:'chat', visit:'event_available', meeting:'groups' };
             lead.activities.forEach(function (a) {
-                var mIcon = materialIconMap[a.type] || 'notes';
+                var aType = enumVal(a.type);
+                var aTypeLabel = enumLabel(a.type);
+                var mIcon = materialIconMap[aType] || 'notes';
                 var html = '<div class="cd-act ' + (a.completed_at ? 'cd-completed' : '') + '">'
-                    + '<span class="cd-act-ic" data-k="' + a.type + '"><span class="material-icons">' + mIcon + '</span></span>'
+                    + '<span class="cd-act-ic" data-k="' + aType + '"><span class="material-icons">' + mIcon + '</span></span>'
                     + '<div class="cd-act-main">'
-                    + '<div class="cd-act-top"><span class="cd-act-who">' + escapeHtml(a.type) + '</span>'
+                    + '<div class="cd-act-top"><span class="cd-act-who">' + escapeHtml(aTypeLabel) + '</span>'
                     + '<span class="cd-act-when">' + (a.user ? escapeHtml(a.user.name || a.user.first_name || '') : 'Sistema') + ' · ' + (a.created_at ? a.created_at.substring(0, 16).replace('T', ' ') : '') + '</span></div>'
                     + '<div class="cd-act-txt">' + escapeHtml(a.description) + '</div>';
                 if (a.scheduled_at && !a.completed_at) {
@@ -294,6 +313,20 @@
     }
 
     // ---- Activity Form Modal ----
+    function populateLeadSelect(select, callback) {
+        ajaxRequest('GET', getRoute('leadsList'), null, function (err, resp) {
+            if (err || !resp.data) { if (callback) callback(); return; }
+            select.innerHTML = '<option value="">— Seleccionar lead —</option>';
+            resp.data.forEach(function (lead) {
+                var opt = document.createElement('option');
+                opt.value = lead.id;
+                opt.textContent = lead.name;
+                select.appendChild(opt);
+            });
+            if (callback) callback();
+        });
+    }
+
     function openActivityForm(leadId) {
         var form = document.getElementById('crmActivityForm');
         if (!form) return;
@@ -309,10 +342,7 @@
         } else {
             hiddenLeadId.value = '';
             selectGroup.style.display = '';
-            // Load leads for dropdown
-            ajaxRequest('GET', getRoute('leadsStore'), null, function (err, resp) {
-                // A simple fallback: we won't populate if error
-            });
+            if (select) populateLeadSelect(select);
         }
 
         activityFormModal.show();
@@ -387,6 +417,7 @@
     // Expose helpers
     window.CRM_openLeadForm = openLeadForm;
     window.CRM_openActivityForm = openActivityForm;
+    window.CRM_populateLeadSelect = populateLeadSelect;
     window.CRM_showToast = showToast;
     window.CRM_ajaxRequest = ajaxRequest;
     window.CRM_getRoute = getRoute;

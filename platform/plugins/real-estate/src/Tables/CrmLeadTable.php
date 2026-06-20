@@ -36,9 +36,17 @@ class CrmLeadTable extends TableAbstract
                 return BaseHelper::clean($item->name);
             })
             ->editColumn('stage', function (CrmLead $item) {
+                if (! $item->stage) {
+                    return '&mdash;';
+                }
+
                 return $item->stage->toHtml();
             })
             ->editColumn('source', function (CrmLead $item) {
+                if (! $item->source) {
+                    return '&mdash;';
+                }
+
                 return $item->source->toHtml();
             })
             ->editColumn('assigned_agent_id', function (CrmLead $item) {
@@ -47,6 +55,21 @@ class CrmLeadTable extends TableAbstract
                 }
 
                 return BaseHelper::clean($item->assignedAgent->first_name . ' ' . $item->assignedAgent->last_name);
+            })
+            ->filter(function ($query) {
+                $keyword = $this->request->input('search.value');
+
+                if (! $keyword) {
+                    return $query;
+                }
+
+                return $query->where(function ($query) use ($keyword) {
+                    $query
+                        ->where('id', $keyword)
+                        ->orWhere('name', 'LIKE', '%' . $keyword . '%')
+                        ->orWhere('email', 'LIKE', '%' . $keyword . '%')
+                        ->orWhere('phone', 'LIKE', '%' . $keyword . '%');
+                });
             });
 
         return $this->toJson($data);

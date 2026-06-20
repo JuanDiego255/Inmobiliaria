@@ -1,40 +1,77 @@
 @extends(BaseHelper::getAdminMasterLayoutTemplate())
 
 @section('content')
-<div class="crm-dashboard">
+<div class="cd-wrap">
+
+    {{-- ═══════════ PAGE HEADER ═══════════ --}}
+    <header class="cd-head">
+        <nav class="cd-crumb">
+            <a href="{{ route('dashboard.index') }}">Inicio</a>
+            <span class="material-icons">chevron_right</span>
+            <a href="{{ route('crm.leads.index') }}">CRM</a>
+            <span class="material-icons">chevron_right</span>
+            <span class="cd-cur">Dashboard</span>
+        </nav>
+        <div class="cd-head-row">
+            <div>
+                <span class="cd-eyebrow">CRM · Panel de control</span>
+                <h1>Dashboard de CRM</h1>
+                <p class="cd-head-sub">Tus leads, tareas y pipeline del día en una sola vista.</p>
+            </div>
+            <span class="cd-head-meta"><span class="material-icons">calendar_today</span> Hoy · {{ \Carbon\Carbon::now()->translatedFormat('d M Y') }}</span>
+        </div>
+    </header>
+
+    {{-- ═══════════ KPI ROW ═══════════ --}}
     @include('plugins/real-estate::crm.dashboard.stat-cards')
 
-    <div class="row mt-4">
-        <div class="col-lg-8">
+    {{-- ═══════════ MAIN GRID ═══════════ --}}
+    <div class="cd-grid">
+
+        {{-- ───── LEFT STACK ───── --}}
+        <div class="cd-col-stack">
             @include('plugins/real-estate::crm.dashboard.my-tasks-today')
-
-            <div class="mt-4">
-                @include('plugins/real-estate::crm.dashboard.recent-leads')
-            </div>
-
-            <div class="mt-4">
-                @include('plugins/real-estate::crm.dashboard.activity-timeline')
-            </div>
+            @include('plugins/real-estate::crm.dashboard.recent-leads')
+            @include('plugins/real-estate::crm.dashboard.activity-timeline')
         </div>
-        <div class="col-lg-4">
+
+        {{-- ───── RIGHT STACK ───── --}}
+        <div class="cd-col-stack">
             @include('plugins/real-estate::crm.dashboard.quick-actions')
 
-            <div class="crm-card mt-4">
-                <div class="crm-card-header">
-                    <h5 class="crm-card-title">Resumen Pipeline</h5>
+            {{-- Resumen del pipeline --}}
+            <section class="cd-card cd-reveal-up">
+                <div class="cd-card-head">
+                    <div class="cd-ti"><span class="cd-ey">Embudo</span><h3>Resumen del pipeline</h3></div>
                 </div>
-                <div class="crm-card-body">
-                    @foreach ($pipelineSummary as $stage => $count)
-                        <div class="crm-pipeline-bar-row">
-                            <span class="crm-pipeline-bar-label">{{ \Botble\RealEstate\Enums\CrmLeadStageEnum::labels()[$stage] }}</span>
-                            <div class="crm-pipeline-bar-track">
-                                <div class="crm-pipeline-bar-fill crm-stage-{{ $stage }}" style="width: {{ $count > 0 ? max(8, min(100, $count * 10)) : 0 }}%"></div>
+                <div class="cd-card-body">
+                    @php
+                        $stageColors = [
+                            'nuevo' => '--cd-s-nuevo',
+                            'contactado' => '--cd-s-contactado',
+                            'calificado' => '--cd-s-calificado',
+                            'en_negociacion' => '--cd-s-negociacion',
+                            'ganado' => '--cd-s-ganado',
+                            'perdido' => '--cd-s-perdido',
+                        ];
+                        $stageLabels = \Botble\RealEstate\Enums\CrmLeadStageEnum::labels();
+                        $pipelineTotal = array_sum($pipelineSummary);
+                    @endphp
+                    <div class="cd-pipe" id="cd-pipe">
+                        @foreach ($pipelineSummary as $stage => $count)
+                            <div class="cd-pl-row">
+                                <span class="cd-pl-name"><span class="cd-d" style="background:var({{ $stageColors[$stage] ?? '--cd-s-nuevo' }})"></span>{{ $stageLabels[$stage] ?? $stage }}</span>
+                                <div class="cd-pl-track"><div class="cd-pl-fill" data-v="{{ $count }}" style="background:var({{ $stageColors[$stage] ?? '--cd-s-nuevo' }})"></div></div>
+                                <span class="cd-pl-val cd-tnum">{{ $count }}</span>
                             </div>
-                            <span class="crm-pipeline-bar-count">{{ $count }}</span>
-                        </div>
-                    @endforeach
+                        @endforeach
+                    </div>
+                    <div class="cd-pl-foot">
+                        <span class="cd-l">Leads activos</span>
+                        <span class="cd-v cd-tnum">{{ $pipelineTotal }}</span>
+                    </div>
                 </div>
-            </div>
+            </section>
         </div>
     </div>
 </div>

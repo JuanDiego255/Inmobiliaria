@@ -1,27 +1,27 @@
-<div class="crm-card">
-    <div class="crm-card-header">
-        <h5 class="crm-card-title">Acciones Rápidas</h5>
+<section class="cd-card cd-reveal-up">
+    <div class="cd-card-head">
+        <div class="cd-ti"><h3>Acciones rápidas</h3></div>
     </div>
-    <div class="crm-card-body">
-        <div class="d-grid gap-2">
-            <button type="button" class="btn btn-primary btn-crm-new-lead">
-                <i class="fas fa-user-plus me-2"></i>Nuevo Lead
+    <div class="cd-card-body">
+        <div class="cd-qa">
+            <button class="cd-qbtn cd-primary btn-crm-new-lead" type="button">
+                <span class="cd-qi"><span class="material-icons">person_add</span></span> Nuevo lead
             </button>
-            <button type="button" class="btn btn-outline-primary btn-crm-new-activity-quick">
-                <i class="fas fa-plus-circle me-2"></i>Registrar Actividad
+            <button class="cd-qbtn btn-crm-new-activity-quick" type="button">
+                <span class="cd-qi"><span class="material-icons">add_circle_outline</span></span> Registrar actividad
             </button>
-            <button type="button" class="btn btn-outline-success btn-crm-new-task">
-                <i class="fas fa-tasks me-2"></i>Nueva Tarea
+            <button class="cd-qbtn btn-crm-new-task" type="button">
+                <span class="cd-qi"><span class="material-icons">checklist</span></span> Nueva tarea
             </button>
-            <button type="button" class="btn btn-outline-warning btn-crm-new-reminder">
-                <i class="fas fa-bell me-2"></i>Nuevo Recordatorio
+            <button class="cd-qbtn btn-crm-new-reminder" type="button">
+                <span class="cd-qi"><span class="material-icons">notifications_none</span></span> Nuevo recordatorio
             </button>
-            <button type="button" class="btn btn-outline-secondary btn-crm-import-consults">
-                <i class="fas fa-file-import me-2"></i>Importar Consultas
+            <button class="cd-qbtn btn-crm-import-consults" type="button">
+                <span class="cd-qi"><span class="material-icons">download</span></span> Importar consultas
             </button>
-            <a href="{{ route('crm.pipeline') }}" class="btn btn-outline-info">
-                <i class="fas fa-columns me-2"></i>Ver Pipeline
+            <a class="cd-qbtn" href="{{ route('crm.pipeline') }}">
+                <span class="cd-qi"><span class="material-icons">view_week</span></span> Ver pipeline
             </a>
         </div>
     </div>
-</div>
+</section>

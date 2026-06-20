@@ -1,38 +1,70 @@
-<div class="crm-card">
-    <div class="crm-card-header">
-        <h5 class="crm-card-title">Leads Recientes</h5>
-        <a href="{{ route('crm.leads.index') }}" class="crm-card-link">Ver todos</a>
+@php
+    $sourceIcons = [
+        'manual' => 'edit',
+        'website' => 'language',
+        'consult' => 'public',
+        'referral' => 'person',
+        'social' => 'public',
+        'phone' => 'call',
+        'other' => 'edit',
+    ];
+    $sourceLabels = \Botble\RealEstate\Enums\CrmLeadSourceEnum::labels();
+    $stageLabelsMap = \Botble\RealEstate\Enums\CrmLeadStageEnum::labels();
+@endphp
+<section class="cd-card cd-reveal-up">
+    <div class="cd-card-head">
+        <div class="cd-ti"><h3>Leads recientes</h3></div>
+        <a class="cd-card-link" href="{{ route('crm.leads.index') }}">Ver todos <span class="material-icons">arrow_right_alt</span></a>
     </div>
-    <div class="crm-card-body p-0">
-        <div class="table-responsive">
-            <table class="table crm-table mb-0">
+    <div class="cd-card-body">
+        @if ($recentLeads->isEmpty())
+            <div class="cd-empty">
+                <span class="material-icons">person_search</span>
+                <span>No hay leads registrados aún.</span>
+            </div>
+        @else
+            <table class="cd-lead-table">
                 <thead>
                     <tr>
                         <th>Nombre</th>
-                        <th>Teléfono</th>
+                        <th class="cd-hide-sm">Teléfono</th>
                         <th>Etapa</th>
-                        <th>Fuente</th>
-                        <th>Agente</th>
+                        <th class="cd-hide-sm">Fuente</th>
+                        <th class="cd-hide-sm">Agente</th>
                         <th>Fecha</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse ($recentLeads as $lead)
+                    @foreach ($recentLeads as $lead)
+                        @php
+                            $initials = collect(explode(' ', $lead->name))->map(fn($w) => mb_strtoupper(mb_substr($w, 0, 1)))->take(2)->join('');
+                            $stageVal = $lead->stage->getValue();
+                            $sourceVal = $lead->source->getValue();
+                        @endphp
                         <tr class="crm-clickable-row" data-lead-id="{{ $lead->id }}">
-                            <td class="fw-semibold">{{ $lead->name }}</td>
-                            <td>{{ $lead->phone ?: '—' }}</td>
-                            <td>{!! $lead->stage->toHtml() !!}</td>
-                            <td>{!! $lead->source->toHtml() !!}</td>
-                            <td>{{ $lead->assignedAgent?->name ?: '—' }}</td>
+                            <td>
+                                <span class="cd-lead-name">
+                                    <span class="cd-lead-ava">{{ $initials }}</span>
+                                    <b>{{ $lead->name }}</b>
+                                </span>
+                            </td>
+                            <td class="cd-hide-sm cd-tel">{{ $lead->phone ?: '—' }}</td>
+                            <td>
+                                <span class="cd-pill cd-stage-{{ $stageVal }}">
+                                    <span class="cd-d"></span>{{ $stageLabelsMap[$stageVal] ?? $stageVal }}
+                                </span>
+                            </td>
+                            <td class="cd-hide-sm">
+                                <span class="cd-pill cd-source">
+                                    <span class="material-icons">{{ $sourceIcons[$sourceVal] ?? 'edit' }}</span>{{ $sourceLabels[$sourceVal] ?? $sourceVal }}
+                                </span>
+                            </td>
+                            <td class="cd-hide-sm">{{ $lead->assignedAgent ? ($lead->assignedAgent->first_name . ' ' . $lead->assignedAgent->last_name) : '—' }}</td>
                             <td>{{ $lead->created_at->format('d/m/Y') }}</td>
                         </tr>
-                    @empty
-                        <tr>
-                            <td colspan="6" class="text-center text-muted py-4">No hay leads registrados aún.</td>
-                        </tr>
-                    @endforelse
+                    @endforeach
                 </tbody>
             </table>
-        </div>
+        @endif
     </div>
-</div>
+</section>

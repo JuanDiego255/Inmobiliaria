@@ -1,38 +1,18 @@
-<div class="row crm-stat-cards">
-    <div class="col-md-3 col-sm-6">
-        <div class="crm-stat-card crm-stat-primary">
-            <div class="crm-stat-icon"><i class="fas fa-user-plus"></i></div>
-            <div class="crm-stat-content">
-                <span class="crm-stat-number">{{ $stats['leads_today'] }}</span>
-                <span class="crm-stat-label">Leads Hoy</span>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3 col-sm-6">
-        <div class="crm-stat-card crm-stat-info">
-            <div class="crm-stat-icon"><i class="fas fa-clock"></i></div>
-            <div class="crm-stat-content">
-                <span class="crm-stat-number">{{ $stats['pending_followups'] }}</span>
-                <span class="crm-stat-label">Pendientes</span>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3 col-sm-6">
-        <div class="crm-stat-card crm-stat-danger">
-            <div class="crm-stat-icon"><i class="fas fa-exclamation-triangle"></i></div>
-            <div class="crm-stat-content">
-                <span class="crm-stat-number">{{ $stats['overdue'] }}</span>
-                <span class="crm-stat-label">Atrasados</span>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3 col-sm-6">
-        <div class="crm-stat-card crm-stat-success">
-            <div class="crm-stat-icon"><i class="fas fa-trophy"></i></div>
-            <div class="crm-stat-content">
-                <span class="crm-stat-number">{{ $stats['won_this_month'] }}</span>
-                <span class="crm-stat-label">Ganados este mes</span>
-            </div>
-        </div>
-    </div>
-</div>
+<section class="cd-kpis cd-reveal-up">
+    <article class="cd-kpi" data-tone="accent">
+        <span class="cd-kpi-ic"><span class="material-icons">person_add</span></span>
+        <div><div class="cd-kpi-num cd-tnum">{{ $stats['leads_today'] }}</div><div class="cd-kpi-lab">Leads hoy</div></div>
+    </article>
+    <article class="cd-kpi" data-tone="gold">
+        <span class="cd-kpi-ic"><span class="material-icons">schedule</span></span>
+        <div><div class="cd-kpi-num cd-tnum">{{ $stats['pending_followups'] }}</div><div class="cd-kpi-lab">Pendientes</div></div>
+    </article>
+    <article class="cd-kpi" data-tone="red">
+        <span class="cd-kpi-ic"><span class="material-icons">error_outline</span></span>
+        <div><div class="cd-kpi-num cd-tnum">{{ $stats['overdue'] }}</div><div class="cd-kpi-lab">Atrasados</div></div>
+    </article>
+    <article class="cd-kpi" data-tone="green">
+        <span class="cd-kpi-ic"><span class="material-icons">emoji_events</span></span>
+        <div><div class="cd-kpi-num cd-tnum">{{ $stats['won_this_month'] }}</div><div class="cd-kpi-lab">Ganados este mes</div></div>
+    </article>
+</section>

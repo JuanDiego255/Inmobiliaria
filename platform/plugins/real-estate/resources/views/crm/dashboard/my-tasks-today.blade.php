@@ -1,41 +1,57 @@
-<div class="crm-card">
-    <div class="crm-card-header">
-        <h5 class="crm-card-title"><i class="fas fa-tasks me-2 text-primary"></i>Mis Tareas</h5>
-        <span class="badge bg-primary" id="myTasksCount">{{ $myTasks->count() }}</span>
+@php
+    $priorityDotColors = [
+        'high' => 'var(--cd-s-perdido)',
+        'urgent' => 'var(--cd-s-perdido)',
+        'medium' => 'var(--cd-s-calificado)',
+        'low' => 'var(--cd-s-ganado)',
+    ];
+    $priorityLabels = [
+        'high' => 'Alta',
+        'urgent' => 'Urgente',
+        'medium' => 'Media',
+        'low' => 'Baja',
+    ];
+@endphp
+<section class="cd-card cd-reveal-up">
+    <div class="cd-card-head">
+        <div class="cd-ti"><h3>Mis tareas</h3></div>
+        <span class="cd-count-pill cd-tnum" id="myTasksCount">{{ $myTasks->count() }}</span>
     </div>
-    <div class="crm-card-body p-0">
-        <div class="crm-tasks-list" id="myTasksList">
-            @forelse ($myTasks as $task)
-                <div class="crm-task-item {{ $task->due_date && $task->due_date->isPast() ? 'overdue' : '' }}" data-task-id="{{ $task->id }}">
-                    <div class="crm-task-check">
-                        <button class="btn btn-sm btn-outline-success crm-task-complete-btn" data-task-id="{{ $task->id }}" title="Completar">
-                            <i class="fas fa-check"></i>
-                        </button>
-                    </div>
-                    <div class="crm-task-content">
-                        <div class="crm-task-title">{{ $task->title }}</div>
-                        <div class="crm-task-meta">
-                            {!! $task->priority->toHtml() !!}
-                            @if ($task->due_date)
-                                <span class="crm-task-due {{ $task->due_date->isPast() ? 'text-danger' : 'text-muted' }}">
-                                    <i class="far fa-calendar-alt"></i>
-                                    {{ $task->due_date->format('d/m') }}
-                                </span>
-                            @endif
-                            @if ($task->lead)
-                                <span class="crm-task-lead crm-clickable-lead" data-lead-id="{{ $task->lead_id }}">
-                                    <i class="fas fa-user"></i> {{ Str::limit($task->lead->name, 20) }}
-                                </span>
-                            @endif
-                        </div>
+    <div class="cd-card-body" id="myTasksList">
+        @forelse ($myTasks as $task)
+            @php
+                $isDone = $task->status->getValue() === 'completed';
+                $isOverdue = $task->due_date && $task->due_date->isPast() && !$isDone;
+                $pVal = $task->priority->getValue();
+            @endphp
+            <div class="cd-task {{ $isDone ? 'cd-done' : '' }}" data-task-id="{{ $task->id }}">
+                <button class="cd-task-check crm-task-complete-btn" role="checkbox" aria-checked="{{ $isDone ? 'true' : 'false' }}" data-task-id="{{ $task->id }}">
+                    <span class="material-icons">check</span>
+                </button>
+                <div class="cd-task-main">
+                    <div class="cd-task-title">{{ $task->title }}</div>
+                    <div class="cd-task-meta">
+                        <span class="cd-pdot" style="background:{{ $priorityDotColors[$pVal] ?? 'var(--cd-ink-400)' }}"></span>
+                        {{ $priorityLabels[$pVal] ?? $pVal }}
+                        @if ($task->due_date)
+                            · <span class="{{ $isOverdue ? 'cd-due-late' : '' }}">
+                                <span class="material-icons">calendar_today</span>
+                                {{ $isOverdue ? 'Vence hoy' : $task->due_date->format('d/m') }}
+                            </span>
+                        @endif
+                        @if ($task->lead)
+                            <span class="crm-clickable-lead" data-lead-id="{{ $task->lead_id }}" style="color:var(--cd-accent);cursor:pointer">
+                                {{ Str::limit($task->lead->name, 20) }}
+                            </span>
+                        @endif
                     </div>
                 </div>
-            @empty
-                <div class="text-center text-muted py-4">
-                    <i class="fas fa-clipboard-check d-block mb-2" style="font-size:1.5rem;opacity:.3"></i>
-                    No hay tareas pendientes.
-                </div>
-            @endforelse
-        </div>
+            </div>
+        @empty
+            <div class="cd-empty">
+                <span class="material-icons">task_alt</span>
+                <span>No hay tareas pendientes.</span>
+            </div>
+        @endforelse
     </div>
-</div>
+</section>

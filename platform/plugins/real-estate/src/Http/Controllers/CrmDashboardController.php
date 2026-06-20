@@ -21,6 +21,7 @@ class CrmDashboardController extends BaseController
 
         Assets::addStylesDirectly([
             'vendor/core/plugins/real-estate/css/crm.css',
+            'vendor/core/plugins/real-estate/css/crm-dashboard.css',
         ]);
         Assets::addScriptsDirectly([
             'vendor/core/plugins/real-estate/js/crm-modals.js',

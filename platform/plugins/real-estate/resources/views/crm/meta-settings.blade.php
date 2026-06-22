@@ -32,32 +32,38 @@
     {!! Form::open(['route' => 'crm.meta-settings.update', 'method' => 'POST', 'class' => 'main-setting-form']) !!}
 
     {{-- ═══════════ WEBHOOK URL INFO ═══════════ --}}
-    <section class="cd-card" style="margin-bottom: 24px;">
-        <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
-            <span class="material-icons" style="color:#1877F2;font-size:28px">webhook</span>
-            <h3 style="margin:0;font-family:'Playfair Display',serif;font-size:1.15rem">Webhook URL</h3>
+    <section class="cd-card cd-settings-card">
+        <div class="cd-sc-head">
+            <div class="cd-sc-icon cd-sc-meta">
+                <span class="material-icons">webhook</span>
+            </div>
+            <div>
+                <h3>Webhook URL</h3>
+                <p>Copiá esta URL y configurala como Callback URL en tu Meta App (Webhooks).</p>
+            </div>
         </div>
-        <p style="color:#666;font-size:.9rem;margin-bottom:12px">
-            Copiá esta URL y configurala como Callback URL en tu Meta App (Webhooks).
-        </p>
-        <div style="display:flex;gap:8px;align-items:center">
-            <input type="text" readonly class="form-control" id="metaWebhookUrl"
-                value="{{ url('/webhook/meta') }}"
-                style="background:#f8f9fa;font-family:monospace;font-size:.85rem" />
-            <button type="button" class="cd-qbtn cd-primary" onclick="copyWebhookUrl()" style="width:auto;padding:9px 16px;white-space:nowrap">
-                <span class="material-icons" style="font-size:18px">content_copy</span> Copiar
+
+        <div class="cd-webhook-url-box">
+            <input type="text" readonly id="metaWebhookUrl" value="{{ url('/webhook/meta') }}" />
+            <button type="button" class="cd-copy-btn" onclick="copyWebhookUrl()">
+                <span class="material-icons" style="font-size:16px">content_copy</span> Copiar
             </button>
         </div>
-        <p style="color:#999;font-size:.8rem;margin-top:8px">
+        <div class="cd-verify-token">
             <strong>Verify Token:</strong> <code>{{ setting('crm_meta_verify_token') }}</code>
-        </p>
+        </div>
     </section>
 
     {{-- ═══════════ META APP CONFIG ═══════════ --}}
-    <section class="cd-card" style="margin-bottom: 24px;">
-        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
-            <span class="material-icons" style="color:#717fe0;font-size:28px">apps</span>
-            <h3 style="margin:0;font-family:'Playfair Display',serif;font-size:1.15rem">Aplicación Meta</h3>
+    <section class="cd-card cd-settings-card">
+        <div class="cd-sc-head">
+            <div class="cd-sc-icon cd-sc-accent">
+                <span class="material-icons">apps</span>
+            </div>
+            <div>
+                <h3>Aplicación Meta</h3>
+                <p>Credenciales de tu app en Meta Developer Console.</p>
+            </div>
         </div>
 
         <div class="row">
@@ -81,10 +87,15 @@
     </section>
 
     {{-- ═══════════ TOKENS ═══════════ --}}
-    <section class="cd-card" style="margin-bottom: 24px;">
-        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
-            <span class="material-icons" style="color:#25D366;font-size:28px">key</span>
-            <h3 style="margin:0;font-family:'Playfair Display',serif;font-size:1.15rem">Tokens de Acceso</h3>
+    <section class="cd-card cd-settings-card">
+        <div class="cd-sc-head">
+            <div class="cd-sc-icon cd-sc-green">
+                <span class="material-icons">key</span>
+            </div>
+            <div>
+                <h3>Tokens de Acceso</h3>
+                <p>Tokens necesarios para comunicarse con la Graph API de Meta.</p>
+            </div>
         </div>
 
         <div class="form-group mb-3">
@@ -103,10 +114,15 @@
     </section>
 
     {{-- ═══════════ WHATSAPP ═══════════ --}}
-    <section class="cd-card" style="margin-bottom: 24px;">
-        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
-            <span style="color:#25D366;font-size:24px"><i class="fab fa-whatsapp"></i></span>
-            <h3 style="margin:0;font-family:'Playfair Display',serif;font-size:1.15rem">WhatsApp Business</h3>
+    <section class="cd-card cd-settings-card">
+        <div class="cd-sc-head">
+            <div class="cd-sc-icon cd-sc-green">
+                <i class="fab fa-whatsapp" style="font-size:22px"></i>
+            </div>
+            <div>
+                <h3>WhatsApp Business</h3>
+                <p>Configuración para capturar leads desde mensajes de WhatsApp.</p>
+            </div>
         </div>
 
         <div class="row">
@@ -130,13 +146,18 @@
     </section>
 
     {{-- ═══════════ CRM CONFIG ═══════════ --}}
-    <section class="cd-card" style="margin-bottom: 24px;">
-        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
-            <span class="material-icons" style="color:#717fe0;font-size:28px">settings</span>
-            <h3 style="margin:0;font-family:'Playfair Display',serif;font-size:1.15rem">Configuración CRM</h3>
+    <section class="cd-card cd-settings-card">
+        <div class="cd-sc-head">
+            <div class="cd-sc-icon cd-sc-accent">
+                <span class="material-icons">settings</span>
+            </div>
+            <div>
+                <h3>Configuración CRM</h3>
+                <p>Opciones de asignación y comportamiento automático.</p>
+            </div>
         </div>
 
-        <div class="row">
+        <div class="row" style="align-items:stretch">
             <div class="col-md-6">
                 <div class="form-group mb-3">
                     <label class="text-title-field" for="crm_meta_default_agent_id">Agente por defecto</label>
@@ -153,25 +174,23 @@
                     <small class="form-text text-muted">Agente al que se asignarán automáticamente los leads de Meta.</small>
                 </div>
             </div>
-            <div class="col-md-6">
-                <div class="form-group mb-3" style="padding-top:28px">
-                    <label class="form-check-label" style="display:flex;align-items:center;gap:10px;cursor:pointer">
-                        <input type="hidden" name="crm_meta_auto_import" value="0" />
-                        <input type="checkbox" class="form-check-input" name="crm_meta_auto_import" value="1"
-                            @checked(setting('crm_meta_auto_import')) style="width:20px;height:20px" />
-                        <span>
-                            <strong>Auto-importar leads</strong><br>
-                            <small class="text-muted">Si está activo, los leads se crean automáticamente al recibir webhooks.</small>
-                        </span>
-                    </label>
-                </div>
+            <div class="col-md-6" style="display:flex;align-items:center">
+                <label class="cd-toggle-wrap">
+                    <input type="hidden" name="crm_meta_auto_import" value="0" />
+                    <input type="checkbox" name="crm_meta_auto_import" value="1"
+                        @checked(setting('crm_meta_auto_import')) />
+                    <div class="cd-toggle-text">
+                        <strong>Auto-importar leads</strong><br>
+                        <small>Si está activo, los leads se crean automáticamente al recibir webhooks.</small>
+                    </div>
+                </label>
             </div>
         </div>
     </section>
 
     {{-- ═══════════ SAVE BUTTON ═══════════ --}}
-    <div style="display:flex;justify-content:flex-end;margin-bottom:24px">
-        <button type="submit" class="cd-qbtn cd-primary" style="width:auto;padding:12px 32px;font-size:1rem">
+    <div class="cd-save-row">
+        <button type="submit" class="cd-save-btn">
             <span class="material-icons" style="font-size:20px">save</span> Guardar configuración
         </button>
     </div>
@@ -179,38 +198,46 @@
     {!! Form::close() !!}
 
     {{-- ═══════════ WEBHOOK LOGS ═══════════ --}}
-    <section class="cd-card" style="margin-bottom: 24px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-            <div style="display:flex;align-items:center;gap:12px">
-                <span class="material-icons" style="color:#717fe0;font-size:28px">list_alt</span>
-                <h3 style="margin:0;font-family:'Playfair Display',serif;font-size:1.15rem">Últimos Webhooks</h3>
+    <section class="cd-card cd-settings-card">
+        <div class="cd-sc-head" style="justify-content:space-between">
+            <div style="display:flex;align-items:center;gap:14px">
+                <div class="cd-sc-icon cd-sc-accent">
+                    <span class="material-icons">list_alt</span>
+                </div>
+                <div>
+                    <h3>Últimos Webhooks</h3>
+                    <p>Log de eventos recibidos desde Meta.</p>
+                </div>
             </div>
-            <button type="button" class="cd-qbtn" onclick="loadWebhookLogs()" style="width:auto;padding:6px 14px;font-size:.85rem">
+            <button type="button" class="cd-qbtn" onclick="loadWebhookLogs()" style="width:auto;padding:7px 16px;font-size:.82rem">
                 <span class="material-icons" style="font-size:16px">refresh</span> Actualizar
             </button>
         </div>
         <div id="webhookLogsContainer">
-            <p style="color:#999;font-size:.9rem">Cargando logs...</p>
+            <p style="color:var(--cd-ink-400);font-size:.88rem">Cargando logs...</p>
         </div>
     </section>
 
     {{-- ═══════════ SETUP GUIDE ═══════════ --}}
-    <section class="cd-card" style="margin-bottom: 24px;">
-        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
-            <span class="material-icons" style="color:#1877F2;font-size:28px">menu_book</span>
-            <h3 style="margin:0;font-family:'Playfair Display',serif;font-size:1.15rem">Guía de Configuración</h3>
+    <section class="cd-card cd-settings-card">
+        <div class="cd-sc-head">
+            <div class="cd-sc-icon cd-sc-meta">
+                <span class="material-icons">menu_book</span>
+            </div>
+            <div>
+                <h3>Guía de Configuración</h3>
+                <p>Pasos para conectar tu cuenta de Meta con este CRM.</p>
+            </div>
         </div>
-        <div style="color:#555;font-size:.9rem;line-height:1.7">
-            <ol style="padding-left:20px">
-                <li><strong>Crear App en Meta:</strong> Ir a <code>developers.facebook.com</code> → My Apps → Create App → Business → Completar datos.</li>
-                <li><strong>Agregar productos:</strong> En el panel de la App, agregar: <em>Webhooks</em>, <em>Facebook Login</em> (si no existe), <em>WhatsApp</em> (si aplica), <em>Messenger</em> (si aplica).</li>
-                <li><strong>Configurar Webhook:</strong> En Webhooks → subscribir a <em>Page</em> → Callback URL: la URL de arriba → Verify Token: el token de arriba → Subscribir a <code>leadgen</code> y <code>messages</code>.</li>
-                <li><strong>Generar Page Token:</strong> En Facebook Login → ir a Graph API Explorer → seleccionar tu Page → generar token → extender a long-lived → pegar arriba.</li>
-                <li><strong>WhatsApp (opcional):</strong> En WhatsApp → Getting Started → copiar Phone Number ID y Business Account ID → pegar arriba. Configurar webhook callback para mensajes.</li>
-                <li><strong>Lead Ads:</strong> Subscribir tu página al webhook de leadgen en la sección de Webhooks de la App.</li>
-                <li><strong>Activar:</strong> Marcar "Auto-importar leads" arriba y guardar.</li>
-            </ol>
-        </div>
+        <ol class="cd-guide-steps">
+            <li><strong>Crear App en Meta:</strong> Ir a <code>developers.facebook.com</code> → My Apps → Create App → Business → Completar datos.</li>
+            <li><strong>Agregar productos:</strong> En el panel de la App, agregar: <em>Webhooks</em>, <em>Facebook Login</em> (si no existe), <em>WhatsApp</em> (si aplica), <em>Messenger</em> (si aplica).</li>
+            <li><strong>Configurar Webhook:</strong> En Webhooks → subscribir a <em>Page</em> → Callback URL: la URL de arriba → Verify Token: el token de arriba → Subscribir a <code>leadgen</code> y <code>messages</code>.</li>
+            <li><strong>Generar Page Token:</strong> En Facebook Login → ir a Graph API Explorer → seleccionar tu Page → generar token → extender a long-lived → pegar arriba.</li>
+            <li><strong>WhatsApp (opcional):</strong> En WhatsApp → Getting Started → copiar Phone Number ID y Business Account ID → pegar arriba. Configurar webhook callback para mensajes.</li>
+            <li><strong>Lead Ads:</strong> Subscribir tu página al webhook de leadgen en la sección de Webhooks de la App.</li>
+            <li><strong>Activar:</strong> Marcar "Auto-importar leads" arriba y guardar.</li>
+        </ol>
     </section>
 </div>
 
@@ -227,7 +254,7 @@
 
     function loadWebhookLogs() {
         var container = document.getElementById('webhookLogsContainer');
-        container.innerHTML = '<p style="color:#999;font-size:.9rem">Cargando...</p>';
+        container.innerHTML = '<p style="color:var(--cd-ink-400);font-size:.88rem">Cargando...</p>';
 
         $.ajax({
             url: '{{ route("crm.meta-logs") }}',
@@ -235,31 +262,31 @@
             success: function(res) {
                 var logs = res.data || [];
                 if (!logs.length) {
-                    container.innerHTML = '<p style="color:#999;font-size:.9rem">No hay webhooks registrados aún.</p>';
+                    container.innerHTML = '<p style="color:var(--cd-ink-400);font-size:.88rem">No hay webhooks registrados aún.</p>';
                     return;
                 }
-                var html = '<table style="width:100%;font-size:.85rem;border-collapse:collapse">';
-                html += '<thead><tr style="border-bottom:2px solid #eee;text-align:left">';
-                html += '<th style="padding:8px 6px">ID</th>';
-                html += '<th style="padding:8px 6px">Tipo</th>';
-                html += '<th style="padding:8px 6px">Estado</th>';
-                html += '<th style="padding:8px 6px">Error</th>';
-                html += '<th style="padding:8px 6px">Fecha</th>';
-                html += '<th style="padding:8px 6px"></th>';
+                var html = '<table class="cd-logs-table">';
+                html += '<thead><tr>';
+                html += '<th>ID</th>';
+                html += '<th>Tipo</th>';
+                html += '<th>Estado</th>';
+                html += '<th>Error</th>';
+                html += '<th>Fecha</th>';
+                html += '<th></th>';
                 html += '</tr></thead><tbody>';
                 logs.forEach(function(log) {
                     var status = log.processed
-                        ? '<span style="color:#25D366">✓ Procesado</span>'
-                        : (log.error_message ? '<span style="color:#E4405F">✗ Error</span>' : '<span style="color:#999">Pendiente</span>');
-                    html += '<tr style="border-bottom:1px solid #f0f0f0">';
-                    html += '<td style="padding:6px">#' + log.id + '</td>';
-                    html += '<td style="padding:6px"><code>' + log.event_type + '</code></td>';
-                    html += '<td style="padding:6px">' + status + '</td>';
-                    html += '<td style="padding:6px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (log.error_message || '—') + '</td>';
-                    html += '<td style="padding:6px">' + (log.created_at || '') + '</td>';
-                    html += '<td style="padding:6px">';
+                        ? '<span class="cd-log-ok">✓ Procesado</span>'
+                        : (log.error_message ? '<span class="cd-log-err">✗ Error</span>' : '<span class="cd-log-pending">Pendiente</span>');
+                    html += '<tr>';
+                    html += '<td>#' + log.id + '</td>';
+                    html += '<td><code>' + log.event_type + '</code></td>';
+                    html += '<td>' + status + '</td>';
+                    html += '<td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (log.error_message || '—') + '</td>';
+                    html += '<td>' + (log.created_at || '') + '</td>';
+                    html += '<td>';
                     if (!log.processed && log.error_message) {
-                        html += '<button type="button" class="cd-qbtn" style="padding:3px 10px;font-size:.8rem" onclick="retryLog(' + log.id + ')">Reintentar</button>';
+                        html += '<button type="button" class="cd-qbtn" style="padding:4px 12px;font-size:.78rem" onclick="retryLog(' + log.id + ')">Reintentar</button>';
                     }
                     html += '</td></tr>';
                 });
@@ -267,7 +294,7 @@
                 container.innerHTML = html;
             },
             error: function() {
-                container.innerHTML = '<p style="color:#E4405F;font-size:.9rem">Error al cargar logs.</p>';
+                container.innerHTML = '<p style="color:#E4405F;font-size:.88rem">Error al cargar logs.</p>';
             }
         });
     }

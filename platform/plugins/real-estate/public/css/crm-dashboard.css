@@ -184,6 +184,162 @@
 }
 .cd-card-body { padding: var(--cd-pad); }
 
+/* ── SETTINGS CARD ────────────────────────────────── */
+.cd-settings-card {
+    padding: clamp(20px, 3vw, 32px);
+    margin-bottom: 20px;
+    transition: box-shadow .25s var(--cd-ease), border-color .25s var(--cd-ease);
+}
+.cd-settings-card:hover {
+    box-shadow: var(--cd-shadow-card);
+    border-color: rgba(113,127,224,.22);
+}
+.cd-settings-card .cd-sc-head {
+    display: flex; align-items: center; gap: 14px;
+    margin-bottom: 20px; padding-bottom: 16px;
+    border-bottom: 1px solid var(--cd-line-soft);
+}
+.cd-settings-card .cd-sc-head .cd-sc-icon {
+    width: 44px; height: 44px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; flex-shrink: 0;
+}
+.cd-settings-card .cd-sc-head .cd-sc-icon.cd-sc-meta { background: rgba(24,119,242,.08); color: #1877F2; }
+.cd-settings-card .cd-sc-head .cd-sc-icon.cd-sc-accent { background: var(--cd-accent-tint); color: var(--cd-accent); }
+.cd-settings-card .cd-sc-head .cd-sc-icon.cd-sc-green { background: rgba(37,211,102,.08); color: #25D366; }
+.cd-settings-card .cd-sc-head h3 {
+    margin: 0; font-family: 'Playfair Display', serif;
+    font-size: 1.1rem; font-weight: 600; color: var(--cd-ink-900);
+    letter-spacing: -.01em;
+}
+.cd-settings-card .cd-sc-head p {
+    margin: 3px 0 0; font-size: .82rem; color: var(--cd-ink-400);
+}
+.cd-settings-card .form-group label,
+.cd-settings-card .text-title-field {
+    font-size: .82rem; font-weight: 600; color: var(--cd-ink-900);
+    letter-spacing: .02em; margin-bottom: 6px; display: block;
+}
+.cd-settings-card .form-control {
+    border-radius: var(--cd-radius-sm); border: 1px solid var(--cd-line);
+    padding: 10px 14px; font-size: .88rem; transition: border-color .2s ease, box-shadow .2s ease;
+    background: var(--cd-page);
+}
+.cd-settings-card .form-control:focus {
+    border-color: var(--cd-accent); box-shadow: 0 0 0 3px var(--cd-accent-tint);
+    outline: none;
+}
+.cd-settings-card .form-text {
+    font-size: .78rem; color: var(--cd-ink-400); margin-top: 5px;
+}
+.cd-settings-card .ui-select-wrapper select {
+    border-radius: var(--cd-radius-sm); border: 1px solid var(--cd-line);
+    padding: 10px 14px; font-size: .88rem;
+}
+
+/* webhook URL box */
+.cd-webhook-url-box {
+    display: flex; gap: 10px; align-items: center;
+    background: var(--cd-soft-bg); border: 1px dashed var(--cd-line);
+    border-radius: var(--cd-radius-sm); padding: 12px 16px;
+}
+.cd-webhook-url-box input {
+    flex: 1; background: transparent !important; border: none !important;
+    font-family: 'SF Mono', 'Fira Code', monospace; font-size: .85rem;
+    color: var(--cd-ink-900); outline: none;
+}
+.cd-webhook-url-box .cd-copy-btn {
+    flex-shrink: 0; display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 18px; border-radius: 8px; font-size: .82rem; font-weight: 600;
+    background: var(--cd-accent); color: #fff; border: none; cursor: pointer;
+    transition: background .2s ease, transform .1s ease;
+}
+.cd-webhook-url-box .cd-copy-btn:hover { background: var(--cd-accent-ink); }
+.cd-webhook-url-box .cd-copy-btn:active { transform: scale(.97); }
+
+.cd-verify-token {
+    display: inline-flex; align-items: center; gap: 8px;
+    margin-top: 10px; font-size: .8rem; color: var(--cd-ink-400);
+}
+.cd-verify-token code {
+    background: rgba(113,127,224,.08); color: var(--cd-accent);
+    padding: 3px 10px; border-radius: 6px; font-size: .78rem;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+}
+
+/* guide steps */
+.cd-guide-steps {
+    padding-left: 0; list-style: none; counter-reset: guide;
+}
+.cd-guide-steps li {
+    counter-increment: guide; position: relative;
+    padding: 12px 0 12px 44px; border-bottom: 1px solid var(--cd-line-soft);
+    font-size: .88rem; line-height: 1.65; color: var(--cd-ink-600);
+}
+.cd-guide-steps li:last-child { border-bottom: none; }
+.cd-guide-steps li::before {
+    content: counter(guide);
+    position: absolute; left: 0; top: 12px;
+    width: 28px; height: 28px; border-radius: 8px;
+    background: var(--cd-accent-tint); color: var(--cd-accent);
+    display: flex; align-items: center; justify-content: center;
+    font-size: .78rem; font-weight: 700;
+}
+.cd-guide-steps li strong { color: var(--cd-ink-900); }
+.cd-guide-steps li code {
+    background: var(--cd-soft-bg); padding: 2px 7px; border-radius: 4px;
+    font-size: .82rem;
+}
+
+/* webhook logs table */
+.cd-logs-table { width: 100%; border-collapse: collapse; font-size: .83rem; }
+.cd-logs-table thead th {
+    padding: 10px 12px; text-align: left; font-weight: 600;
+    font-size: .75rem; text-transform: uppercase; letter-spacing: .06em;
+    color: var(--cd-ink-400); border-bottom: 2px solid var(--cd-line);
+}
+.cd-logs-table tbody td {
+    padding: 10px 12px; border-bottom: 1px solid var(--cd-line-soft);
+    color: var(--cd-ink-600);
+}
+.cd-logs-table tbody tr:hover { background: var(--cd-soft-bg); }
+.cd-log-ok { color: #25D366; font-weight: 600; }
+.cd-log-err { color: #E4405F; font-weight: 600; }
+.cd-log-pending { color: var(--cd-ink-400); }
+
+/* save button row */
+.cd-save-row {
+    display: flex; justify-content: flex-end;
+    margin-bottom: 24px; padding-top: 8px;
+}
+.cd-save-row .cd-save-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 12px 36px; border-radius: 12px; font-size: .92rem; font-weight: 600;
+    background: var(--cd-accent); color: #fff; border: none; cursor: pointer;
+    box-shadow: 0 2px 8px rgba(113,127,224,.25);
+    transition: background .2s ease, transform .1s ease, box-shadow .2s ease;
+}
+.cd-save-row .cd-save-btn:hover {
+    background: var(--cd-accent-ink);
+    box-shadow: 0 4px 16px rgba(113,127,224,.35);
+}
+.cd-save-row .cd-save-btn:active { transform: scale(.97); }
+
+/* checkbox toggle */
+.cd-toggle-wrap {
+    display: flex; align-items: flex-start; gap: 14px;
+    cursor: pointer; padding: 12px 16px;
+    border: 1px solid var(--cd-line-soft); border-radius: var(--cd-radius-sm);
+    transition: border-color .2s ease, background .2s ease;
+}
+.cd-toggle-wrap:hover { border-color: var(--cd-accent); background: var(--cd-accent-tint); }
+.cd-toggle-wrap input[type="checkbox"] {
+    width: 20px; height: 20px; accent-color: var(--cd-accent);
+    margin-top: 2px; flex-shrink: 0;
+}
+.cd-toggle-wrap .cd-toggle-text strong { font-size: .88rem; color: var(--cd-ink-900); }
+.cd-toggle-wrap .cd-toggle-text small { font-size: .78rem; color: var(--cd-ink-400); }
+
 /* ── TASKS ─────────────────────────────────────────── */
 .cd-task {
     display: flex; align-items: flex-start; gap: 13px;

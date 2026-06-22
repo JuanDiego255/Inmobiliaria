@@ -30,6 +30,8 @@ class CrmLead extends BaseModel
         'last_contacted_at',
         'expected_close_date',
         'lost_reason',
+        'meta_lead_id',
+        'meta_platform',
     ];
 
     protected $casts = [

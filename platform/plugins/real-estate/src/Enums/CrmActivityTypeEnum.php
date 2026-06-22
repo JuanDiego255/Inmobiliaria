@@ -14,6 +14,7 @@ class CrmActivityTypeEnum extends Enum
     public const WHATSAPP = 'whatsapp';
     public const VISIT = 'visit';
     public const MEETING = 'meeting';
+    public const META_AUTO = 'meta_auto';
 
     public static $langPath = 'plugins/real-estate::crm.activity_types';
 
@@ -26,6 +27,7 @@ class CrmActivityTypeEnum extends Enum
             self::WHATSAPP => Html::tag('span', 'WhatsApp', ['class' => 'label-success status-label'])->toHtml(),
             self::VISIT => Html::tag('span', 'Visita', ['class' => 'label-warning status-label'])->toHtml(),
             self::MEETING => Html::tag('span', 'Reunión', ['class' => 'label-danger status-label'])->toHtml(),
+            self::META_AUTO => Html::tag('span', 'Meta (Auto)', ['class' => 'label-info status-label', 'style' => 'background-color:#0081FB;color:#fff'])->toHtml(),
             default => null,
         };
     }
@@ -39,6 +41,7 @@ class CrmActivityTypeEnum extends Enum
             self::WHATSAPP => 'WhatsApp',
             self::VISIT => 'Visita',
             self::MEETING => 'Reunión',
+            self::META_AUTO => 'Meta (Auto)',
         ];
     }
 
@@ -51,6 +54,7 @@ class CrmActivityTypeEnum extends Enum
             self::WHATSAPP => 'fab fa-whatsapp',
             self::VISIT => 'fas fa-walking',
             self::MEETING => 'fas fa-users',
+            self::META_AUTO => 'fab fa-meta',
         ];
     }
 

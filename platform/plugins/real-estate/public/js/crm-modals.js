@@ -237,7 +237,7 @@
         var stageKey = enumVal(lead.stage);
         document.getElementById('detailStage').textContent = stageLabels[stageKey] || enumLabel(lead.stage);
 
-        var sourceLabels = { manual:'Manual', website:'Sitio Web', consult:'Consulta', referral:'Referido', social:'Redes Sociales', phone:'Teléfono', other:'Otro' };
+        var sourceLabels = { manual:'Manual', website:'Sitio Web', consult:'Consulta', referral:'Referido', social:'Redes Sociales', phone:'Teléfono', facebook_lead_ad:'Facebook Lead Ad', whatsapp:'WhatsApp', messenger:'Messenger', instagram_dm:'Instagram DM', other:'Otro' };
         var sourceKey = enumVal(lead.source);
         document.getElementById('detailSource').textContent = sourceLabels[sourceKey] || enumLabel(lead.source);
 
@@ -278,7 +278,7 @@
         actTimeline.innerHTML = '';
         if (lead.activities && lead.activities.length) {
             actEmpty.style.display = 'none';
-            var materialIconMap = { note:'sticky_note_2', call:'call', email:'mail_outline', whatsapp:'chat', visit:'event_available', meeting:'groups' };
+            var materialIconMap = { note:'sticky_note_2', call:'call', email:'mail_outline', whatsapp:'chat', visit:'event_available', meeting:'groups', meta_auto:'share' };
             lead.activities.forEach(function (a) {
                 var aType = enumVal(a.type);
                 var aTypeLabel = enumLabel(a.type);

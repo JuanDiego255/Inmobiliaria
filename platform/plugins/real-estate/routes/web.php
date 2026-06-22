@@ -17,6 +17,12 @@ use Botble\Slug\Facades\SlugHelper;
 use Illuminate\Support\Facades\Route;
 
 Route::group(['namespace' => 'Botble\RealEstate\Http\Controllers', 'middleware' => ['web', 'core']], function () {
+
+    Route::group(['prefix' => 'webhook'], function () {
+        Route::get('meta', 'MetaWebhookController@verify')->name('meta.webhook.verify');
+        Route::post('meta', 'MetaWebhookController@handle')->name('meta.webhook.handle');
+    });
+
     Route::group([
         'prefix' => BaseHelper::getAdminPrefix() . '/real-estate',
         'middleware' => 'auth',
@@ -380,6 +386,30 @@ Route::group(['namespace' => 'Botble\RealEstate\Http\Controllers', 'middleware' 
                     'permission' => 'crm-task.index',
                 ]);
             });
+
+            Route::get('meta-settings', [
+                'as' => 'meta-settings',
+                'uses' => 'MetaLeadSettingsController@index',
+                'permission' => 'crm-meta.settings',
+            ]);
+
+            Route::post('meta-settings', [
+                'as' => 'meta-settings.update',
+                'uses' => 'MetaLeadSettingsController@update',
+                'permission' => 'crm-meta.settings',
+            ]);
+
+            Route::get('meta-logs', [
+                'as' => 'meta-logs',
+                'uses' => 'MetaWebhookLogController@index',
+                'permission' => 'crm-meta.settings',
+            ]);
+
+            Route::post('meta-logs/{id}/retry', [
+                'as' => 'meta-logs.retry',
+                'uses' => 'MetaWebhookLogController@retry',
+                'permission' => 'crm-meta.settings',
+            ])->wherePrimaryKey();
 
             Route::group(['prefix' => 'reminders', 'as' => 'reminders.'], function () {
                 Route::post('/', [

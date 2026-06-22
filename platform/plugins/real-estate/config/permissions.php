@@ -410,4 +410,10 @@ return [
         'flag' => 'crm-reminder.create',
         'parent_flag' => 'crm-reminder.index',
     ],
+
+    [
+        'name' => 'CRM Meta Settings',
+        'flag' => 'crm-meta.settings',
+        'parent_flag' => 'plugins.real-estate',
+    ],
 ];

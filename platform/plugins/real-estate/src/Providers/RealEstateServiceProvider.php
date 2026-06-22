@@ -374,6 +374,14 @@ class RealEstateServiceProvider extends ServiceProvider
                     'name' => 'Pipeline',
                     'url' => route('crm.pipeline'),
                     'permissions' => ['crm-lead.index'],
+                ])
+                ->registerItem([
+                    'id' => 'cms-plugins-crm-meta',
+                    'priority' => 3,
+                    'parent_id' => 'cms-plugins-crm',
+                    'name' => 'Meta Integración',
+                    'url' => route('crm.meta-settings'),
+                    'permissions' => ['crm-meta.settings'],
                 ]);
 
             if (RealEstateHelper::isEnabledCustomFields()) {

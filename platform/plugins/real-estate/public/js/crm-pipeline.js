@@ -6,7 +6,9 @@
 
     var sourceLabels = {
         manual: 'Manual', website: 'Web', consult: 'Consulta',
-        referral: 'Referido', social: 'Social', phone: 'Tel', other: 'Otro'
+        referral: 'Referido', social: 'Social', phone: 'Tel',
+        facebook_lead_ad: 'FB Lead Ad', whatsapp: 'WhatsApp',
+        messenger: 'Messenger', instagram_dm: 'IG DM', other: 'Otro'
     };
 
     function enumVal(e) {

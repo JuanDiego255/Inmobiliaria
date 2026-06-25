@@ -9,6 +9,7 @@ use Botble\RealEstate\Models\CrmActivity;
 use Botble\RealEstate\Models\CrmLead;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Botble\RealEstate\Services\WhatsAppBotService;
 
 class MetaLeadService
 {
@@ -58,6 +59,19 @@ class MetaLeadService
 
                 $contactName = $contacts[$index]['profile']['name'] ?? ($contacts[0]['profile']['name'] ?? 'WhatsApp Contact');
                 $messageText = $this->extractWhatsAppMessageText($message);
+
+                if (setting('crm_whatsapp_bot_enabled') && $messageText && ($message['type'] ?? 'text') === 'text') {
+                    try {
+                        $botService = app(WhatsAppBotService::class);
+                        $botService->processIncomingMessage($waId, $contactName, $messageText, [
+                            'message_id' => $message['id'] ?? null,
+                            'timestamp' => $message['timestamp'] ?? null,
+                        ]);
+                        continue;
+                    } catch (\Exception $e) {
+                        Log::error('WhatsAppBot: Failed, falling back to lead creation', ['error' => $e->getMessage()]);
+                    }
+                }
 
                 $data = [
                     'name' => $contactName,

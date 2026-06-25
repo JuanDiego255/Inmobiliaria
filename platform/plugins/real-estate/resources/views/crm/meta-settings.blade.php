@@ -19,6 +19,9 @@
                 <p class="cd-head-sub">Capturá leads automáticamente desde Facebook, Instagram, WhatsApp y Messenger.</p>
             </div>
             <div class="cd-leads-nav">
+                <a class="cd-qbtn cd-primary" href="{{ route('crm.meta-help') }}" style="width:auto;padding:9px 16px">
+                    <span class="cd-qi"><span class="material-icons">help_outline</span></span> Ayuda
+                </a>
                 <a class="cd-qbtn" href="{{ route('crm.dashboard') }}" style="width:auto;padding:9px 16px">
                     <span class="cd-qi"><span class="material-icons">dashboard</span></span> Dashboard
                 </a>
@@ -188,6 +191,98 @@
         </div>
     </section>
 
+    {{-- ═══════════ WHATSAPP BOT AI ═══════════ --}}
+    <section class="cd-card cd-settings-card">
+        <div class="cd-sc-head">
+            <div class="cd-sc-icon cd-sc-green">
+                <span class="material-icons">smart_toy</span>
+            </div>
+            <div>
+                <h3>Bot de WhatsApp con IA</h3>
+                <p>Responde automáticamente consultas sobre propiedades usando inteligencia artificial.</p>
+            </div>
+        </div>
+
+        <div class="row" style="margin-bottom:16px">
+            <div class="col-md-6">
+                <label class="cd-toggle-wrap">
+                    <input type="hidden" name="crm_whatsapp_bot_enabled" value="0" />
+                    <input type="checkbox" name="crm_whatsapp_bot_enabled" value="1"
+                        @checked(setting('crm_whatsapp_bot_enabled')) />
+                    <div class="cd-toggle-text">
+                        <strong>Activar Bot IA</strong><br>
+                        <small>Cuando está activo, el bot responde mensajes de WhatsApp automáticamente con datos de propiedades.</small>
+                    </div>
+                </label>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group mb-3">
+                    <label class="text-title-field" for="crm_whatsapp_bot_max_properties">Máx. propiedades por respuesta</label>
+                    <input type="number" class="form-control" id="crm_whatsapp_bot_max_properties"
+                        name="crm_whatsapp_bot_max_properties"
+                        value="{{ setting('crm_whatsapp_bot_max_properties', 5) }}"
+                        min="1" max="10" />
+                    <small class="form-text text-muted">Cantidad máxima de propiedades que el bot muestra en cada respuesta.</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group mb-3">
+                    <label class="text-title-field" for="crm_whatsapp_bot_llm_provider">Proveedor de IA</label>
+                    <div class="ui-select-wrapper">
+                        <select class="ui-select form-control" id="crm_whatsapp_bot_llm_provider" name="crm_whatsapp_bot_llm_provider">
+                            <option value="claude" @selected(setting('crm_whatsapp_bot_llm_provider', 'claude') === 'claude')>
+                                Claude (Anthropic) — Recomendado
+                            </option>
+                            <option value="openai" @selected(setting('crm_whatsapp_bot_llm_provider') === 'openai')>
+                                OpenAI (GPT)
+                            </option>
+                        </select>
+                    </div>
+                    <small class="form-text text-muted">Claude Haiku es el más recomendado por calidad/precio (~$0.004/conversación).</small>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group mb-3">
+                    <label class="text-title-field" for="crm_whatsapp_bot_llm_model">Modelo</label>
+                    <input type="text" class="form-control" id="crm_whatsapp_bot_llm_model"
+                        name="crm_whatsapp_bot_llm_model"
+                        value="{{ setting('crm_whatsapp_bot_llm_model', 'claude-haiku-4-5-20251001') }}"
+                        placeholder="claude-haiku-4-5-20251001" />
+                    <small class="form-text text-muted">Claude: claude-haiku-4-5-20251001 · OpenAI: gpt-4o-mini</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group mb-3">
+            <label class="text-title-field" for="crm_whatsapp_bot_llm_api_key">API Key del LLM</label>
+            <input type="password" class="form-control" id="crm_whatsapp_bot_llm_api_key"
+                name="crm_whatsapp_bot_llm_api_key"
+                value="{{ setting('crm_whatsapp_bot_llm_api_key') }}"
+                placeholder="sk-ant-... o sk-..." />
+            <small class="form-text text-muted">Clave de API de Anthropic o OpenAI. Se obtiene en la consola del proveedor.</small>
+        </div>
+
+        <div class="form-group mb-3">
+            <label class="text-title-field" for="crm_whatsapp_bot_system_prompt">Instrucciones del bot (System Prompt)</label>
+            <textarea class="form-control" id="crm_whatsapp_bot_system_prompt"
+                name="crm_whatsapp_bot_system_prompt"
+                rows="6" placeholder="Dejá vacío para usar el prompt por defecto...">{{ setting('crm_whatsapp_bot_system_prompt') }}</textarea>
+            <small class="form-text text-muted">Personalizá el comportamiento del bot. Dejá vacío para usar las instrucciones por defecto (recomendado).</small>
+        </div>
+
+        <div class="form-group mb-3">
+            <label class="text-title-field" for="crm_whatsapp_bot_welcome_message">Mensaje de fallback</label>
+            <input type="text" class="form-control" id="crm_whatsapp_bot_welcome_message"
+                name="crm_whatsapp_bot_welcome_message"
+                value="{{ setting('crm_whatsapp_bot_welcome_message') }}"
+                placeholder="¡Hola! Gracias por contactarnos. Un agente te atenderá pronto." />
+            <small class="form-text text-muted">Mensaje que se envía si la IA no está disponible o falla.</small>
+        </div>
+    </section>
+
     {{-- ═══════════ SAVE BUTTON ═══════════ --}}
     <div class="cd-save-row">
         <button type="submit" class="cd-save-btn">
@@ -218,26 +313,14 @@
         </div>
     </section>
 
-    {{-- ═══════════ SETUP GUIDE ═══════════ --}}
-    <section class="cd-card cd-settings-card">
-        <div class="cd-sc-head">
-            <div class="cd-sc-icon cd-sc-meta">
-                <span class="material-icons">menu_book</span>
-            </div>
-            <div>
-                <h3>Guía de Configuración</h3>
-                <p>Pasos para conectar tu cuenta de Meta con este CRM.</p>
-            </div>
-        </div>
-        <ol class="cd-guide-steps">
-            <li><strong>Crear App en Meta:</strong> Ir a <code>developers.facebook.com</code> → My Apps → Create App → Business → Completar datos.</li>
-            <li><strong>Agregar productos:</strong> En el panel de la App, agregar: <em>Webhooks</em>, <em>Facebook Login</em> (si no existe), <em>WhatsApp</em> (si aplica), <em>Messenger</em> (si aplica).</li>
-            <li><strong>Configurar Webhook:</strong> En Webhooks → subscribir a <em>Page</em> → Callback URL: la URL de arriba → Verify Token: el token de arriba → Subscribir a <code>leadgen</code> y <code>messages</code>.</li>
-            <li><strong>Generar Page Token:</strong> En Facebook Login → ir a Graph API Explorer → seleccionar tu Page → generar token → extender a long-lived → pegar arriba.</li>
-            <li><strong>WhatsApp (opcional):</strong> En WhatsApp → Getting Started → copiar Phone Number ID y Business Account ID → pegar arriba. Configurar webhook callback para mensajes.</li>
-            <li><strong>Lead Ads:</strong> Subscribir tu página al webhook de leadgen en la sección de Webhooks de la App.</li>
-            <li><strong>Activar:</strong> Marcar "Auto-importar leads" arriba y guardar.</li>
-        </ol>
+    {{-- ═══════════ HELP LINK ═══════════ --}}
+    <section class="cd-card cd-settings-card" style="text-align:center;padding:32px">
+        <span class="material-icons" style="font-size:40px;color:var(--cd-accent);margin-bottom:12px">menu_book</span>
+        <h3 style="font-family:'Playfair Display',serif;font-size:1.1rem;margin-bottom:8px">¿Necesitás ayuda para configurar?</h3>
+        <p style="color:var(--cd-ink-400);font-size:.88rem;margin-bottom:16px">Tutorial detallado paso a paso para conectar Facebook, Instagram y WhatsApp.</p>
+        <a href="{{ route('crm.meta-help') }}" class="cd-save-btn" style="display:inline-flex;text-decoration:none">
+            <span class="material-icons" style="font-size:20px">help_outline</span> Ver Guía Completa
+        </a>
     </section>
 </div>
 

@@ -399,6 +399,12 @@ Route::group(['namespace' => 'Botble\RealEstate\Http\Controllers', 'middleware' 
                 'permission' => 'crm-meta.settings',
             ]);
 
+            Route::get('meta-help', [
+                'as' => 'meta-help',
+                'uses' => 'MetaLeadSettingsController@help',
+                'permission' => 'crm-lead.index',
+            ]);
+
             Route::get('meta-logs', [
                 'as' => 'meta-logs',
                 'uses' => 'MetaWebhookLogController@index',

@@ -39,7 +39,10 @@ class VirtualTourService
                 ]));
 
             if ($response->successful()) {
-                return $response->json();
+                $json = $response->json();
+                // DEBUG: remover después de verificar
+                logger()->info('VirtualTourService response', ['json' => $json]);
+                return $json;
             }
 
             Log::warning('VirtualTourService: API returned ' . $response->status());

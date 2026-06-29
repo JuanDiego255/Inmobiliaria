@@ -280,6 +280,37 @@
                     </section>
                 @endif
 
+                {{-- TOUR VIRTUAL 360 --}}
+                @if($property->virtual_tour_url)
+                    <section class="pd-sec">
+                        <h2 class="pd-sec-h">{{ __('Tour Virtual 360°') }}</h2>
+                        <div class="vt-detail-card">
+                            <div class="vt-detail-card-icon">
+                                <span class="material-icons">panorama_photosphere</span>
+                            </div>
+                            <div class="vt-detail-card-body">
+                                <h4>{{ __('Recorrido Virtual 360°') }}</h4>
+                                <p>{{ __('Explorá esta propiedad en un tour inmersivo e interactivo.') }}</p>
+                                <a href="{{ $property->virtual_tour_url }}" target="_blank" rel="noopener" class="vt-detail-btn">
+                                    <span class="material-icons">play_arrow</span> {{ __('Abrir Tour Virtual') }}
+                                </a>
+                            </div>
+                        </div>
+                        <style>
+                            .vt-detail-card{display:flex;align-items:center;gap:20px;background:linear-gradient(135deg,#1a1520 0%,#0e0b08 100%);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:24px;transition:border-color .3s}
+                            .vt-detail-card:hover{border-color:rgba(233,30,99,.4)}
+                            .vt-detail-card-icon{width:64px;height:64px;border-radius:50%;background:rgba(233,30,99,.12);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+                            .vt-detail-card-icon .material-icons{font-size:32px;color:#e91e63}
+                            .vt-detail-card-body h4{color:#fff;font-size:17px;margin:0 0 6px;font-weight:600}
+                            .vt-detail-card-body p{color:rgba(255,255,255,.55);font-size:13px;margin:0 0 14px}
+                            .vt-detail-btn{display:inline-flex;align-items:center;gap:8px;background:#e91e63;color:#fff;border:none;border-radius:8px;padding:10px 22px;font-size:14px;text-decoration:none;font-weight:600;transition:all .2s;box-shadow:0 0 20px rgba(233,30,99,.3)}
+                            .vt-detail-btn:hover{background:#c2185b;transform:translateY(-1px);box-shadow:0 4px 24px rgba(233,30,99,.4);text-decoration:none;color:#fff}
+                            .vt-detail-btn .material-icons{font-size:18px}
+                            @media(max-width:480px){.vt-detail-card{flex-direction:column;text-align:center}}
+                        </style>
+                    </section>
+                @endif
+
                 <hr class="pd-rule" style="margin:44px 0 30px">
 
                 {!! apply_filters('after_single_content_detail', null, $property) !!}

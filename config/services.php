@@ -31,4 +31,9 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'tours' => [
+        'url' => env('TOUR_API_URL'),
+        'token' => env('TOUR_API_TOKEN'),
+    ],
+
 ];

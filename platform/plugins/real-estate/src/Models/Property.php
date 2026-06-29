@@ -52,6 +52,7 @@ class Property extends BaseModel
         'latitude',
         'longitude',
         'unique_id',
+        'virtual_tour_url',
     ];
 
     protected $casts = [

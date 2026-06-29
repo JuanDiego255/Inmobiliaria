@@ -27,6 +27,7 @@ class ProjectRequest extends Request
             ],
             'status' => Rule::in(ProjectStatusEnum::values()),
             'unique_id' => 'nullable|string|max:120|unique:re_projects,unique_id,' . $this->route('project'),
+            'virtual_tour_url' => 'nullable|url|max:500',
         ];
     }
 }

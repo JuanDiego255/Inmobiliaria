@@ -29,6 +29,7 @@ class PropertyRequest extends Request
             'custom_fields.*.name' => ['required', 'string', 'max:255'],
             'custom_fields.*.value' => ['required', 'string', 'max:255'],
             'unique_id' => 'nullable|string|max:120|unique:re_properties,unique_id,' . $this->route('property'),
+            'virtual_tour_url' => 'nullable|url|max:500',
         ];
     }
 }

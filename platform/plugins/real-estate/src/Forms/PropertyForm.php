@@ -328,6 +328,17 @@ class PropertyForm extends FormAbstract
                     'class' => 'form-control',
                 ],
             ])
+            ->add('virtual_tour_url', 'text', [
+                'label' => 'Tour Virtual 360° URL',
+                'attr' => [
+                    'placeholder' => 'https://tours.tudominio.com/virtual-tour/12',
+                    'class' => 'form-control',
+                    'data-counter' => 500,
+                ],
+                'help_block' => [
+                    'text' => 'URL del tour virtual 360° de esta propiedad (del sistema de tours virtuales)',
+                ],
+            ])
             ->add('project_id', 'customSelect', [
                 'label' => trans('plugins/real-estate::property.form.project'),
                 'attr' => [

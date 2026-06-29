@@ -1,5 +1,6 @@
 <?php
 
+use Botble\RealEstate\Http\Controllers\VirtualTourController;
 use Botble\Theme\Facades\Theme;
 use Illuminate\Support\Facades\Route;
 use Theme\FlexHome\Http\Controllers\FlexHomeController;
@@ -7,6 +8,9 @@ use Theme\FlexHome\Http\Controllers\FlexHomeController;
 Route::group(['controller' => FlexHomeController::class, 'middleware' => ['web', 'core']], function () {
     Route::group(apply_filters(BASE_FILTER_GROUP_PUBLIC_ROUTE, []), function () {
         Route::get('wishlist', 'getWishlist')->name('public.wishlist');
+
+        Route::get('tours-virtuales', [VirtualTourController::class, 'index'])->name('public.virtual-tours');
+        Route::get('ajax/tours', [VirtualTourController::class, 'apiList'])->name('public.ajax.tours');
 
         Route::group(['prefix' => 'ajax', 'as' => 'public.ajax.'], function () {
             Route::get('cities', 'ajaxGetCities')->name('cities');

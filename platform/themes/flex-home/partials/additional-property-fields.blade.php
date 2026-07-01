@@ -21,6 +21,7 @@
         {!! Form::mediaImage('video[thumbnail]', $videoThumbnail) !!}
     @endif
 </div>
+{{-- Prueba Git --}}
 
 <div class="form-group mb-3">
     <label class="control-label" for="video_url">{{ __('Youtube Video URL') }}</label>

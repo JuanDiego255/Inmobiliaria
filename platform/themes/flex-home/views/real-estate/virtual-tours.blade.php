@@ -1,9 +1,9 @@
 <style>
 /* ── Design Tokens ── */
 :root {
-    --vt-accent: #e91e63;
-    --vt-accent-ink: #c2185b;
-    --vt-accent-tint: rgba(233,30,99,.12);
+    --vt-accent: #717fe0;
+    --vt-accent-ink: #5b69c9;
+    --vt-accent-tint: rgba(113,127,224,.12);
     --vt-page: #ffffff;
     --vt-sec-bg: #f6f5f2;
     --vt-ink-900: #16181d;
@@ -206,7 +206,7 @@
 .vt-badge {
     position: absolute; top: 10px; left: 10px;
     background: var(--vt-accent);
-    box-shadow: 0 0 14px rgba(233,30,99,.4);
+    box-shadow: 0 0 14px rgba(113,127,224,.4);
     color: #fff; font-size: 10px; font-weight: 600;
     padding: 5px 12px; border-radius: 20px;
     text-transform: uppercase; letter-spacing: .08em;

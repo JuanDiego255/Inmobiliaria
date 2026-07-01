@@ -285,13 +285,13 @@
                         </div>
                         <style>
                             .vt-detail-card{display:flex;align-items:center;gap:20px;background:linear-gradient(135deg,#1a1520 0%,#0e0b08 100%);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:24px;transition:border-color .3s}
-                            .vt-detail-card:hover{border-color:rgba(233,30,99,.4)}
-                            .vt-detail-card-icon{width:64px;height:64px;border-radius:50%;background:rgba(233,30,99,.12);display:flex;align-items:center;justify-content:center;flex-shrink:0}
-                            .vt-detail-card-icon .material-icons{font-size:32px;color:#e91e63}
+                            .vt-detail-card:hover{border-color:rgba(113,127,224,.4)}
+                            .vt-detail-card-icon{width:64px;height:64px;border-radius:50%;background:rgba(113,127,224,.12);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+                            .vt-detail-card-icon .material-icons{font-size:32px;color:#717fe0}
                             .vt-detail-card-body h4{color:#fff;font-size:17px;margin:0 0 6px;font-weight:600}
                             .vt-detail-card-body p{color:rgba(255,255,255,.55);font-size:13px;margin:0 0 14px}
-                            .vt-detail-btn{display:inline-flex;align-items:center;gap:8px;background:#e91e63;color:#fff;border:none;border-radius:8px;padding:10px 22px;font-size:14px;text-decoration:none;font-weight:600;transition:all .2s;box-shadow:0 0 20px rgba(233,30,99,.3)}
-                            .vt-detail-btn:hover{background:#c2185b;transform:translateY(-1px);box-shadow:0 4px 24px rgba(233,30,99,.4);text-decoration:none;color:#fff}
+                            .vt-detail-btn{display:inline-flex;align-items:center;gap:8px;background:#717fe0;color:#fff;border:none;border-radius:8px;padding:10px 22px;font-size:14px;text-decoration:none;font-weight:600;transition:all .2s;box-shadow:0 0 20px rgba(113,127,224,.3)}
+                            .vt-detail-btn:hover{background:#5b69c9;transform:translateY(-1px);box-shadow:0 4px 24px rgba(113,127,224,.4);text-decoration:none;color:#fff}
                             .vt-detail-btn .material-icons{font-size:18px}
                             @media(max-width:480px){.vt-detail-card{flex-direction:column;text-align:center}}
                         </style>

@@ -21,8 +21,10 @@
     </div>
 
     <div class="description">
-        <a href="#" class="text-orange heart add-to-wishlist" data-id="{{ $property->id }}"
-            title="{{ __('I care about this property!!!') }}"><i class="far fa-heart"></i></a>
+        @if(auth('account')->check())
+            <a href="#" class="text-orange heart add-to-wishlist" data-id="{{ $property->id }}"
+                title="{{ __('I care about this property!!!') }}"><i class="far fa-heart"></i></a>
+        @endif
         <a href="{{ $property->url }}">
             <h5>{{ $property->name }}</h5>
             <p class="dia_chi"><i class="fas fa-map-marker-alt"></i> {{ implode(', ', array_filter([$property->city->name, $property->state->name])) }}</p>

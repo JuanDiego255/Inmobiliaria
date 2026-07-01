@@ -33,27 +33,45 @@
         }
     }
 
+    function toggleWishlistIcon($el, filled) {
+        // Material Icons version (pc-fav, ix-fav buttons)
+        let $matIcon = $el.find('.material-icons')
+        if ($matIcon.length) {
+            $matIcon.text(filled ? 'favorite' : 'favorite_border')
+            $el.toggleClass('on', filled)
+            return
+        }
+        // FontAwesome version (legacy)
+        let $faIcon = $el.find('i')
+        if ($faIcon.length) {
+            if (filled) {
+                $faIcon.removeClass('far fa-heart').addClass('fas fa-heart')
+            } else {
+                $faIcon.removeClass('fas fa-heart').addClass('far fa-heart')
+            }
+        }
+    }
+
     $(document).ready(function () {
         setWishListCount()
 
-        $(document).on('click', '.add-to-wishlist', function (e) {
+        // Unified click handler for all wishlist buttons
+        $(document).on('click', '.add-to-wishlist, .pc-fav, .ix-fav', function (e) {
             e.preventDefault()
+            e.stopPropagation()
 
             let cookieName = 'wishlist'
-
-            let propertyId = $(this).data('id')
+            let $btn = $(this)
+            let propertyId = $btn.data('id') || $btn.data('property-id')
             let wishCookies = decodeURIComponent(getCookie(cookieName))
             let arrWList = []
 
             if (propertyId != null && propertyId != 0 && propertyId != undefined) {
-                // Case 1: Wishlist cookies are undefined
                 if (wishCookies == undefined || wishCookies == null || wishCookies == '') {
                     let item = { id: propertyId }
                     arrWList.push(item)
-
-                    $(`.add-to-wishlist[data-id=${propertyId}] i`).removeClass('far fa-heart').addClass('fas fa-heart')
+                    toggleWishlistIcon($btn, true)
                     showSuccess(__('Added to wishlist successfully!'))
-
                     setCookie(cookieName, JSON.stringify(arrWList), 60)
                 } else {
                     let item = { id: propertyId }
@@ -68,27 +86,23 @@
                         arrWList.push(item)
                         clearCookies(cookieName)
                         setCookie(cookieName, JSON.stringify(arrWList), 60)
-                        $(`.add-to-wishlist[data-id=${propertyId}] i`)
-                            .removeClass('far fa-heart')
-                            .addClass('fas fa-heart')
-
+                        toggleWishlistIcon($btn, true)
                         showSuccess(__('Added to wishlist successfully!'))
                     } else {
                         arrWList.splice(index, 1)
                         clearCookies(cookieName)
                         setCookie(cookieName, JSON.stringify(arrWList), 60)
-                        $(`.add-to-wishlist[data-id=${propertyId}] i`)
-                            .removeClass('fas fa-heart')
-                            .addClass('far fa-heart')
-
+                        toggleWishlistIcon($btn, false)
                         showSuccess(__('Removed from wishlist successfully!'))
                     }
                 }
             }
 
-            let countWishlist = JSON.parse(getCookie(cookieName)).length
-
-            $('.wishlist-count').text(countWishlist)
+            let cookieVal = getCookie(cookieName)
+            if (cookieVal) {
+                let countWishlist = JSON.parse(cookieVal).length
+                $('.wishlist-count').text(countWishlist)
+            }
             setWishListCount()
         })
 
@@ -119,9 +133,11 @@
                 }
             }
 
-            let countWishlist = JSON.parse(getCookie(cookieName)).length
-
-            $('.wishlist-count').text(countWishlist)
+            let cookieVal = getCookie(cookieName)
+            if (cookieVal) {
+                let countWishlist = JSON.parse(cookieVal).length
+                $('.wishlist-count').text(countWishlist)
+            }
             setWishListCount()
         })
 
@@ -135,10 +151,18 @@
 
                 $('.wishlist-count').text(countWishlist)
                 if (countWishlist > 0) {
-                    $('.add-to-wishlist').removeClass('far fa-heart')
                     $.each(arrList, function (key, value) {
                         if (value != null) {
+                            // FontAwesome legacy
                             $(document).find(`.add-to-wishlist[data-id=${value.id}] i`).addClass('fas fa-heart')
+                            // Material Icons — pc-fav
+                            $(document).find(`.pc-fav[data-id=${value.id}]`).each(function() {
+                                $(this).addClass('on').find('.material-icons').text('favorite')
+                            })
+                            // Material Icons — ix-fav
+                            $(document).find(`.ix-fav[data-property-id=${value.id}]`).each(function() {
+                                $(this).addClass('on').find('.material-icons').text('favorite')
+                            })
                         }
                     })
                 }
@@ -188,11 +212,20 @@
         function checkWishlistInElement($el) {
             let parseCookie = JSON.parse(getCookie('wishlist') || '{}')
             if (parseCookie && parseCookie.length) {
+                // FontAwesome legacy
                 $el.find('.add-to-wishlist').map(function () {
                     let wlId = $(this).data('id')
                     let exists = parseCookie.some((x) => x.id === wlId)
                     if (exists) {
                         $(this).find('i').addClass('fas')
+                    }
+                })
+                // Material Icons
+                $el.find('.pc-fav, .ix-fav').map(function () {
+                    let wlId = $(this).data('id') || $(this).data('property-id')
+                    let exists = parseCookie.some((x) => x.id === wlId)
+                    if (exists) {
+                        $(this).addClass('on').find('.material-icons').text('favorite')
                     }
                 })
             }

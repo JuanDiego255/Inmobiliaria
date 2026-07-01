@@ -68,10 +68,12 @@
                         <span class="ix-imgcount"><span
                                 class="material-icons">photo_camera</span>{{ $pImgCount }}</span>
                     @endif
-                    <button class="ix-fav" type="button" aria-label="{{ __('Favorito') }}"
-                        data-property-id="{{ $property->id }}">
-                        <span class="material-icons">favorite_border</span>
-                    </button>
+                    @if(auth('account')->check())
+                        <button class="ix-fav" type="button" aria-label="{{ __('Favorito') }}"
+                            data-property-id="{{ $property->id }}">
+                            <span class="material-icons">favorite_border</span>
+                        </button>
+                    @endif
                     <div class="ix-prop-overlay">
                         <span class="ix-prop-type">{{ $categoryName }}</span>
                         <h3 class="ix-prop-title">{!! BaseHelper::clean($property->name) !!}</h3>

@@ -85,10 +85,12 @@
                                     loading="lazy">
                             </a>
                             <span class="pc-badge {{ $isRent ? 'pc-badge--rent' : '' }}">{{ $dealLabel }}</span>
-                            <button class="pc-fav add-to-wishlist" data-id="{{ $property->id }}" type="button"
-                                aria-label="Favorito">
-                                <span class="material-icons">favorite_border</span>
-                            </button>
+                            @if(auth('account')->check())
+                                <button class="pc-fav" data-id="{{ $property->id }}" type="button"
+                                    aria-label="Favorito">
+                                    <span class="material-icons">favorite_border</span>
+                                </button>
+                            @endif
                             <div class="pc-overlay">
                                 <span class="pc-overlay__type">{{ $categoryName }}</span>
                                 <h3 class="pc-overlay__title">{{ $property->name }}</h3>

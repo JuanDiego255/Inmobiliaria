@@ -1,1 +1,236 @@
-!function(i){"use strict";var t=function(i){window.showAlert("alert-success",i)},n=function(i){return window.trans=window.trans||{},"undefined"!==window.trans[i]&&window.trans[i]?window.trans[i]:i};window.showAlert=function(t,n){if(t&&""!==n){var a=Math.floor(1e3*Math.random()),s='<div class="alert '.concat(t,' alert-dismissible" id="').concat(a,'">\n                            <span class="close far fa-times" data-dismiss="alert" aria-label="close"></span>\n                            <i class="far fa-')+("alert-success"===t?"check":"times")+' message-icon"></i>\n                            '.concat(n,"\n                        </div>");i("#alert-container").append(s).ready((function(){window.setTimeout((function(){i("#alert-container #".concat(a)).remove()}),6e3)}))}},i(document).ready((function(){function a(){var t=decodeURIComponent(e("wishlist"));if(null!=t&&null!=t&&t){var n=JSON.parse(t),a=n.length;i(".wishlist-count").text(a),a>0&&(i(".add-to-wishlist").removeClass("far fa-heart"),i.each(n,(function(t,n){null!=n&&i(document).find(".add-to-wishlist[data-id=".concat(n.id,"] i")).addClass("fas fa-heart")})))}}function s(i,t,n){var a=new Date,s=window.siteUrl;s.includes(window.location.protocol)||(s=window.location.protocol+s);var e=new URL(s);a.setTime(a.getTime()+24*n*60*60*1e3);var o="expires="+a.toUTCString();document.cookie=i+"="+t+"; "+o+"; path=/; domain="+e.hostname}function e(i){for(var t=i+"=",n=document.cookie.split(";"),a=0;a<n.length;a++){for(var s=n[a];" "==s.charAt(0);)s=s.substring(1);if(0==s.indexOf(t))return s.substring(t.length,s.length)}return""}function o(i){var t=window.siteUrl;t.includes(window.location.protocol)||(t=window.location.protocol+t);var n=new URL(t);document.cookie=i+"=; expires=Thu, 01 Jan 1970 00:00:01 GMT; path=/; domain="+n.hostname}a(),i(document).on("click",".add-to-wishlist",(function(d){d.preventDefault();var r="wishlist",l=i(this).data("id"),c=decodeURIComponent(e(r)),f=[];if(null!=l&&0!=l&&null!=l)if(null==c||null==c||""==c){var u={id:l};f.push(u),i(".add-to-wishlist[data-id=".concat(l,"] i")).removeClass("far fa-heart").addClass("fas fa-heart"),t(n("Added to wishlist successfully!")),s(r,JSON.stringify(f),60)}else{var w={id:l},h=(f=JSON.parse(c)).map((function(i){return i.id})).indexOf(w.id);-1===h?(f.push(w),o(r),s(r,JSON.stringify(f),60),i(".add-to-wishlist[data-id=".concat(l,"] i")).removeClass("far fa-heart").addClass("fas fa-heart"),t(n("Added to wishlist successfully!"))):(f.splice(h,1),o(r),s(r,JSON.stringify(f),60),i(".add-to-wishlist[data-id=".concat(l,"] i")).removeClass("fas fa-heart").addClass("far fa-heart"),t(n("Removed from wishlist successfully!")))}var m=JSON.parse(e(r)).length;i(".wishlist-count").text(m),a()})),i(document).on("click",".remove-from-wishlist",(function(d){d.preventDefault();var r="wishlist",l=i(this).data("id"),c=decodeURIComponent(e(r)),f=[];if(null!=l&&0!=l&&null!=l){var u={id:l},w=(f=JSON.parse(c)).map((function(i){return i.id})).indexOf(u.id);-1!=w&&(f.splice(w,1),o(r),s(r,JSON.stringify(f),60),t(n("Removed from wishlist successfully!")),i(".wishlist-page .item[data-id=".concat(l,"]")).closest("div").remove())}var h=JSON.parse(e(r)).length;i(".wishlist-count").text(h),a()})),window.wishlishInElement=function(t){var n=JSON.parse(e("wishlist")||"{}");n&&n.length&&t.find(".add-to-wishlist").map((function(){var t=i(this).data("id");n.some((function(i){return i.id===t}))&&i(this).find("i").addClass("fas")}))}}))}(jQuery);
+;(function ($) {
+    'use strict'
+    let showSuccess = (message) => {
+        window.showAlert('alert-success', message)
+    }
+
+    let __ = function (key) {
+        window.trans = window.trans || {}
+
+        return window.trans[key] !== 'undefined' && window.trans[key] ? window.trans[key] : key
+    }
+
+    window.showAlert = (messageType, message) => {
+        if (messageType && message !== '') {
+            let alertId = Math.floor(Math.random() * 1000)
+
+            let html =
+                `<div class="alert ${messageType} alert-dismissible" id="${alertId}">
+                            <span class="close far fa-times" data-dismiss="alert" aria-label="close"></span>
+                            <i class="far fa-` +
+                (messageType === 'alert-success' ? 'check' : 'times') +
+                ` message-icon"></i>
+                            ${message}
+                        </div>`
+
+            $('#alert-container')
+                .append(html)
+                .ready(() => {
+                    window.setTimeout(() => {
+                        $(`#alert-container #${alertId}`).remove()
+                    }, 6000)
+                })
+        }
+    }
+
+    function toggleWishlistIcon($el, filled) {
+        // Material Icons version (pc-fav, ix-fav buttons)
+        let $matIcon = $el.find('.material-icons')
+        if ($matIcon.length) {
+            $matIcon.text(filled ? 'favorite' : 'favorite_border')
+            $el.toggleClass('on', filled)
+            return
+        }
+        // FontAwesome version (legacy)
+        let $faIcon = $el.find('i')
+        if ($faIcon.length) {
+            if (filled) {
+                $faIcon.removeClass('far fa-heart').addClass('fas fa-heart')
+            } else {
+                $faIcon.removeClass('fas fa-heart').addClass('far fa-heart')
+            }
+        }
+    }
+
+    $(document).ready(function () {
+        setWishListCount()
+
+        // Unified click handler for all wishlist buttons
+        $(document).on('click', '.add-to-wishlist, .pc-fav, .ix-fav', function (e) {
+            e.preventDefault()
+            e.stopPropagation()
+
+            let cookieName = 'wishlist'
+            let $btn = $(this)
+            let propertyId = $btn.data('id') || $btn.data('property-id')
+            let wishCookies = decodeURIComponent(getCookie(cookieName))
+            let arrWList = []
+
+            if (propertyId != null && propertyId != 0 && propertyId != undefined) {
+                if (wishCookies == undefined || wishCookies == null || wishCookies == '') {
+                    let item = { id: propertyId }
+                    arrWList.push(item)
+                    toggleWishlistIcon($btn, true)
+                    showSuccess(__('Added to wishlist successfully!'))
+                    setCookie(cookieName, JSON.stringify(arrWList), 60)
+                } else {
+                    let item = { id: propertyId }
+                    arrWList = JSON.parse(wishCookies)
+                    let index = arrWList
+                        .map(function (e) {
+                            return e.id
+                        })
+                        .indexOf(item.id)
+
+                    if (index === -1) {
+                        arrWList.push(item)
+                        clearCookies(cookieName)
+                        setCookie(cookieName, JSON.stringify(arrWList), 60)
+                        toggleWishlistIcon($btn, true)
+                        showSuccess(__('Added to wishlist successfully!'))
+                    } else {
+                        arrWList.splice(index, 1)
+                        clearCookies(cookieName)
+                        setCookie(cookieName, JSON.stringify(arrWList), 60)
+                        toggleWishlistIcon($btn, false)
+                        showSuccess(__('Removed from wishlist successfully!'))
+                    }
+                }
+            }
+
+            let cookieVal = getCookie(cookieName)
+            if (cookieVal) {
+                let countWishlist = JSON.parse(cookieVal).length
+                $('.wishlist-count').text(countWishlist)
+            }
+            setWishListCount()
+        })
+
+        $(document).on('click', '.remove-from-wishlist', function (e) {
+            e.preventDefault()
+
+            let cookieName = 'wishlist'
+            let propertyId = $(this).data('id')
+            let wishCookies = decodeURIComponent(getCookie(cookieName))
+            let arrWList = []
+
+            if (propertyId != null && propertyId != 0 && propertyId != undefined) {
+                let item = { id: propertyId }
+                arrWList = JSON.parse(wishCookies)
+                let index = arrWList
+                    .map(function (e) {
+                        return e.id
+                    })
+                    .indexOf(item.id)
+
+                if (index != -1) {
+                    arrWList.splice(index, 1)
+                    clearCookies(cookieName)
+                    setCookie(cookieName, JSON.stringify(arrWList), 60)
+
+                    showSuccess(__('Removed from wishlist successfully!'))
+                    $(`.wishlist-page .item[data-id=${propertyId}]`).closest('div').remove()
+                }
+            }
+
+            let cookieVal = getCookie(cookieName)
+            if (cookieVal) {
+                let countWishlist = JSON.parse(cookieVal).length
+                $('.wishlist-count').text(countWishlist)
+            }
+            setWishListCount()
+        })
+
+        function setWishListCount() {
+            let cookieName = 'wishlist'
+            let wishListCookies = decodeURIComponent(getCookie(cookieName))
+
+            if (wishListCookies != null && wishListCookies != undefined && !!wishListCookies) {
+                let arrList = JSON.parse(wishListCookies)
+                let countWishlist = arrList.length
+
+                $('.wishlist-count').text(countWishlist)
+                if (countWishlist > 0) {
+                    $.each(arrList, function (key, value) {
+                        if (value != null) {
+                            // FontAwesome legacy
+                            $(document).find(`.add-to-wishlist[data-id=${value.id}] i`).addClass('fas fa-heart')
+                            // Material Icons — pc-fav
+                            $(document).find(`.pc-fav[data-id=${value.id}]`).each(function() {
+                                $(this).addClass('on').find('.material-icons').text('favorite')
+                            })
+                            // Material Icons — ix-fav
+                            $(document).find(`.ix-fav[data-property-id=${value.id}]`).each(function() {
+                                $(this).addClass('on').find('.material-icons').text('favorite')
+                            })
+                        }
+                    })
+                }
+            }
+        }
+
+        function setCookie(cname, cvalue, exdays) {
+            let d = new Date()
+            let siteUrl = window.siteUrl
+
+            if (!siteUrl.includes(window.location.protocol)) {
+                siteUrl = window.location.protocol + siteUrl
+            }
+
+            let url = new URL(siteUrl)
+            d.setTime(d.getTime() + exdays * 24 * 60 * 60 * 1000)
+            let expires = 'expires=' + d.toUTCString()
+            document.cookie = cname + '=' + cvalue + '; ' + expires + '; path=/' + '; domain=' + url.hostname
+        }
+
+        function getCookie(cname) {
+            let name = cname + '='
+            let ca = document.cookie.split(';')
+            for (let i = 0; i < ca.length; i++) {
+                let c = ca[i]
+                while (c.charAt(0) == ' ') {
+                    c = c.substring(1)
+                }
+                if (c.indexOf(name) == 0) {
+                    return c.substring(name.length, c.length)
+                }
+            }
+            return ''
+        }
+
+        function clearCookies(name) {
+            let siteUrl = window.siteUrl
+
+            if (!siteUrl.includes(window.location.protocol)) {
+                siteUrl = window.location.protocol + siteUrl
+            }
+
+            let url = new URL(siteUrl)
+            document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:01 GMT; path=/' + '; domain=' + url.hostname
+        }
+
+        function checkWishlistInElement($el) {
+            let parseCookie = JSON.parse(getCookie('wishlist') || '{}')
+            if (parseCookie && parseCookie.length) {
+                // FontAwesome legacy
+                $el.find('.add-to-wishlist').map(function () {
+                    let wlId = $(this).data('id')
+                    let exists = parseCookie.some((x) => x.id === wlId)
+                    if (exists) {
+                        $(this).find('i').addClass('fas')
+                    }
+                })
+                // Material Icons
+                $el.find('.pc-fav, .ix-fav').map(function () {
+                    let wlId = $(this).data('id') || $(this).data('property-id')
+                    let exists = parseCookie.some((x) => x.id === wlId)
+                    if (exists) {
+                        $(this).addClass('on').find('.material-icons').text('favorite')
+                    }
+                })
+            }
+        }
+
+        window.wishlishInElement = checkWishlistInElement
+    })
+})(jQuery)

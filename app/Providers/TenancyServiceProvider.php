@@ -54,11 +54,7 @@ class TenancyServiceProvider extends ServiceProvider
     {
         foreach ($this->events() as $event => $listeners) {
             foreach ($listeners as $listener) {
-                if ($listener instanceof \Closure) {
-                    Event::listen($event, $listener);
-                } else {
-                    Event::listen($event, [$listener, 'handle']);
-                }
+                Event::listen($event, $listener);
             }
         }
     }

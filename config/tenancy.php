@@ -10,6 +10,8 @@ return [
 
     'domain_model' => \Stancl\Tenancy\Database\Models\Domain::class,
 
+    'base_domain' => env('TENANCY_BASE_DOMAIN', 'safeworsolutions.com'),
+
     'central_domains' => array_filter([
         env('TENANCY_CENTRAL_DOMAIN', 'realstate.safeworsolutions.com'),
     ]),

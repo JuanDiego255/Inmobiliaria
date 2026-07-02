@@ -18,7 +18,7 @@ class InitializeTenancy
             return $next($request);
         }
 
-        $baseDomain = env('TENANCY_BASE_DOMAIN', 'safeworsolutions.com');
+        $baseDomain = config('tenancy.base_domain', 'safeworsolutions.com');
         $subdomain = str_replace('.' . $baseDomain, '', $host);
 
         if (empty($subdomain) || $subdomain === $host) {

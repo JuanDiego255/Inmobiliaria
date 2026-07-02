@@ -7,42 +7,10 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 use Stancl\Tenancy\Contracts\TenantWithDatabase;
 use Stancl\Tenancy\Events;
-use Stancl\Tenancy\Jobs;
 use Stancl\Tenancy\Listeners;
-use Stancl\Tenancy\Listeners\JobPipeline;
 
 class TenancyServiceProvider extends ServiceProvider
 {
-    public function events(): array
-    {
-        return [
-            Events\TenantCreated::class => [
-                JobPipeline::make([
-                    Jobs\CreateDatabase::class,
-                    Jobs\MigrateDatabase::class,
-                ])->send(function (Events\TenantCreated $event) {
-                    return $event->tenant;
-                })->shouldBeQueued(false),
-            ],
-
-            Events\TenantDeleted::class => [
-                JobPipeline::make([
-                    Jobs\DeleteDatabase::class,
-                ])->send(function (Events\TenantDeleted $event) {
-                    return $event->tenant;
-                })->shouldBeQueued(false),
-            ],
-
-            Events\TenancyInitialized::class => [
-                Listeners\BootstrapTenancy::class,
-            ],
-
-            Events\TenancyEnded::class => [
-                Listeners\RevertToCentralContext::class,
-            ],
-        ];
-    }
-
     public function register(): void
     {
         $this->app->bind(TenantWithDatabase::class, Tenant::class);
@@ -56,15 +24,36 @@ class TenancyServiceProvider extends ServiceProvider
 
     protected function configureEvents(): void
     {
-        foreach ($this->events() as $event => $listeners) {
-            foreach ($listeners as $listener) {
-                if ($listener instanceof JobPipeline) {
-                    $listener = $listener->toListener();
-                }
+        Event::listen(Events\TenantCreated::class, function (Events\TenantCreated $event) {
+            $tenant = $event->tenant;
+            $manager = app(\Stancl\Tenancy\Database\DatabaseManager::class);
+            $manager->createTenantConnection($tenant);
+            $manager->connectToTenant($tenant);
 
-                Event::listen($event, $listener);
+            \Stancl\Tenancy\Events\CreatingDatabase::dispatch($tenant);
+            $manager->getTenantDatabaseManager($tenant)->createDatabase($tenant);
+            \Stancl\Tenancy\Events\DatabaseCreated::dispatch($tenant);
+
+            \Stancl\Tenancy\Events\MigratingDatabase::dispatch($tenant);
+            \Illuminate\Support\Facades\Artisan::call('tenants:migrate', [
+                '--tenants' => [$tenant->getTenantKey()],
+                '--force' => true,
+            ]);
+            \Stancl\Tenancy\Events\DatabaseMigrated::dispatch($tenant);
+        });
+
+        Event::listen(Events\TenantDeleted::class, function (Events\TenantDeleted $event) {
+            $tenant = $event->tenant;
+            try {
+                $manager = app(\Stancl\Tenancy\Database\DatabaseManager::class);
+                $manager->getTenantDatabaseManager($tenant)->deleteDatabase($tenant);
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::warning("Could not delete tenant DB: " . $e->getMessage());
             }
-        }
+        });
+
+        Event::listen(Events\TenancyInitialized::class, Listeners\BootstrapTenancy::class);
+        Event::listen(Events\TenancyEnded::class, Listeners\RevertToCentralContext::class);
     }
 
     protected function makeTenancyMiddlewareHighestPriority(): void

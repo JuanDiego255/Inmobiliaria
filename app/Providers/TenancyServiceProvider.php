@@ -2,8 +2,10 @@
 
 namespace App\Providers;
 
+use App\Models\Tenant;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
+use Stancl\Tenancy\Contracts\TenantWithDatabase;
 use Stancl\Tenancy\Events;
 use Stancl\Tenancy\Jobs;
 use Stancl\Tenancy\Listeners;
@@ -41,7 +43,7 @@ class TenancyServiceProvider extends ServiceProvider
 
     public function register(): void
     {
-        //
+        $this->app->bind(TenantWithDatabase::class, Tenant::class);
     }
 
     public function boot(): void

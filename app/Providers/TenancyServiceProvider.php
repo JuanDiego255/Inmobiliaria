@@ -9,35 +9,37 @@ use Stancl\Tenancy\Contracts\TenantWithDatabase;
 use Stancl\Tenancy\Events;
 use Stancl\Tenancy\Jobs;
 use Stancl\Tenancy\Listeners;
+use Stancl\Tenancy\Listeners\JobPipeline;
 
 class TenancyServiceProvider extends ServiceProvider
 {
     public function events(): array
     {
         return [
-            Events\CreatingTenant::class => [],
             Events\TenantCreated::class => [
-                Jobs\CreateDatabase::class,
-                Jobs\MigrateDatabase::class,
+                JobPipeline::make([
+                    Jobs\CreateDatabase::class,
+                    Jobs\MigrateDatabase::class,
+                ])->send(function (Events\TenantCreated $event) {
+                    return $event->tenant;
+                })->shouldBeQueued(false),
             ],
-            Events\SavingTenant::class => [],
-            Events\TenantSaved::class => [],
-            Events\UpdatingTenant::class => [],
-            Events\TenantUpdated::class => [],
-            Events\DeletingTenant::class => [],
+
             Events\TenantDeleted::class => [
-                Jobs\DeleteDatabase::class,
+                JobPipeline::make([
+                    Jobs\DeleteDatabase::class,
+                ])->send(function (Events\TenantDeleted $event) {
+                    return $event->tenant;
+                })->shouldBeQueued(false),
             ],
+
             Events\TenancyInitialized::class => [
                 Listeners\BootstrapTenancy::class,
             ],
+
             Events\TenancyEnded::class => [
                 Listeners\RevertToCentralContext::class,
             ],
-            Events\BootstrapingTenancy::class => [],
-            Events\TenancyBootstrapped::class => [],
-            Events\RevertingToCentralContext::class => [],
-            Events\RevertedToCentralContext::class => [],
         ];
     }
 
@@ -56,6 +58,10 @@ class TenancyServiceProvider extends ServiceProvider
     {
         foreach ($this->events() as $event => $listeners) {
             foreach ($listeners as $listener) {
+                if ($listener instanceof JobPipeline) {
+                    $listener = $listener->toListener();
+                }
+
                 Event::listen($event, $listener);
             }
         }

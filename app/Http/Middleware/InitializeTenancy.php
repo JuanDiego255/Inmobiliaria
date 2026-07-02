@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use App\Models\Tenant;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Stancl\Tenancy\Database\Models\Domain;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -25,7 +26,12 @@ class InitializeTenancy
             abort(404, 'Inquilino no encontrado.');
         }
 
-        tenancy()->initialize($tenant);
+        $dbName = $tenant->tenancy_db_name
+            ?? config('tenancy.database.prefix', 'safewors_') . $tenant->getTenantKey() . config('tenancy.database.suffix', '');
+
+        config(['database.connections.mysql.database' => $dbName]);
+        DB::purge('mysql');
+        DB::reconnect('mysql');
 
         return $next($request);
     }

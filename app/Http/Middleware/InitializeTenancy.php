@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use App\Models\Tenant;
 use Closure;
 use Illuminate\Http\Request;
+use Stancl\Tenancy\Database\Models\Domain;
 use Symfony\Component\HttpFoundation\Response;
 
 class InitializeTenancy
@@ -18,14 +19,7 @@ class InitializeTenancy
             return $next($request);
         }
 
-        $baseDomain = config('tenancy.base_domain', 'safeworsolutions.com');
-        $subdomain = str_replace('.' . $baseDomain, '', $host);
-
-        if (empty($subdomain) || $subdomain === $host) {
-            return $next($request);
-        }
-
-        $tenant = Tenant::find($subdomain);
+        $tenant = $this->resolveTenant($host);
 
         if (! $tenant) {
             abort(404, 'Inquilino no encontrado.');
@@ -34,5 +28,22 @@ class InitializeTenancy
         tenancy()->initialize($tenant);
 
         return $next($request);
+    }
+
+    protected function resolveTenant(string $host): ?Tenant
+    {
+        $domain = Domain::where('domain', $host)->first();
+        if ($domain) {
+            return $domain->tenant;
+        }
+
+        $baseDomain = config('tenancy.base_domain', 'safeworsolutions.com');
+        $subdomain = str_replace('.' . $baseDomain, '', $host);
+
+        if (empty($subdomain) || $subdomain === $host) {
+            return null;
+        }
+
+        return Tenant::find($subdomain);
     }
 }

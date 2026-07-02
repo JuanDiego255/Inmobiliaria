@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Models\Tenant;
+use Botble\Setting\Supports\SettingStore;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -33,7 +34,17 @@ class InitializeTenancy
         DB::purge('mysql');
         DB::reconnect('mysql');
 
+        $this->reloadSettings();
+
         return $next($request);
+    }
+
+    protected function reloadSettings(): void
+    {
+        try {
+            app(SettingStore::class)->load(force: true);
+        } catch (\Throwable $e) {
+        }
     }
 
     protected function resolveTenant(string $host): ?Tenant

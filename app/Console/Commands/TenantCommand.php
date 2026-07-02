@@ -56,33 +56,36 @@ class TenantCommand extends Command
             'plan' => 'basic',
         ]);
 
-        // 2. Create the database via SQL
+        // 2. Register domain
+        $tenant->domains()->create(['domain' => $domain]);
+
+        // 3. Create the database via SQL
         $this->info('Creando base de datos...');
+        $dbCreated = false;
         try {
             DB::statement("CREATE DATABASE IF NOT EXISTS `{$dbName}` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
+            $dbCreated = true;
         } catch (\Exception $e) {
-            $this->error("No se pudo crear la BD: {$e->getMessage()}");
-            $this->warn("Creá la BD '{$dbName}' manualmente desde cPanel y luego ejecutá:");
-            $this->warn("  php artisan tenant:manage migrate --id={$id}");
-            $tenant->domains()->create(['domain' => $domain]);
-            return 1;
+            $this->warn("No se pudo crear la BD automáticamente (normal en hosting compartido).");
+            $this->warn("Creá la BD '{$dbName}' desde cPanel → MySQL Databases.");
+            $this->warn("Asigná tu usuario MySQL a esa BD con todos los privilegios.");
+            $this->warn("Luego ejecutá: php artisan tenant:manage migrate --id={$id}");
         }
 
-        // 3. Run tenant migrations
-        $this->info('Ejecutando migraciones (puede tardar)...');
-        try {
-            Artisan::call('tenants:migrate', [
-                '--tenants' => [$id],
-                '--force' => true,
-            ]);
-            $this->info(Artisan::output());
-        } catch (\Exception $e) {
-            $this->warn("Error en migraciones: {$e->getMessage()}");
-            $this->warn("Ejecutá manualmente: php artisan tenant:manage migrate --id={$id}");
+        // 4. Run tenant migrations (only if DB was created)
+        if ($dbCreated) {
+            $this->info('Ejecutando migraciones (puede tardar)...');
+            try {
+                Artisan::call('tenants:migrate', [
+                    '--tenants' => [$id],
+                    '--force' => true,
+                ]);
+                $this->info(Artisan::output());
+            } catch (\Exception $e) {
+                $this->warn("Error en migraciones: {$e->getMessage()}");
+                $this->warn("Ejecutá manualmente: php artisan tenant:manage migrate --id={$id}");
+            }
         }
-
-        // 4. Register domain
-        $tenant->domains()->create(['domain' => $domain]);
 
         $this->info("Tenant '{$id}' creado exitosamente.");
 

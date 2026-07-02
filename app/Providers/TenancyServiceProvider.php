@@ -28,23 +28,17 @@ class TenancyServiceProvider extends ServiceProvider
             $tenant = $event->tenant;
             $manager = app(\Stancl\Tenancy\Database\DatabaseManager::class);
             $manager->createTenantConnection($tenant);
-            $manager->connectToTenant($tenant);
-
-            \Stancl\Tenancy\Events\CreatingDatabase::dispatch($tenant);
             $manager->getTenantDatabaseManager($tenant)->createDatabase($tenant);
-            \Stancl\Tenancy\Events\DatabaseCreated::dispatch($tenant);
 
-            \Stancl\Tenancy\Events\MigratingDatabase::dispatch($tenant);
             \Illuminate\Support\Facades\Artisan::call('tenants:migrate', [
                 '--tenants' => [$tenant->getTenantKey()],
                 '--force' => true,
             ]);
-            \Stancl\Tenancy\Events\DatabaseMigrated::dispatch($tenant);
         });
 
         Event::listen(Events\TenantDeleted::class, function (Events\TenantDeleted $event) {
-            $tenant = $event->tenant;
             try {
+                $tenant = $event->tenant;
                 $manager = app(\Stancl\Tenancy\Database\DatabaseManager::class);
                 $manager->getTenantDatabaseManager($tenant)->deleteDatabase($tenant);
             } catch (\Exception $e) {

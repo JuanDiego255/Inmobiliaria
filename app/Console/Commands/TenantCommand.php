@@ -4,7 +4,8 @@ namespace App\Console\Commands;
 
 use App\Models\Tenant;
 use Illuminate\Console\Command;
-use Stancl\Tenancy\Database\Models\Domain;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\DB;
 
 class TenantCommand extends Command
 {
@@ -41,10 +42,13 @@ class TenantCommand extends Command
             return 1;
         }
 
+        $dbName = config('tenancy.database.prefix', 'safewors_') . $id . config('tenancy.database.suffix', '');
+
         $this->info("Creando tenant '{$id}'...");
-        $this->info("  BD: safewors_{$id}");
+        $this->info("  BD: {$dbName}");
         $this->info("  Dominio: {$domain}");
 
+        // 1. Create tenant record (HasDatabase trait auto-sets tenancy_db_name)
         $tenant = Tenant::create([
             'id' => $id,
             'name' => $name,
@@ -52,10 +56,35 @@ class TenantCommand extends Command
             'plan' => 'basic',
         ]);
 
+        // 2. Create the database via SQL
+        $this->info('Creando base de datos...');
+        try {
+            DB::statement("CREATE DATABASE IF NOT EXISTS `{$dbName}` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
+        } catch (\Exception $e) {
+            $this->error("No se pudo crear la BD: {$e->getMessage()}");
+            $this->warn("Creá la BD '{$dbName}' manualmente desde cPanel y luego ejecutá:");
+            $this->warn("  php artisan tenant:manage migrate --id={$id}");
+            $tenant->domains()->create(['domain' => $domain]);
+            return 1;
+        }
+
+        // 3. Run tenant migrations
+        $this->info('Ejecutando migraciones (puede tardar)...');
+        try {
+            Artisan::call('tenants:migrate', [
+                '--tenants' => [$id],
+                '--force' => true,
+            ]);
+            $this->info(Artisan::output());
+        } catch (\Exception $e) {
+            $this->warn("Error en migraciones: {$e->getMessage()}");
+            $this->warn("Ejecutá manualmente: php artisan tenant:manage migrate --id={$id}");
+        }
+
+        // 4. Register domain
         $tenant->domains()->create(['domain' => $domain]);
 
         $this->info("Tenant '{$id}' creado exitosamente.");
-        $this->info("BD: " . ($tenant->database()->getName() ?? "safewors_{$id}"));
 
         return 0;
     }
@@ -74,8 +103,17 @@ class TenantCommand extends Command
             return 0;
         }
 
+        $dbName = config('tenancy.database.prefix', 'safewors_') . $id . config('tenancy.database.suffix', '');
+
+        $tenant->domains()->delete();
         $tenant->delete();
-        $this->info("Tenant '{$id}' eliminado.");
+
+        try {
+            DB::statement("DROP DATABASE IF EXISTS `{$dbName}`");
+            $this->info("Tenant '{$id}' y BD '{$dbName}' eliminados.");
+        } catch (\Exception $e) {
+            $this->info("Tenant '{$id}' eliminado. BD '{$dbName}' debe eliminarse manualmente.");
+        }
 
         return 0;
     }
@@ -92,10 +130,10 @@ class TenantCommand extends Command
         $rows = $tenants->map(fn ($t) => [
             $t->id,
             $t->name,
-            $t->email,
-            $t->plan,
-            $t->domains->pluck('domain')->implode(', '),
-            $t->database()->getName() ?? '-',
+            $t->email ?? '-',
+            $t->plan ?? 'basic',
+            $t->domains->pluck('domain')->implode(', ') ?: '-',
+            config('tenancy.database.prefix', 'safewors_') . $t->id . config('tenancy.database.suffix', ''),
         ])->toArray();
 
         $this->table(['ID', 'Nombre', 'Email', 'Plan', 'Dominios', 'BD'], $rows);
@@ -108,24 +146,21 @@ class TenantCommand extends Command
         $id = $this->option('id');
 
         if ($id) {
-            $tenant = Tenant::find($id);
-            if (! $tenant) {
+            if (! Tenant::find($id)) {
                 $this->error("Tenant '{$id}' no encontrado.");
                 return 1;
             }
             $this->info("Migrando tenant '{$id}'...");
-            $tenant->run(function () {
-                $this->call('migrate', ['--force' => true]);
-            });
+            Artisan::call('tenants:migrate', [
+                '--tenants' => [$id],
+                '--force' => true,
+            ]);
+            $this->info(Artisan::output());
             $this->info("Migración completa para '{$id}'.");
         } else {
             $this->info('Migrando todos los tenants...');
-            Tenant::all()->each(function ($tenant) {
-                $this->info("  → Migrando '{$tenant->id}'...");
-                $tenant->run(function () {
-                    $this->call('migrate', ['--force' => true]);
-                });
-            });
+            Artisan::call('tenants:migrate', ['--force' => true]);
+            $this->info(Artisan::output());
             $this->info('Migración completa.');
         }
 

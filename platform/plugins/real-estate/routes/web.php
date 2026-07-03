@@ -387,35 +387,37 @@ Route::group(['namespace' => 'Botble\RealEstate\Http\Controllers', 'middleware' 
                 ]);
             });
 
-            Route::get('meta-settings', [
-                'as' => 'meta-settings',
-                'uses' => 'MetaLeadSettingsController@index',
-                'permission' => 'crm-meta.settings',
-            ]);
+            Route::middleware('central.only')->group(function () {
+                Route::get('meta-settings', [
+                    'as' => 'meta-settings',
+                    'uses' => 'MetaLeadSettingsController@index',
+                    'permission' => 'crm-meta.settings',
+                ]);
 
-            Route::post('meta-settings', [
-                'as' => 'meta-settings.update',
-                'uses' => 'MetaLeadSettingsController@update',
-                'permission' => 'crm-meta.settings',
-            ]);
+                Route::post('meta-settings', [
+                    'as' => 'meta-settings.update',
+                    'uses' => 'MetaLeadSettingsController@update',
+                    'permission' => 'crm-meta.settings',
+                ]);
 
-            Route::get('meta-help', [
-                'as' => 'meta-help',
-                'uses' => 'MetaLeadSettingsController@help',
-                'permission' => 'crm-lead.index',
-            ]);
+                Route::get('meta-help', [
+                    'as' => 'meta-help',
+                    'uses' => 'MetaLeadSettingsController@help',
+                    'permission' => 'crm-lead.index',
+                ]);
 
-            Route::get('meta-logs', [
-                'as' => 'meta-logs',
-                'uses' => 'MetaWebhookLogController@index',
-                'permission' => 'crm-meta.settings',
-            ]);
+                Route::get('meta-logs', [
+                    'as' => 'meta-logs',
+                    'uses' => 'MetaWebhookLogController@index',
+                    'permission' => 'crm-meta.settings',
+                ]);
 
-            Route::post('meta-logs/{id}/retry', [
-                'as' => 'meta-logs.retry',
-                'uses' => 'MetaWebhookLogController@retry',
-                'permission' => 'crm-meta.settings',
-            ])->wherePrimaryKey();
+                Route::post('meta-logs/{id}/retry', [
+                    'as' => 'meta-logs.retry',
+                    'uses' => 'MetaWebhookLogController@retry',
+                    'permission' => 'crm-meta.settings',
+                ])->wherePrimaryKey();
+            });
 
             Route::group(['prefix' => 'reminders', 'as' => 'reminders.'], function () {
                 Route::post('/', [

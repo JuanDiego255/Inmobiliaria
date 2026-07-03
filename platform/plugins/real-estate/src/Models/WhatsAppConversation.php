@@ -11,6 +11,7 @@ class WhatsAppConversation extends BaseModel
 
     protected $fillable = [
         'phone',
+        'tenant_id',
         'direction',
         'message',
         'lead_id',

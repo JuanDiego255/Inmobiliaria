@@ -203,6 +203,18 @@
             </div>
         </div>
 
+        <div style="background:linear-gradient(135deg,#e8f5e9,#e3f2fd);border-radius:10px;padding:16px 20px;margin-bottom:20px;border-left:4px solid #2e7d32">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+                <span class="material-icons" style="color:#2e7d32;font-size:20px">hub</span>
+                <strong style="color:#1b5e20;font-size:.92rem">Bot Centralizado Multi-Tenant</strong>
+            </div>
+            <p style="color:#33691e;font-size:.84rem;margin:0;line-height:1.5">
+                Este bot opera desde un solo número de WhatsApp para todas las empresas inmobiliarias (tenants).
+                Al recibir un mensaje, el bot presenta las empresas disponibles y el cliente elige con cuál consultar.
+                Las propiedades se buscan en la base de datos del tenant seleccionado y los leads se crean automáticamente en su CRM.
+            </p>
+        </div>
+
         <div class="row" style="margin-bottom:16px">
             <div class="col-md-6">
                 <label class="cd-toggle-wrap">

@@ -2,18 +2,25 @@
 
 namespace Botble\RealEstate\Services;
 
+use App\Models\Tenant;
 use Botble\RealEstate\Enums\CrmActivityTypeEnum;
 use Botble\RealEstate\Enums\CrmLeadSourceEnum;
 use Botble\RealEstate\Enums\CrmLeadStageEnum;
 use Botble\RealEstate\Models\CrmActivity;
 use Botble\RealEstate\Models\CrmLead;
 use Botble\RealEstate\Models\WhatsAppConversation;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class WhatsAppBotService
 {
     protected PropertySearchService $searchService;
+
+    protected ?string $currentTenantId = null;
+
+    protected ?string $currentTenantName = null;
 
     public function __construct(PropertySearchService $searchService)
     {
@@ -26,34 +33,226 @@ class WhatsAppBotService
             return;
         }
 
-        $lead = $this->getOrCreateLead($from, $name);
+        $activeTenantId = $this->getActiveTenantId($from);
+
+        if (! $activeTenantId) {
+            $result = $this->handleTenantSelection($from, $name, $message);
+            $reply = $result['reply'];
+            $tenantId = $result['tenant_id'];
+        } elseif ($this->wantsToChangeTenant($message)) {
+            $result = $this->handleTenantSelection($from, $name, $message, true);
+            $reply = $result['reply'];
+            $tenantId = $result['tenant_id'];
+        } else {
+            $reply = $this->handlePropertySearch($from, $name, $message, $activeTenantId);
+            $tenantId = $activeTenantId;
+        }
 
         WhatsAppConversation::query()->create([
             'phone' => $from,
+            'tenant_id' => $tenantId,
             'direction' => 'inbound',
             'message' => mb_substr($message, 0, 5000),
-            'lead_id' => $lead->id,
             'metadata' => $metadata,
         ]);
 
-        $history = $this->getConversationContext($from);
-        $reply = $this->callLLM($message, $history);
-
         WhatsAppConversation::query()->create([
             'phone' => $from,
+            'tenant_id' => $tenantId,
             'direction' => 'outbound',
             'message' => $reply,
-            'lead_id' => $lead->id,
         ]);
 
         $this->sendWhatsAppReply($from, $reply);
+    }
 
-        CrmActivity::query()->create([
-            'lead_id' => $lead->id,
-            'type' => CrmActivityTypeEnum::META_AUTO,
-            'description' => 'Bot WhatsApp respondió a: "' . mb_substr($message, 0, 150) . '"',
-            'completed_at' => now(),
-        ]);
+    protected function getActiveTenantId(string $phone): ?string
+    {
+        $latest = WhatsAppConversation::query()
+            ->where('phone', $phone)
+            ->orderBy('created_at', 'desc')
+            ->orderBy('id', 'desc')
+            ->first();
+
+        return $latest?->tenant_id;
+    }
+
+    protected function listAvailableTenants(): Collection
+    {
+        return Tenant::orderBy('name')->get();
+    }
+
+    protected function matchTenantFromMessage(string $message, Collection $tenants): ?Tenant
+    {
+        $message = trim($message);
+        $messageLower = mb_strtolower($message);
+
+        if (is_numeric($message)) {
+            $index = (int) $message - 1;
+
+            return $tenants->values()->get($index);
+        }
+
+        if (preg_match('/\b(\d+)\b/', $message, $matches)) {
+            $index = (int) $matches[1] - 1;
+            $tenant = $tenants->values()->get($index);
+            if ($tenant) {
+                return $tenant;
+            }
+        }
+
+        foreach ($tenants as $tenant) {
+            $tenantNameLower = mb_strtolower($tenant->name);
+            if ($tenantNameLower === $messageLower
+                || str_contains($tenantNameLower, $messageLower)
+                || str_contains($messageLower, $tenantNameLower)) {
+                return $tenant;
+            }
+        }
+
+        return null;
+    }
+
+    protected function wantsToChangeTenant(string $message): bool
+    {
+        $keywords = ['cambiar', 'otra empresa', 'otro', 'volver', 'menu', 'menú', 'inicio', 'reiniciar', 'salir'];
+        $messageLower = mb_strtolower(trim($message));
+
+        foreach ($keywords as $keyword) {
+            if (str_contains($messageLower, $keyword)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    protected function handleTenantSelection(string $from, string $name, string $message, bool $isReset = false): array
+    {
+        $tenants = $this->listAvailableTenants();
+
+        if ($tenants->isEmpty()) {
+            return [
+                'reply' => 'Lo sentimos, no hay empresas inmobiliarias disponibles en este momento.',
+                'tenant_id' => null,
+            ];
+        }
+
+        if ($tenants->count() === 1) {
+            $tenant = $tenants->first();
+            $this->createLeadInTenant($tenant->id, $from, $name);
+
+            return [
+                'reply' => "¡Hola! 👋 Te conecté con *{$tenant->name}*.\n\n"
+                    . "¿Qué tipo de propiedad estás buscando? Podés decirme:\n"
+                    . "- Ubicación (ej: Escazú, Santa Ana)\n"
+                    . "- Tipo (casa, apartamento, terreno)\n"
+                    . "- Presupuesto\n"
+                    . "- Habitaciones",
+                'tenant_id' => $tenant->id,
+            ];
+        }
+
+        $matched = $this->matchTenantFromMessage($message, $tenants);
+
+        if ($matched) {
+            $this->createLeadInTenant($matched->id, $from, $name);
+
+            return [
+                'reply' => "Perfecto, te conecté con *{$matched->name}* 🏠\n\n"
+                    . "¿Qué tipo de propiedad estás buscando? Podés decirme:\n"
+                    . "- Ubicación (ej: Escazú, Santa Ana)\n"
+                    . "- Tipo (casa, apartamento, terreno)\n"
+                    . "- Presupuesto\n"
+                    . "- Habitaciones\n\n"
+                    . "_Escribí *cambiar* para elegir otra empresa._",
+                'tenant_id' => $matched->id,
+            ];
+        }
+
+        $greeting = $isReset ? "Sin problema.\n\n" : "¡Hola! 👋 Un gusto atenderte.\n\n";
+        $list = "¿Con cuál empresa inmobiliaria deseas consultar?\n\n";
+
+        foreach ($tenants->values() as $i => $tenant) {
+            $num = $i + 1;
+            $list .= "*{$num}.* {$tenant->name}\n";
+        }
+
+        $list .= "\n_Respondé con el número o nombre de la empresa._";
+
+        return [
+            'reply' => $greeting . $list,
+            'tenant_id' => null,
+        ];
+    }
+
+    protected function handlePropertySearch(string $from, string $name, string $message, string $tenantId): string
+    {
+        $tenant = Tenant::find($tenantId);
+        if (! $tenant) {
+            $result = $this->handleTenantSelection($from, $name, $message, true);
+
+            return "La empresa seleccionada ya no está disponible.\n\n" . $result['reply'];
+        }
+
+        $this->currentTenantId = $tenantId;
+        $this->currentTenantName = $tenant->name;
+
+        $history = $this->getConversationContext($from, $tenantId);
+        $reply = $this->callLLM($message, $history);
+
+        try {
+            $this->withTenantDb($tenantId, function () use ($from, $name, $message) {
+                $lead = $this->getOrCreateLead($from, $name);
+                CrmActivity::query()->create([
+                    'lead_id' => $lead->id,
+                    'type' => CrmActivityTypeEnum::META_AUTO,
+                    'description' => 'Bot WhatsApp respondió a: "' . mb_substr($message, 0, 150) . '"',
+                    'completed_at' => now(),
+                ]);
+            });
+        } catch (\Exception $e) {
+            Log::warning('WhatsAppBot: Could not create lead/activity in tenant DB', [
+                'tenant' => $tenantId,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        return $reply;
+    }
+
+    protected function createLeadInTenant(string $tenantId, string $phone, string $name): void
+    {
+        try {
+            $this->withTenantDb($tenantId, function () use ($phone, $name) {
+                $this->getOrCreateLead($phone, $name);
+            });
+        } catch (\Exception $e) {
+            Log::warning('WhatsAppBot: Could not create lead in tenant DB', [
+                'tenant' => $tenantId,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    protected function withTenantDb(string $tenantId, callable $callback): mixed
+    {
+        $centralDb = config('database.connections.mysql.database');
+        $prefix = config('tenancy.database.prefix', 'safewors_');
+        $suffix = config('tenancy.database.suffix', '');
+        $tenantDb = $prefix . $tenantId . $suffix;
+
+        config(['database.connections.mysql.database' => $tenantDb]);
+        DB::purge('mysql');
+        DB::reconnect('mysql');
+
+        try {
+            return $callback();
+        } finally {
+            config(['database.connections.mysql.database' => $centralDb]);
+            DB::purge('mysql');
+            DB::reconnect('mysql');
+        }
     }
 
     protected function callLLM(string $message, array $history): string
@@ -263,11 +462,17 @@ class WhatsAppBotService
 
     protected function handleToolCall(string $tool, array $params): string
     {
-        return match ($tool) {
-            'search_properties' => $this->toolSearchProperties($params),
-            'get_property_detail' => $this->toolGetPropertyDetail($params),
-            default => 'Herramienta no reconocida.',
-        };
+        if (! $this->currentTenantId) {
+            return json_encode(['error' => 'No hay empresa seleccionada.']);
+        }
+
+        return $this->withTenantDb($this->currentTenantId, function () use ($tool, $params) {
+            return match ($tool) {
+                'search_properties' => $this->toolSearchProperties($params),
+                'get_property_detail' => $this->toolGetPropertyDetail($params),
+                default => 'Herramienta no reconocida.',
+            };
+        });
     }
 
     protected function toolSearchProperties(array $params): string
@@ -352,22 +557,26 @@ class WhatsAppBotService
     protected function buildSystemPrompt(): string
     {
         $custom = setting('crm_whatsapp_bot_system_prompt');
+        $company = $this->currentTenantName ?: 'la inmobiliaria';
+
         if ($custom) {
-            return $custom;
+            return $custom . "\n\nEstás atendiendo en nombre de: {$company}. "
+                . 'Si es la primera interacción, mencioná que pueden escribir "cambiar" para elegir otra empresa.';
         }
 
-        return <<<'PROMPT'
-Sos un asistente inmobiliario profesional y amigable. Tu trabajo es ayudar a clientes a encontrar propiedades según sus necesidades.
+        return <<<PROMPT
+Sos un asistente inmobiliario profesional y amigable de {$company}. Tu trabajo es ayudar a clientes a encontrar propiedades según sus necesidades.
 
 Reglas:
 - Respondé siempre en español, de forma concisa y profesional.
 - Usá la herramienta search_properties para buscar propiedades cuando el cliente pregunte por opciones.
 - Usá get_property_detail cuando el cliente pida más información de una propiedad específica.
 - Si no encontrás resultados, sugerí ampliar la búsqueda (otra zona, rango de precio más amplio, etc.).
-- Si el cliente quiere agendar una visita o hablar con un agente, indicale que un asesor lo contactará pronto.
+- Si el cliente quiere agendar una visita o hablar con un agente, indicale que un asesor de {$company} lo contactará pronto.
 - No inventés propiedades. Solo mostrá las que devuelve la herramienta de búsqueda.
 - Formateá las respuestas para WhatsApp: usá *negrita* para nombres y precios, emojis moderados.
 - Sé breve — máximo 3-4 propiedades por mensaje para no saturar.
+- Si es la primera respuesta, mencioná brevemente que pueden escribir *cambiar* para consultar con otra empresa inmobiliaria.
 PROMPT;
     }
 
@@ -454,6 +663,7 @@ PROMPT;
 
         if (! $phoneNumberId || ! $token) {
             Log::warning('WhatsAppBot: Missing phone_number_id or access token for reply.');
+
             return;
         }
 
@@ -493,6 +703,7 @@ PROMPT;
 
         if ($lead) {
             $lead->update(['last_contacted_at' => now()]);
+
             return $lead;
         }
 
@@ -508,11 +719,16 @@ PROMPT;
         ]);
     }
 
-    protected function getConversationContext(string $phone): array
+    protected function getConversationContext(string $phone, ?string $tenantId = null): array
     {
-        return WhatsAppConversation::query()
-            ->where('phone', $phone)
-            ->orderBy('created_at', 'desc')
+        $query = WhatsAppConversation::query()
+            ->where('phone', $phone);
+
+        if ($tenantId) {
+            $query->where('tenant_id', $tenantId);
+        }
+
+        return $query->orderBy('created_at', 'desc')
             ->limit(10)
             ->get()
             ->reverse()

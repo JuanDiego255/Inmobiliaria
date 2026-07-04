@@ -366,8 +366,9 @@ class WhatsAppBotService
         return $this->processOpenAIResponse($data, $messages, $apiKey, $model, $tools);
     }
 
-    protected function processLLMResponse(array $data, array $messages, string $apiKey, string $model, string $systemPrompt, array $tools): string
+    protected function processLLMResponse(array $data, array $messages, string $apiKey, string $model, string $systemPrompt, array $tools, int $iteration = 0): string
     {
+        $maxIterations = 3;
         $textParts = [];
         $toolUses = [];
 
@@ -379,7 +380,7 @@ class WhatsAppBotService
             }
         }
 
-        if (empty($toolUses)) {
+        if (empty($toolUses) || $iteration >= $maxIterations) {
             return implode("\n", $textParts) ?: '¡Hola! ¿En qué puedo ayudarte?';
         }
 
@@ -414,25 +415,18 @@ class WhatsAppBotService
             return implode("\n", $textParts) ?: 'Encontré algunas opciones, un agente te las compartirá pronto.';
         }
 
-        $followUpData = $followUp->json();
-        $finalText = [];
-        foreach ($followUpData['content'] ?? [] as $block) {
-            if ($block['type'] === 'text') {
-                $finalText[] = $block['text'];
-            }
-        }
-
-        return implode("\n", $finalText) ?: implode("\n", $textParts) ?: '¡Hola! ¿En qué puedo ayudarte?';
+        return $this->processLLMResponse($followUp->json(), $messages, $apiKey, $model, $systemPrompt, $tools, $iteration + 1);
     }
 
-    protected function processOpenAIResponse(array $data, array $messages, string $apiKey, string $model, array $tools): string
+    protected function processOpenAIResponse(array $data, array $messages, string $apiKey, string $model, array $tools, int $iteration = 0): string
     {
+        $maxIterations = 3;
         $choice = $data['choices'][0] ?? [];
         $assistantMessage = $choice['message'] ?? [];
 
         $toolCalls = $assistantMessage['tool_calls'] ?? [];
 
-        if (empty($toolCalls)) {
+        if (empty($toolCalls) || $iteration >= $maxIterations) {
             return $assistantMessage['content'] ?? '¡Hola! ¿En qué puedo ayudarte?';
         }
 
@@ -466,9 +460,7 @@ class WhatsAppBotService
             return $assistantMessage['content'] ?? 'Encontré opciones, un agente te las compartirá.';
         }
 
-        $followUpData = $followUp->json();
-
-        return $followUpData['choices'][0]['message']['content'] ?? '¡Hola! ¿En qué puedo ayudarte?';
+        return $this->processOpenAIResponse($followUp->json(), $messages, $apiKey, $model, $tools, $iteration + 1);
     }
 
     protected function handleToolCall(string $tool, array $params): string
@@ -527,7 +519,7 @@ class WhatsAppBotService
             $results[] = [
                 'id' => $property->id,
                 'name' => $property->name,
-                'type' => $property->type->value,
+                'type' => $property->type instanceof \Botble\Base\Supports\Enum ? $property->type->getValue() : (string) $property->type,
                 'price' => $symbol . number_format($property->price, 0),
                 'location' => $location ?: $property->location,
                 'bedrooms' => $property->number_bedroom,
@@ -566,7 +558,7 @@ class WhatsAppBotService
         return json_encode([
             'id' => $property->id,
             'name' => $property->name,
-            'type' => $property->type->value,
+            'type' => $property->type instanceof \Botble\Base\Supports\Enum ? $property->type->getValue() : (string) $property->type,
             'price' => $symbol . number_format($property->price, 0),
             'location' => $location ?: $property->location,
             'bedrooms' => $property->number_bedroom,
@@ -596,12 +588,18 @@ Reglas:
 - Respondé siempre en español, de forma concisa y profesional.
 - Usá la herramienta search_properties para buscar propiedades cuando el cliente pregunte por opciones.
 - Usá get_property_detail cuando el cliente pida más información de una propiedad específica.
-- Si no encontrás resultados, sugerí ampliar la búsqueda (otra zona, rango de precio más amplio, etc.).
-- Si el cliente quiere agendar una visita o hablar con un agente, indicale que un asesor de {$company} lo contactará pronto.
 - No inventés propiedades. Solo mostrá las que devuelve la herramienta de búsqueda.
 - Formateá las respuestas para WhatsApp: usá *negrita* para nombres y precios, emojis moderados.
 - Sé breve — máximo 3-4 propiedades por mensaje para no saturar.
 - Si es la primera respuesta, mencioná brevemente que pueden escribir *cambiar* para consultar con otra empresa inmobiliaria.
+- Si el cliente quiere agendar una visita o hablar con un agente, indicale que un asesor de {$company} lo contactará pronto.
+
+Estrategia de búsqueda (MUY IMPORTANTE):
+- Empezá siempre con pocos filtros. Usá "keyword" para texto libre en vez de combinar location + category.
+- NUNCA repitas una búsqueda exacta que ya devolvió 0 resultados. Si no hay match, quitá filtros y ampliá.
+- Si buscás por category y no hay resultados, intentá sin category (solo con location o keyword).
+- Si no hay resultados con ningún filtro, hacé una búsqueda vacía (sin parámetros) para ver qué propiedades hay disponibles, y presentá las opciones.
+- Llamá search_properties una sola vez por intento — no repitas la misma búsqueda.
 PROMPT;
     }
 
@@ -614,14 +612,14 @@ PROMPT;
                 'input_schema' => [
                     'type' => 'object',
                     'properties' => [
-                        'keyword' => ['type' => 'string', 'description' => 'Texto libre de búsqueda (nombre de proyecto, zona, etc.)'],
+                        'keyword' => ['type' => 'string', 'description' => 'Texto libre de búsqueda. Busca en nombre de propiedad, ubicación, descripción, provincia, ciudad, proyecto y categorías. Usá este campo como primera opción.'],
                         'type' => ['type' => 'string', 'enum' => ['sale', 'rent'], 'description' => 'Tipo: sale (venta) o rent (alquiler)'],
                         'min_price' => ['type' => 'number', 'description' => 'Precio mínimo'],
                         'max_price' => ['type' => 'number', 'description' => 'Precio máximo'],
                         'bedrooms' => ['type' => 'integer', 'description' => 'Número de habitaciones'],
                         'bathrooms' => ['type' => 'integer', 'description' => 'Número de baños'],
-                        'location' => ['type' => 'string', 'description' => 'Ciudad, zona o ubicación'],
-                        'category' => ['type' => 'string', 'description' => 'Tipo de propiedad: casa, apartamento, local, terreno, etc.'],
+                        'location' => ['type' => 'string', 'description' => 'Filtro específico por provincia o ciudad (busca en provincia y ciudad, no en categoría)'],
+                        'category' => ['type' => 'string', 'description' => 'Filtro por categoría exacta como está en el sistema (puede variar, usá keyword si no estás seguro del nombre exacto)'],
                     ],
                     'required' => [],
                 ],
@@ -651,14 +649,14 @@ PROMPT;
                     'parameters' => [
                         'type' => 'object',
                         'properties' => [
-                            'keyword' => ['type' => 'string', 'description' => 'Texto libre de búsqueda'],
+                            'keyword' => ['type' => 'string', 'description' => 'Texto libre. Busca en nombre, ubicación, descripción, provincia, ciudad, proyecto y categorías. Usá este como primera opción.'],
                             'type' => ['type' => 'string', 'enum' => ['sale', 'rent'], 'description' => 'sale (venta) o rent (alquiler)'],
                             'min_price' => ['type' => 'number', 'description' => 'Precio mínimo'],
                             'max_price' => ['type' => 'number', 'description' => 'Precio máximo'],
                             'bedrooms' => ['type' => 'integer', 'description' => 'Número de habitaciones'],
                             'bathrooms' => ['type' => 'integer', 'description' => 'Número de baños'],
-                            'location' => ['type' => 'string', 'description' => 'Ciudad, zona o ubicación'],
-                            'category' => ['type' => 'string', 'description' => 'Tipo de propiedad'],
+                            'location' => ['type' => 'string', 'description' => 'Filtro específico por provincia o ciudad'],
+                            'category' => ['type' => 'string', 'description' => 'Filtro por categoría exacta del sistema (usá keyword si no sabés el nombre exacto)'],
                         ],
                         'required' => [],
                     ],

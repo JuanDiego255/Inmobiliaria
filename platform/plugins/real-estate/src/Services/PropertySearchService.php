@@ -116,7 +116,8 @@ class PropertySearchService
         $symbol = $currency ? $currency->symbol : '$';
         $price = $symbol . number_format($property->price, 0, '.', ',');
 
-        $type = $property->type->value === 'sale' ? 'VENTA' : 'ALQUILER';
+        $typeValue = $property->type instanceof \Botble\Base\Supports\Enum ? $property->type->getValue() : (string) $property->type;
+        $type = $typeValue === 'sale' ? 'VENTA' : 'ALQUILER';
 
         $location = '';
         if ($property->city && $property->city->name) {

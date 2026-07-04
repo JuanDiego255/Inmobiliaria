@@ -477,12 +477,26 @@ class WhatsAppBotService
             return json_encode(['error' => 'No hay empresa seleccionada.']);
         }
 
+        Log::info('WhatsAppBot: Tool call', [
+            'tool' => $tool,
+            'params' => $params,
+            'tenant' => $this->currentTenantId,
+            'db' => $this->resolveTenantDbName($this->currentTenantId),
+        ]);
+
         return $this->withTenantDb($this->currentTenantId, function () use ($tool, $params) {
-            return match ($tool) {
+            $result = match ($tool) {
                 'search_properties' => $this->toolSearchProperties($params),
                 'get_property_detail' => $this->toolGetPropertyDetail($params),
                 default => 'Herramienta no reconocida.',
             };
+
+            Log::info('WhatsAppBot: Tool result', [
+                'db_connected' => DB::connection()->getDatabaseName(),
+                'result_preview' => mb_substr($result, 0, 500),
+            ]);
+
+            return $result;
         });
     }
 

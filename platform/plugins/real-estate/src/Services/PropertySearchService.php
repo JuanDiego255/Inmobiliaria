@@ -5,6 +5,7 @@ namespace Botble\RealEstate\Services;
 use Botble\Media\Facades\RvMedia;
 use Botble\RealEstate\Models\Property;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 
 class PropertySearchService
 {
@@ -74,6 +75,13 @@ class PropertySearchService
         }
 
         $maxResults = (int) (setting('crm_whatsapp_bot_max_properties') ?: 5);
+
+        Log::info('WhatsAppBot: Property search', [
+            'criteria' => $criteria,
+            'sql' => $query->toSql(),
+            'bindings' => $query->getBindings(),
+            'total_active' => Property::query()->active()->count(),
+        ]);
 
         return $query->orderBy('is_featured', 'desc')
             ->orderBy('created_at', 'desc')

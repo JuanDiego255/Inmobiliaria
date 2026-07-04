@@ -18,9 +18,21 @@ class PropertySearchService
         if (! empty($criteria['keyword'])) {
             $keyword = $criteria['keyword'];
             $query->where(function ($q) use ($keyword) {
-                $q->where('name', 'LIKE', "%{$keyword}%")
-                    ->orWhere('location', 'LIKE', "%{$keyword}%")
-                    ->orWhere('description', 'LIKE', "%{$keyword}%");
+                $q->where('re_properties.name', 'LIKE', "%{$keyword}%")
+                    ->orWhere('re_properties.location', 'LIKE', "%{$keyword}%")
+                    ->orWhere('re_properties.description', 'LIKE', "%{$keyword}%")
+                    ->orWhereHas('state', function ($q) use ($keyword) {
+                        $q->where('states.name', 'LIKE', "%{$keyword}%");
+                    })
+                    ->orWhereHas('city', function ($q) use ($keyword) {
+                        $q->where('cities.name', 'LIKE', "%{$keyword}%");
+                    })
+                    ->orWhereHas('project', function ($q) use ($keyword) {
+                        $q->where('re_projects.name', 'LIKE', "%{$keyword}%");
+                    })
+                    ->orWhereHas('categories', function ($q) use ($keyword) {
+                        $q->where('re_categories.name', 'LIKE', "%{$keyword}%");
+                    });
             });
         }
 
@@ -57,12 +69,13 @@ class PropertySearchService
         if (! empty($criteria['location'])) {
             $location = $criteria['location'];
             $query->where(function ($q) use ($location) {
-                $q->where('location', 'LIKE', "%{$location}%")
-                    ->orWhereHas('city', function ($q) use ($location) {
-                        $q->where('name', 'LIKE', "%{$location}%");
-                    })
+                $q->where('re_properties.name', 'LIKE', "%{$location}%")
+                    ->orWhere('re_properties.location', 'LIKE', "%{$location}%")
                     ->orWhereHas('state', function ($q) use ($location) {
-                        $q->where('name', 'LIKE', "%{$location}%");
+                        $q->where('states.name', 'LIKE', "%{$location}%");
+                    })
+                    ->orWhereHas('city', function ($q) use ($location) {
+                        $q->where('cities.name', 'LIKE', "%{$location}%");
                     });
             });
         }
@@ -70,7 +83,7 @@ class PropertySearchService
         if (! empty($criteria['category'])) {
             $category = $criteria['category'];
             $query->whereHas('categories', function ($q) use ($category) {
-                $q->where('name', 'LIKE', "%{$category}%");
+                $q->where('re_categories.name', 'LIKE', "%{$category}%");
             });
         }
 

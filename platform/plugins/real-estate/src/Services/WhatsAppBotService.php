@@ -235,12 +235,23 @@ class WhatsAppBotService
         }
     }
 
+    protected function resolveTenantDbName(string $tenantId): string
+    {
+        $tenant = Tenant::find($tenantId);
+
+        if ($tenant && $tenant->tenancy_db_name) {
+            return $tenant->tenancy_db_name;
+        }
+
+        return config('tenancy.database.prefix', 'safewors_')
+            . $tenantId
+            . config('tenancy.database.suffix', '');
+    }
+
     protected function withTenantDb(string $tenantId, callable $callback): mixed
     {
         $centralDb = config('database.connections.mysql.database');
-        $prefix = config('tenancy.database.prefix', 'safewors_');
-        $suffix = config('tenancy.database.suffix', '');
-        $tenantDb = $prefix . $tenantId . $suffix;
+        $tenantDb = $this->resolveTenantDbName($tenantId);
 
         config(['database.connections.mysql.database' => $tenantDb]);
         DB::purge('mysql');

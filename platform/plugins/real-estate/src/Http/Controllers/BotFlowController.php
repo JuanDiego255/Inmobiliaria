@@ -82,6 +82,7 @@ class BotFlowController extends BaseController
             'mail_from_address' => 'nullable|email',
             'mail_from_name' => 'nullable|string|max:100',
             'notification_emails' => 'required|string',
+            'notification_whatsapp' => 'nullable|string|max:25',
             'is_active' => 'boolean',
         ]);
 
@@ -102,6 +103,7 @@ class BotFlowController extends BaseController
             'mail_from_address' => $request->input('mail_from_address') ?: $request->input('mail_username'),
             'mail_from_name' => $request->input('mail_from_name') ?: 'Bot WhatsApp',
             'notification_emails' => $notificationEmails,
+            'notification_whatsapp' => $request->input('notification_whatsapp') ?: null,
             'is_active' => $request->boolean('is_active', true),
         ];
 

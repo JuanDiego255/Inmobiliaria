@@ -238,8 +238,35 @@
                         <label class="cd-toggle-label">
                             <input type="checkbox" name="is_active" value="1" {{ ($mailConfig->is_active ?? false) ? 'checked' : '' }}>
                             <span class="cd-toggle-switch"></span>
-                            <span>Correo activo</span>
+                            <span>Notificaciones activas</span>
                         </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group mb-3">
+                    <label class="text-title-field" for="notification_whatsapp">
+                        <span class="material-icons" style="font-size:16px;vertical-align:middle;color:#25d366">chat</span>
+                        WhatsApp del agente (notificación)
+                    </label>
+                    <input type="text" class="form-control" id="notification_whatsapp" name="notification_whatsapp"
+                        value="{{ $mailConfig->notification_whatsapp ?? '' }}"
+                        placeholder="50688887777" />
+                    <small class="form-text text-muted">
+                        Número con código de país (ej: 50688887777). Cuando el bot complete un flujo, enviará un resumen por WhatsApp a este número.
+                        <strong>Costo: ~$0.014 por notificación.</strong>
+                    </small>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group mb-3">
+                    <label class="text-title-field">&nbsp;</label>
+                    <div class="cd-wa-info" style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:12px 14px;font-size:13px;color:#166534">
+                        <span class="material-icons" style="font-size:16px;vertical-align:middle;margin-right:4px">info</span>
+                        El bot enviará al agente un mensaje con el nombre del cliente, teléfono, trámite solicitado y toda la info recopilada.
                     </div>
                 </div>
             </div>

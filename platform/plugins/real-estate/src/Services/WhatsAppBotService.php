@@ -282,13 +282,80 @@ class WhatsAppBotService
             ]);
         }
 
-        $this->mailService->sendLeadNotification($tenantId, [
+        $leadData = [
             'client_name' => $clientName,
             'client_phone' => $phone,
             'intent' => $metadata['intent'] ?? 'Consulta',
             'option_label' => $metadata['selected_label'] ?? '',
             'collected_data' => $metadata['collected_data'] ?? [],
-        ]);
+        ];
+
+        $this->mailService->sendLeadNotification($tenantId, $leadData);
+
+        $this->sendWhatsAppNotificationToAgent($tenantId, $leadData);
+    }
+
+    protected function sendWhatsAppNotificationToAgent(string $tenantId, array $data): void
+    {
+        $config = \Botble\RealEstate\Models\TenantMailConfig::where('tenant_id', $tenantId)
+            ->where('is_active', true)
+            ->first();
+
+        if (! $config || empty($config->notification_whatsapp)) {
+            return;
+        }
+
+        $agentPhone = preg_replace('/[^0-9]/', '', $config->notification_whatsapp);
+
+        if (strlen($agentPhone) < 8) {
+            return;
+        }
+
+        $message = $this->buildAgentNotificationMessage($data);
+
+        try {
+            $this->sendWhatsAppReply($agentPhone, $message);
+
+            Log::info('WhatsAppBot: Agent notification sent via WhatsApp', [
+                'tenant' => $tenantId,
+                'agent_phone' => $agentPhone,
+            ]);
+        } catch (\Exception $e) {
+            Log::warning('WhatsAppBot: Failed to send WhatsApp notification to agent', [
+                'tenant' => $tenantId,
+                'agent_phone' => $agentPhone,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    protected function buildAgentNotificationMessage(array $data): string
+    {
+        $clientName = $data['client_name'] ?? 'Sin nombre';
+        $clientPhone = $data['client_phone'] ?? '';
+        $intent = $data['option_label'] ?? $data['intent'] ?? 'Consulta';
+
+        $msg = "🔔 *Nuevo Lead desde WhatsApp*\n\n";
+        $msg .= "👤 *Cliente:* {$clientName}\n";
+        $msg .= "📱 *Teléfono:* {$clientPhone}\n";
+        $msg .= "📋 *Trámite:* {$intent}\n";
+
+        $collected = $data['collected_data'] ?? [];
+
+        if (! empty($collected)) {
+            $msg .= "\n📝 *Información recopilada:*\n";
+
+            foreach ($collected as $field => $item) {
+                $question = $item['question'] ?? $field;
+                $answer = $item['answer'] ?? '';
+                $msg .= "• {$question}: _{$answer}_\n";
+            }
+        }
+
+        $msg .= "\n📅 " . now()->format('d/m/Y H:i');
+        $msg .= "\n\n_Enviado automáticamente por el Bot._";
+
+        return $msg;
     }
 
     protected function createLeadInTenant(string $tenantId, string $phone, string $name): void

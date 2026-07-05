@@ -101,8 +101,8 @@
                 <div class="form-group mb-3">
                     <label class="text-title-field">Estado</label>
                     <div class="mt-2">
+                        <input type="hidden" name="is_active" value="0">
                         <label class="cd-toggle-label">
-                            <input type="hidden" name="is_active" value="0">
                             <input type="checkbox" name="is_active" value="1" {{ ($flow?->is_active ?? false) ? 'checked' : '' }}>
                             <span class="cd-toggle-switch"></span>
                             <span>Flujo activo</span>
@@ -234,8 +234,8 @@
                 <div class="form-group mb-3">
                     <label class="text-title-field">Estado</label>
                     <div class="mt-2">
+                        <input type="hidden" name="is_active" value="0">
                         <label class="cd-toggle-label">
-                            <input type="hidden" name="is_active" value="0">
                             <input type="checkbox" name="is_active" value="1" {{ ($mailConfig->is_active ?? false) ? 'checked' : '' }}>
                             <span class="cd-toggle-switch"></span>
                             <span>Correo activo</span>
@@ -296,12 +296,14 @@
 .cd-btn-primary:hover { background:var(--cd-accent-ink) }
 .cd-btn-secondary { display:inline-flex;align-items:center;gap:6px;padding:10px 20px;background:var(--cd-soft-bg);color:var(--cd-ink-600);border:1px solid var(--cd-line);border-radius:var(--cd-radius-sm);font-weight:500;cursor:pointer;font-size:14px;transition:all .2s }
 .cd-btn-secondary:hover { background:var(--cd-card-bg);border-color:var(--cd-ink-400) }
-.cd-toggle-label { display: flex; align-items: center; gap: 10px; cursor: pointer; }
-.cd-toggle-label input[type="checkbox"] { display: none; }
-.cd-toggle-switch { width: 42px; height: 24px; background: #d1d5db; border-radius: 12px; position: relative; transition: background .2s; }
-.cd-toggle-switch::after { content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; background: white; border-radius: 50%; transition: transform .2s; box-shadow: 0 1px 3px rgba(0,0,0,.15); }
-.cd-toggle-label input:checked + .cd-toggle-switch { background: var(--cd-accent); }
-.cd-toggle-label input:checked + .cd-toggle-switch::after { transform: translateX(18px); }
+.cd-toggle-label { display: flex !important; align-items: center !important; gap: 10px !important; cursor: pointer !important; user-select: none; }
+.cd-toggle-label input[type="checkbox"] { position: absolute !important; opacity: 0 !important; width: 0 !important; height: 0 !important; pointer-events: none !important; }
+.cd-toggle-switch { display: inline-block !important; width: 44px !important; min-width: 44px !important; height: 24px !important; background: #d1d5db !important; border-radius: 12px !important; position: relative !important; transition: background .2s ease !important; flex-shrink: 0; vertical-align: middle; }
+.cd-toggle-switch::after { content: '' !important; display: block !important; position: absolute !important; top: 3px !important; left: 3px !important; width: 18px !important; height: 18px !important; background: #fff !important; border-radius: 50% !important; transition: transform .2s ease !important; box-shadow: 0 1px 3px rgba(0,0,0,.2) !important; }
+.cd-toggle-switch.is-on { background: var(--cd-accent, #717fe0) !important; }
+.cd-toggle-switch.is-on::after { transform: translateX(20px) !important; }
+.cd-toggle-label input[type="checkbox"]:checked + .cd-toggle-switch { background: var(--cd-accent, #717fe0) !important; }
+.cd-toggle-label input[type="checkbox"]:checked + .cd-toggle-switch::after { transform: translateX(20px) !important; }
 .cd-modal-overlay { position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:center;justify-content:center }
 .cd-modal-content { background:white;border-radius:var(--cd-radius);width:90%;max-width:500px;max-height:80vh;overflow:hidden;display:flex;flex-direction:column }
 .cd-modal-header { padding:16px 20px;border-bottom:1px solid var(--cd-line);display:flex;align-items:center;justify-content:space-between }
@@ -326,7 +328,26 @@ function switchTenant(id) {
 
 document.addEventListener('DOMContentLoaded', function() {
     renderOptions();
+    initToggles();
 });
+
+function initToggles() {
+    document.querySelectorAll('.cd-toggle-label').forEach(function(label) {
+        const cb = label.querySelector('input[type="checkbox"]');
+        const sw = label.querySelector('.cd-toggle-switch');
+        if (!cb || !sw) return;
+        if (cb.checked) sw.classList.add('is-on');
+        else sw.classList.remove('is-on');
+        cb.addEventListener('change', function() {
+            if (this.checked) sw.classList.add('is-on');
+            else sw.classList.remove('is-on');
+        });
+        sw.addEventListener('click', function() {
+            cb.checked = !cb.checked;
+            cb.dispatchEvent(new Event('change'));
+        });
+    });
+}
 
 function renderOptions() {
     const container = document.getElementById('optionsContainer');

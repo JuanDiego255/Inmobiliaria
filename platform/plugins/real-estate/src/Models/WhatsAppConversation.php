@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class WhatsAppConversation extends BaseModel
 {
+    protected $connection = 'mysql';
+
     protected $table = 're_whatsapp_conversations';
 
     protected $fillable = [

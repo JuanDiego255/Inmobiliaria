@@ -395,6 +395,19 @@ class RealEstateServiceProvider extends ServiceProvider
                             'permissions' => ['crm-lead.index'],
                         ]);
                     }
+                )
+                ->when(
+                    ! in_array(request()->getHost(), config('tenancy.central_domains', [])),
+                    function ($menu) {
+                        $menu->registerItem([
+                            'id' => 'cms-plugins-crm-bot-flow',
+                            'priority' => 3,
+                            'parent_id' => 'cms-plugins-crm',
+                            'name' => 'Entrenamiento Bot',
+                            'url' => route('crm.bot-flow.index'),
+                            'permissions' => ['crm-lead.index'],
+                        ]);
+                    }
                 );
 
             if (RealEstateHelper::isEnabledCustomFields()) {

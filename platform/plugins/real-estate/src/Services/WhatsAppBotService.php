@@ -18,13 +18,19 @@ class WhatsAppBotService
 {
     protected PropertySearchService $searchService;
 
+    protected BotFlowService $flowService;
+
+    protected TenantMailService $mailService;
+
     protected ?string $currentTenantId = null;
 
     protected ?string $currentTenantName = null;
 
-    public function __construct(PropertySearchService $searchService)
+    public function __construct(PropertySearchService $searchService, BotFlowService $flowService, TenantMailService $mailService)
     {
         $this->searchService = $searchService;
+        $this->flowService = $flowService;
+        $this->mailService = $mailService;
     }
 
     public function processIncomingMessage(string $from, string $name, string $message, array $metadata = []): void
@@ -34,6 +40,7 @@ class WhatsAppBotService
         }
 
         $activeTenantId = $this->getActiveTenantId($from);
+        $flowMetadata = null;
 
         if (! $activeTenantId) {
             $result = $this->handleTenantSelection($from, $name, $message);
@@ -44,8 +51,19 @@ class WhatsAppBotService
             $reply = $result['reply'];
             $tenantId = $result['tenant_id'];
         } else {
-            $reply = $this->handlePropertySearch($from, $name, $message, $activeTenantId);
             $tenantId = $activeTenantId;
+            $flowResult = $this->handleWithFlow($from, $name, $message, $activeTenantId);
+
+            if ($flowResult !== null) {
+                $reply = $flowResult['reply'];
+                $flowMetadata = $flowResult['metadata'] ?? null;
+
+                if ($flowResult['completed'] ?? false) {
+                    $this->onFlowCompleted($from, $name, $activeTenantId, $flowResult['metadata'] ?? []);
+                }
+            } else {
+                $reply = $this->handlePropertySearch($from, $name, $message, $activeTenantId);
+            }
         }
 
         WhatsAppConversation::query()->create([
@@ -53,7 +71,7 @@ class WhatsAppBotService
             'tenant_id' => $tenantId,
             'direction' => 'inbound',
             'message' => mb_substr($message, 0, 5000),
-            'metadata' => $metadata,
+            'metadata' => $flowMetadata ?? $metadata,
         ]);
 
         WhatsAppConversation::query()->create([
@@ -61,6 +79,7 @@ class WhatsAppBotService
             'tenant_id' => $tenantId,
             'direction' => 'outbound',
             'message' => $reply,
+            'metadata' => $flowMetadata,
         ]);
 
         $this->sendWhatsAppReply($from, $reply);
@@ -219,6 +238,57 @@ class WhatsAppBotService
         }
 
         return $reply;
+    }
+
+    protected function handleWithFlow(string $from, string $name, string $message, string $tenantId): ?array
+    {
+        $flow = $this->flowService->getActiveFlow($tenantId);
+
+        if (! $flow) {
+            return null;
+        }
+
+        if ($this->flowService->wantsToRestart($message)) {
+            $result = $this->flowService->processMessage($message, $flow, null);
+
+            return $result;
+        }
+
+        $currentState = $this->flowService->getFlowState($from, $tenantId);
+        $result = $this->flowService->processMessage($message, $flow, $currentState);
+
+        return $result;
+    }
+
+    protected function onFlowCompleted(string $phone, string $clientName, string $tenantId, array $metadata): void
+    {
+        try {
+            $this->withTenantDb($tenantId, function () use ($phone, $clientName, $metadata) {
+                $lead = $this->getOrCreateLead($phone, $clientName);
+
+                $activityDescription = $this->flowService->formatCollectedDataForActivity($metadata);
+
+                CrmActivity::query()->create([
+                    'lead_id' => $lead->id,
+                    'type' => CrmActivityTypeEnum::META_AUTO,
+                    'description' => "📋 Bot WhatsApp — Flujo completado\n\n" . $activityDescription,
+                    'completed_at' => now(),
+                ]);
+            });
+        } catch (\Exception $e) {
+            Log::warning('WhatsAppBot: Could not create activity for completed flow', [
+                'tenant' => $tenantId,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        $this->mailService->sendLeadNotification($tenantId, [
+            'client_name' => $clientName,
+            'client_phone' => $phone,
+            'intent' => $metadata['intent'] ?? 'Consulta',
+            'option_label' => $metadata['selected_label'] ?? '',
+            'collected_data' => $metadata['collected_data'] ?? [],
+        ]);
     }
 
     protected function createLeadInTenant(string $tenantId, string $phone, string $name): void

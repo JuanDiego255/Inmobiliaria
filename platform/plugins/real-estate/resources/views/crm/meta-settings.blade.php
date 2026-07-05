@@ -294,14 +294,6 @@
             <small class="form-text text-muted">Mensaje que se envía si la IA no está disponible o falla.</small>
         </div>
 
-        <div class="form-group mb-3">
-            <label class="text-title-field" for="crm_whatsapp_bot_enabled_tenants">Tenants con acceso a entrenar el bot</label>
-            <input type="text" class="form-control" id="crm_whatsapp_bot_enabled_tenants"
-                name="crm_whatsapp_bot_enabled_tenants"
-                value="{{ setting('crm_whatsapp_bot_enabled_tenants') }}"
-                placeholder="* (todos) o: elite, otro-tenant" />
-            <small class="form-text text-muted">IDs de tenants separados por coma que pueden configurar flujos personalizados. Usá <code>*</code> para habilitar a todos.</small>
-        </div>
     </section>
 
     {{-- ═══════════ SAVE BUTTON ═══════════ --}}

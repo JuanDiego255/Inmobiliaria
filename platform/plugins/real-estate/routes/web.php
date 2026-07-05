@@ -417,32 +417,32 @@ Route::group(['namespace' => 'Botble\RealEstate\Http\Controllers', 'middleware' 
                     'uses' => 'MetaWebhookLogController@retry',
                     'permission' => 'crm-meta.settings',
                 ])->wherePrimaryKey();
-            });
 
-            Route::group(['prefix' => 'bot-flow', 'as' => 'bot-flow.'], function () {
-                Route::get('/', [
-                    'as' => 'index',
-                    'uses' => 'BotFlowController@index',
-                    'permission' => 'crm-lead.index',
-                ]);
+                Route::group(['prefix' => 'bot-flow', 'as' => 'bot-flow.'], function () {
+                    Route::get('/', [
+                        'as' => 'index',
+                        'uses' => 'BotFlowController@index',
+                        'permission' => 'crm-meta.settings',
+                    ]);
 
-                Route::post('save', [
-                    'as' => 'save',
-                    'uses' => 'BotFlowController@saveFlow',
-                    'permission' => 'crm-lead.index',
-                ]);
+                    Route::post('save', [
+                        'as' => 'save',
+                        'uses' => 'BotFlowController@saveFlow',
+                        'permission' => 'crm-meta.settings',
+                    ]);
 
-                Route::post('save-mail', [
-                    'as' => 'save-mail',
-                    'uses' => 'BotFlowController@saveMailConfig',
-                    'permission' => 'crm-lead.index',
-                ]);
+                    Route::post('save-mail', [
+                        'as' => 'save-mail',
+                        'uses' => 'BotFlowController@saveMailConfig',
+                        'permission' => 'crm-meta.settings',
+                    ]);
 
-                Route::post('test-mail', [
-                    'as' => 'test-mail',
-                    'uses' => 'BotFlowController@testMail',
-                    'permission' => 'crm-lead.index',
-                ]);
+                    Route::post('test-mail', [
+                        'as' => 'test-mail',
+                        'uses' => 'BotFlowController@testMail',
+                        'permission' => 'crm-meta.settings',
+                    ]);
+                });
             });
 
             Route::group(['prefix' => 'reminders', 'as' => 'reminders.'], function () {

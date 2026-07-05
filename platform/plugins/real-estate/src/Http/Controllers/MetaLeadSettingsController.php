@@ -64,7 +64,6 @@ class MetaLeadSettingsController extends BaseController
             'crm_whatsapp_bot_system_prompt' => ['nullable', 'string', 'max:5000'],
             'crm_whatsapp_bot_max_properties' => ['nullable', 'integer', 'min:1', 'max:10'],
             'crm_whatsapp_bot_welcome_message' => ['nullable', 'string', 'max:500'],
-            'crm_whatsapp_bot_enabled_tenants' => ['nullable', 'string', 'max:500'],
         ]);
 
         $keys = [
@@ -81,7 +80,6 @@ class MetaLeadSettingsController extends BaseController
             'crm_whatsapp_bot_system_prompt',
             'crm_whatsapp_bot_max_properties',
             'crm_whatsapp_bot_welcome_message',
-            'crm_whatsapp_bot_enabled_tenants',
         ];
 
         foreach ($keys as $key) {

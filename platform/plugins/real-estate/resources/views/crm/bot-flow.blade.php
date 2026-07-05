@@ -16,9 +16,12 @@
             <div>
                 <span class="cd-eyebrow">CRM · Bot WhatsApp</span>
                 <h1>Entrenamiento del Bot</h1>
-                <p class="cd-head-sub">Configurá el flujo de conversación y las notificaciones por correo para tu empresa.</p>
+                <p class="cd-head-sub">Configurá flujos de conversación y correos por tenant. Sin flujo activo, el bot usa IA libre.</p>
             </div>
             <div class="cd-leads-nav">
+                <a class="cd-qbtn" href="{{ route('crm.meta-settings') }}" style="width:auto;padding:9px 16px">
+                    <span class="cd-qi"><span class="material-icons">settings</span></span> Meta Config
+                </a>
                 <a class="cd-qbtn" href="{{ route('crm.dashboard') }}" style="width:auto;padding:9px 16px">
                     <span class="cd-qi"><span class="material-icons">dashboard</span></span> Dashboard
                 </a>
@@ -42,6 +45,34 @@
     </div>
     @endif
 
+    {{-- ═══════════ TENANT SELECTOR ═══════════ --}}
+    <section class="cd-card cd-settings-card">
+        <div class="cd-sc-head">
+            <div class="cd-sc-icon cd-sc-meta">
+                <span class="material-icons">business</span>
+            </div>
+            <div>
+                <h3>Seleccionar Empresa</h3>
+                <p>Elegí el tenant para configurar su flujo de bot y notificaciones.</p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group mb-0">
+                    <select class="form-control" id="tenantSelector" onchange="switchTenant(this.value)">
+                        @foreach($tenants as $t)
+                            <option value="{{ $t->id }}" {{ $tenantId === $t->id ? 'selected' : '' }}>
+                                {{ $t->name }} ({{ $t->id }})
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    @if($tenantId)
+
     {{-- ═══════════ FLOW CONFIGURATION ═══════════ --}}
     <section class="cd-card cd-settings-card">
         <div class="cd-sc-head">
@@ -50,11 +81,12 @@
             </div>
             <div>
                 <h3>Flujo de Conversación</h3>
-                <p>Definí las preguntas que el bot hará al cliente paso a paso. Si no configurás un flujo, el bot usará IA libre para buscar propiedades.</p>
+                <p>Definí las preguntas que el bot hará al cliente paso a paso.</p>
             </div>
         </div>
 
         {!! Form::open(['route' => 'crm.bot-flow.save', 'method' => 'POST']) !!}
+        <input type="hidden" name="tenant_id" value="{{ $tenantId }}">
 
         <div class="row">
             <div class="col-md-8">
@@ -122,6 +154,7 @@
         </div>
 
         {!! Form::open(['route' => 'crm.bot-flow.save-mail', 'method' => 'POST']) !!}
+        <input type="hidden" name="tenant_id" value="{{ $tenantId }}">
 
         <div class="row">
             <div class="col-md-6">
@@ -224,6 +257,12 @@
         {!! Form::close() !!}
     </section>
 
+    @else
+    <section class="cd-card cd-settings-card">
+        <p style="text-align:center;color:var(--cd-ink-400);padding:40px">No hay tenants registrados.</p>
+    </section>
+    @endif
+
     {{-- ═══════════ PREVIEW MODAL ═══════════ --}}
     <div class="cd-modal-overlay" id="previewModal" style="display:none">
         <div class="cd-modal-content">
@@ -242,7 +281,6 @@
 @push('header')
 <link rel="stylesheet" href="{{ asset('vendor/core/plugins/real-estate/css/crm-dashboard.css') }}">
 <style>
-/* Flow builder styles */
 .cd-flow-builder { background: var(--cd-soft-bg); border-radius: var(--cd-radius-sm); padding: 20px; margin-top: 16px; }
 .cd-flow-option { background: var(--cd-card-bg); border: 1px solid var(--cd-line); border-radius: var(--cd-radius-sm); padding: 16px; margin-bottom: 12px; position: relative; }
 .cd-flow-option-header { display: flex; gap: 10px; align-items: center; margin-bottom: 12px; }
@@ -258,26 +296,20 @@
 .cd-btn-primary:hover { background:var(--cd-accent-ink) }
 .cd-btn-secondary { display:inline-flex;align-items:center;gap:6px;padding:10px 20px;background:var(--cd-soft-bg);color:var(--cd-ink-600);border:1px solid var(--cd-line);border-radius:var(--cd-radius-sm);font-weight:500;cursor:pointer;font-size:14px;transition:all .2s }
 .cd-btn-secondary:hover { background:var(--cd-card-bg);border-color:var(--cd-ink-400) }
-
-/* Toggle */
 .cd-toggle-label { display: flex; align-items: center; gap: 10px; cursor: pointer; }
 .cd-toggle-label input[type="checkbox"] { display: none; }
 .cd-toggle-switch { width: 42px; height: 24px; background: #d1d5db; border-radius: 12px; position: relative; transition: background .2s; }
 .cd-toggle-switch::after { content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; background: white; border-radius: 50%; transition: transform .2s; box-shadow: 0 1px 3px rgba(0,0,0,.15); }
 .cd-toggle-label input:checked + .cd-toggle-switch { background: var(--cd-accent); }
 .cd-toggle-label input:checked + .cd-toggle-switch::after { transform: translateX(18px); }
-
-/* Modal */
 .cd-modal-overlay { position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:center;justify-content:center }
 .cd-modal-content { background:white;border-radius:var(--cd-radius);width:90%;max-width:500px;max-height:80vh;overflow:hidden;display:flex;flex-direction:column }
 .cd-modal-header { padding:16px 20px;border-bottom:1px solid var(--cd-line);display:flex;align-items:center;justify-content:space-between }
 .cd-modal-header h3 { margin:0;font-size:16px }
 .cd-modal-close { background:none;border:none;font-size:24px;cursor:pointer;color:var(--cd-ink-400) }
 .cd-modal-body { padding:20px;overflow-y:auto;flex:1 }
-
-/* Chat preview */
 .cd-chat-preview { display:flex;flex-direction:column;gap:8px }
-.cd-chat-msg { padding:10px 14px;border-radius:12px;max-width:85%;font-size:13px;line-height:1.5 }
+.cd-chat-msg { padding:10px 14px;border-radius:12px;max-width:85%;font-size:13px;line-height:1.5;white-space:pre-line }
 .cd-chat-bot { background:#e8f4e8;align-self:flex-start;border-bottom-left-radius:4px }
 .cd-chat-user { background:#e3f2fd;align-self:flex-end;border-bottom-right-radius:4px }
 </style>
@@ -286,6 +318,11 @@
 @push('footer')
 <script>
 let flowOptions = @json(($flow?->flow_config ?? ['options' => []])['options'] ?? []);
+const currentTenantId = @json($tenantId);
+
+function switchTenant(id) {
+    window.location.href = '{{ route("crm.bot-flow.index") }}?tenant=' + id;
+}
 
 document.addEventListener('DOMContentLoaded', function() {
     renderOptions();
@@ -293,6 +330,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function renderOptions() {
     const container = document.getElementById('optionsContainer');
+    if (!container) return;
     container.innerHTML = '';
     flowOptions.forEach((opt, i) => {
         container.appendChild(createOptionEl(opt, i));
@@ -386,7 +424,7 @@ function previewFlow() {
 
     let html = `<div class="cd-chat-msg cd-chat-bot">${greeting}`;
     flowOptions.forEach(opt => {
-        html += `<br>${opt.key}. ${opt.label}`;
+        html += `\n${opt.key}. ${opt.label}`;
     });
     html += '</div>';
 
@@ -422,7 +460,8 @@ function testMail() {
         headers: {
             'Content-Type': 'application/json',
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-        }
+        },
+        body: JSON.stringify({ tenant_id: currentTenantId })
     })
     .then(r => r.json())
     .then(data => {
@@ -431,7 +470,7 @@ function testMail() {
         btn.innerHTML = '<span class="material-icons" style="font-size:18px;vertical-align:middle">send</span> Enviar correo de prueba';
     })
     .catch(err => {
-        alert('Error de conexión: ' + err.message);
+        alert('Error: ' + err.message);
         btn.disabled = false;
         btn.innerHTML = '<span class="material-icons" style="font-size:18px;vertical-align:middle">send</span> Enviar correo de prueba';
     });

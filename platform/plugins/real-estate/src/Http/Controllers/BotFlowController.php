@@ -6,36 +6,30 @@ use Botble\Base\Http\Controllers\BaseController;
 use Botble\RealEstate\Models\TenantMailConfig;
 use Botble\RealEstate\Models\WhatsAppBotFlow;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class BotFlowController extends BaseController
 {
-    public function index()
+    public function index(Request $request)
     {
-        $tenantId = $this->getCurrentTenantId();
+        $tenants = DB::connection('mysql')->table('tenants')->orderBy('name')->get();
+        $tenantId = $request->query('tenant', $tenants->first()?->id);
 
-        if (! $tenantId) {
-            abort(403, 'Esta funcionalidad solo está disponible para tenants.');
-        }
-
-        if (! $this->tenantHasBotAccess($tenantId)) {
-            abort(403, 'Su plan no incluye la configuración del bot de WhatsApp.');
-        }
-
-        $flow = WhatsAppBotFlow::where('tenant_id', $tenantId)->first();
-        $mailConfig = TenantMailConfig::where('tenant_id', $tenantId)->first();
+        $flow = $tenantId ? WhatsAppBotFlow::where('tenant_id', $tenantId)->first() : null;
+        $mailConfig = $tenantId ? TenantMailConfig::where('tenant_id', $tenantId)->first() : null;
 
         page_title()->setTitle('Entrenamiento del Bot');
 
-        return view('plugins/real-estate::crm.bot-flow', compact('flow', 'mailConfig', 'tenantId'));
+        return view('plugins/real-estate::crm.bot-flow', compact('flow', 'mailConfig', 'tenantId', 'tenants'));
     }
 
     public function saveFlow(Request $request)
     {
-        $tenantId = $this->getCurrentTenantId();
+        $tenantId = $request->input('tenant_id');
 
-        if (! $tenantId || ! $this->tenantHasBotAccess($tenantId)) {
-            abort(403);
+        if (! $tenantId) {
+            return redirect()->back()->with('error_msg', 'Seleccioná un tenant.');
         }
 
         $validator = Validator::make($request->all(), [
@@ -66,15 +60,17 @@ class BotFlowController extends BaseController
             ]
         );
 
-        return redirect()->back()->with('success_msg', '¡Flujo del bot guardado correctamente!');
+        return redirect()
+            ->route('crm.bot-flow.index', ['tenant' => $tenantId])
+            ->with('success_msg', '¡Flujo del bot guardado correctamente!');
     }
 
     public function saveMailConfig(Request $request)
     {
-        $tenantId = $this->getCurrentTenantId();
+        $tenantId = $request->input('tenant_id');
 
-        if (! $tenantId || ! $this->tenantHasBotAccess($tenantId)) {
-            abort(403);
+        if (! $tenantId) {
+            return redirect()->back()->with('error_msg', 'Seleccioná un tenant.');
         }
 
         $validator = Validator::make($request->all(), [
@@ -118,21 +114,23 @@ class BotFlowController extends BaseController
             $data
         );
 
-        return redirect()->back()->with('success_msg', '¡Configuración de correo guardada correctamente!');
+        return redirect()
+            ->route('crm.bot-flow.index', ['tenant' => $tenantId])
+            ->with('success_msg', '¡Configuración de correo guardada correctamente!');
     }
 
     public function testMail(Request $request)
     {
-        $tenantId = $this->getCurrentTenantId();
+        $tenantId = $request->input('tenant_id');
 
-        if (! $tenantId || ! $this->tenantHasBotAccess($tenantId)) {
-            return response()->json(['success' => false, 'message' => 'Sin acceso'], 403);
+        if (! $tenantId) {
+            return response()->json(['success' => false, 'message' => 'Seleccioná un tenant.']);
         }
 
         $config = TenantMailConfig::where('tenant_id', $tenantId)->first();
 
         if (! $config || ! $config->is_active) {
-            return response()->json(['success' => false, 'message' => 'Configure y active el correo primero.']);
+            return response()->json(['success' => false, 'message' => 'Configurá y activá el correo primero.']);
         }
 
         try {
@@ -151,39 +149,6 @@ class BotFlowController extends BaseController
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
         }
-    }
-
-    protected function getCurrentTenantId(): ?string
-    {
-        $host = request()->getHost();
-        $centralDomains = config('tenancy.central_domains', []);
-
-        if (in_array($host, $centralDomains)) {
-            return null;
-        }
-
-        $baseDomain = config('tenancy.base_domain', 'safeworsolutions.com');
-        $subdomain = str_replace('.' . $baseDomain, '', $host);
-
-        $tenant = \Illuminate\Support\Facades\DB::connection('mysql')
-            ->table('tenants')
-            ->where('id', $subdomain)
-            ->first();
-
-        return $tenant?->id;
-    }
-
-    protected function tenantHasBotAccess(string $tenantId): bool
-    {
-        $enabledTenants = setting('crm_whatsapp_bot_enabled_tenants');
-
-        if (! $enabledTenants) {
-            return (bool) setting('crm_whatsapp_bot_enabled');
-        }
-
-        $allowed = array_map('trim', explode(',', $enabledTenants));
-
-        return in_array($tenantId, $allowed) || in_array('*', $allowed);
     }
 
     protected function validateFlowConfig(array $config): bool

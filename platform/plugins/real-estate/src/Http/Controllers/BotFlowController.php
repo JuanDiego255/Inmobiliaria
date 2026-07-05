@@ -165,7 +165,10 @@ class BotFlowController extends BaseController
         $baseDomain = config('tenancy.base_domain', 'safeworsolutions.com');
         $subdomain = str_replace('.' . $baseDomain, '', $host);
 
-        $tenant = \App\Models\Tenant::where('id', $subdomain)->first();
+        $tenant = \Illuminate\Support\Facades\DB::connection('mysql')
+            ->table('tenants')
+            ->where('id', $subdomain)
+            ->first();
 
         return $tenant?->id;
     }

@@ -98,7 +98,7 @@ class WhatsAppBotService
 
     protected function listAvailableTenants(): Collection
     {
-        return Tenant::orderBy('name')->get();
+        return Tenant::on('mysql')->orderBy('name')->get();
     }
 
     protected function matchTenantFromMessage(string $message, Collection $tenants): ?Tenant
@@ -207,7 +207,7 @@ class WhatsAppBotService
 
     protected function handlePropertySearch(string $from, string $name, string $message, string $tenantId): string
     {
-        $tenant = Tenant::find($tenantId);
+        $tenant = Tenant::on('mysql')->find($tenantId);
         if (! $tenant) {
             $result = $this->handleTenantSelection($from, $name, $message, true);
 
@@ -307,7 +307,7 @@ class WhatsAppBotService
 
     protected function resolveTenantDbName(string $tenantId): string
     {
-        $tenant = Tenant::find($tenantId);
+        $tenant = Tenant::on('mysql')->find($tenantId);
 
         if ($tenant && $tenant->tenancy_db_name) {
             return $tenant->tenancy_db_name;

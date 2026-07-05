@@ -11,8 +11,6 @@ class Tenant extends BaseTenant implements TenantWithDatabase
 {
     use HasDatabase, HasDomains;
 
-    protected $connection = 'mysql';
-
     public $incrementing = false;
 
     protected $keyType = 'string';

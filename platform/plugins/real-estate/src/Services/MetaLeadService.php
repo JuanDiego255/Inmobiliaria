@@ -60,7 +60,7 @@ class MetaLeadService
                 $contactName = $contacts[$index]['profile']['name'] ?? ($contacts[0]['profile']['name'] ?? 'WhatsApp Contact');
                 $messageText = $this->extractWhatsAppMessageText($message);
 
-                if (setting('crm_whatsapp_bot_enabled') && $messageText && ($message['type'] ?? 'text') === 'text') {
+                if (setting('crm_whatsapp_bot_enabled') && $messageText && in_array($message['type'] ?? 'text', ['text', 'interactive'])) {
                     try {
                         $botService = app(WhatsAppBotService::class);
                         $botService->processIncomingMessage($waId, $contactName, $messageText, [
@@ -281,6 +281,9 @@ class MetaLeadService
     {
         return match ($message['type'] ?? 'text') {
             'text' => $message['text']['body'] ?? null,
+            'interactive' => $message['interactive']['button_reply']['title']
+                ?? $message['interactive']['list_reply']['title']
+                ?? null,
             'image' => '[Imagen]' . (isset($message['image']['caption']) ? ' ' . $message['image']['caption'] : ''),
             'document' => '[Documento]' . (isset($message['document']['filename']) ? ' ' . $message['document']['filename'] : ''),
             'audio' => '[Audio]',

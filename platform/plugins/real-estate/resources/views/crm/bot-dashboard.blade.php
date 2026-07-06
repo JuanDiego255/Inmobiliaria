@@ -17,15 +17,18 @@
                 <h1>Dashboard de Conversaciones</h1>
                 <p class="cd-head-sub">Métricas y actividad del bot por tenant.</p>
             </div>
+            @if(empty($isTenantView))
             <div class="cd-leads-nav">
                 <a class="cd-qbtn" href="{{ route('crm.bot-flow.index') }}" style="width:auto;padding:9px 16px">
                     <span class="cd-qi"><span class="material-icons">smart_toy</span></span> Bot Config
                 </a>
             </div>
+            @endif
         </div>
     </header>
 
-    {{-- Tenant Selector --}}
+    @if(empty($isTenantView))
+    {{-- Tenant Selector (solo en vista central) --}}
     <section class="cd-card cd-settings-card">
         <div class="cd-sc-head">
             <div class="cd-sc-icon cd-sc-meta">
@@ -48,6 +51,7 @@
             </div>
         </div>
     </section>
+    @endif
 
     @if($tenantId && !empty($stats))
 

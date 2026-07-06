@@ -12,28 +12,42 @@ class BotDashboardController extends BaseController
 {
     public function index(Request $request)
     {
-        $tenants = DB::connection('mysql')->table('tenants')->orderBy('name')->get();
-        $tenantId = $request->query('tenant', $tenants->first()?->id);
+        $currentTenant = $this->detectCurrentTenant();
+
+        if ($currentTenant) {
+            $tenantId = $currentTenant->id;
+            $tenants = collect([$currentTenant]);
+        } else {
+            $tenants = DB::connection('mysql')->table('tenants')->orderBy('name')->get();
+            $tenantId = $request->query('tenant', $tenants->first()?->id);
+        }
 
         if ($tenantId) {
             $features = TenantFeature::where('tenant_id', $tenantId)->first();
 
             if (! $features || ! $features->hasFeature('dashboard')) {
+                if ($currentTenant) {
+                    return redirect()->route('crm.dashboard')
+                        ->with('error_msg', 'El dashboard de conversaciones no está habilitado para este tenant.');
+                }
+
                 return redirect()->route('crm.bot-flow.index', ['tenant' => $tenantId])
                     ->with('error_msg', 'El dashboard de conversaciones no está habilitado para este tenant.');
             }
         }
 
         $stats = $this->getStats($tenantId);
+        $isTenantView = (bool) $currentTenant;
 
         page_title()->setTitle('Dashboard del Bot');
 
-        return view('plugins/real-estate::crm.bot-dashboard', compact('tenants', 'tenantId', 'stats'));
+        return view('plugins/real-estate::crm.bot-dashboard', compact('tenants', 'tenantId', 'stats', 'isTenantView'));
     }
 
     public function apiStats(Request $request)
     {
-        $tenantId = $request->input('tenant_id');
+        $currentTenant = $this->detectCurrentTenant();
+        $tenantId = $currentTenant ? $currentTenant->id : $request->input('tenant_id');
 
         if (! $tenantId) {
             return response()->json(['error' => 'tenant_id required'], 400);
@@ -46,6 +60,26 @@ class BotDashboardController extends BaseController
         }
 
         return response()->json($this->getStats($tenantId));
+    }
+
+    protected function detectCurrentTenant(): ?object
+    {
+        if (function_exists('tenant') && tenant()) {
+            return tenant();
+        }
+
+        $host = request()->getHost();
+        $domain = DB::connection('mysql')->table('domains')
+            ->where('domain', $host)
+            ->first();
+
+        if ($domain) {
+            return DB::connection('mysql')->table('tenants')
+                ->where('id', $domain->tenant_id)
+                ->first();
+        }
+
+        return null;
     }
 
     protected function getStats(?string $tenantId): array
@@ -75,6 +109,7 @@ class BotDashboardController extends BaseController
             ->get()
             ->filter(function ($conv) {
                 $meta = $conv->metadata;
+
                 return is_array($meta) && ($meta['flow_state'] ?? '') === 'completed';
             })
             ->count();

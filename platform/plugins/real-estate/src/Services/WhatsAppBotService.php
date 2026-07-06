@@ -29,6 +29,8 @@ class WhatsAppBotService
 
     protected array $lastSearchResults = [];
 
+    protected bool $interactiveSent = false;
+
     public function __construct(PropertySearchService $searchService, BotFlowService $flowService, TenantMailService $mailService)
     {
         $this->searchService = $searchService;
@@ -42,6 +44,8 @@ class WhatsAppBotService
             return;
         }
 
+        $this->interactiveSent = false;
+        $this->lastSearchResults = [];
         $activeTenantId = $this->getActiveTenantId($from);
         $flowMetadata = null;
 
@@ -85,7 +89,9 @@ class WhatsAppBotService
             'metadata' => $flowMetadata,
         ]);
 
-        $this->sendWhatsAppReply($from, $reply);
+        if (! $this->interactiveSent) {
+            $this->sendWhatsAppReply($from, $reply);
+        }
 
         if ($tenantId && $this->tenantHasFeature($tenantId, 'photos') && ! empty($this->lastSearchResults)) {
             $this->sendPropertyPhotos($from, $this->lastSearchResults);
@@ -259,7 +265,10 @@ class WhatsAppBotService
             $result = $this->flowService->processMessage($message, $flow, null);
 
             if ($this->tenantHasFeature($tenantId, 'interactive_buttons')) {
-                $this->sendFlowAsInteractive($from, $result, $flow);
+                $sent = $this->sendFlowAsInteractive($from, $result, $flow);
+                if ($sent) {
+                    $this->interactiveSent = true;
+                }
             }
 
             return $result;
@@ -269,7 +278,10 @@ class WhatsAppBotService
         $result = $this->flowService->processMessage($message, $flow, $currentState);
 
         if ($this->tenantHasFeature($tenantId, 'interactive_buttons') && ! ($result['completed'] ?? false)) {
-            $this->sendFlowAsInteractive($from, $result, $flow);
+            $sent = $this->sendFlowAsInteractive($from, $result, $flow);
+            if ($sent) {
+                $this->interactiveSent = true;
+            }
         }
 
         return $result;
@@ -1083,14 +1095,14 @@ PROMPT;
         }
     }
 
-    protected function sendFlowAsInteractive(string $from, array $result, $flow): void
+    protected function sendFlowAsInteractive(string $from, array $result, $flow): bool
     {
         $state = $result['metadata'] ?? [];
         $flowState = $state['flow_state'] ?? '';
 
         if ($flowState === 'awaiting_option') {
             $options = $flow->flow_config['options'] ?? [];
-            if (count($options) <= 10 && count($options) >= 1) {
+            if (count($options) >= 1 && count($options) <= 10) {
                 $rows = [];
                 foreach ($options as $option) {
                     $rows[] = [
@@ -1104,10 +1116,10 @@ PROMPT;
                     'type' => 'list',
                     'header' => [
                         'type' => 'text',
-                        'text' => mb_substr($flow->name ?? 'Menu', 0, 60),
+                        'text' => mb_substr($flow->name ?? 'Menú', 0, 60),
                     ],
                     'body' => [
-                        'text' => $flow->greeting_message ?: 'Que tramite desea realizar?',
+                        'text' => $flow->greeting_message ?: '¿Qué trámite desea realizar?',
                     ],
                     'action' => [
                         'button' => 'Ver opciones',
@@ -1119,6 +1131,8 @@ PROMPT;
                         ],
                     ],
                 ]);
+
+                return true;
             }
         } elseif ($flowState === 'collecting') {
             $selectedKey = $state['selected_option'] ?? '';
@@ -1136,22 +1150,65 @@ PROMPT;
                 $steps = $selectedOption['steps'] ?? [];
                 $currentStep = $steps[$currentStepIndex] ?? null;
 
-                if ($currentStep && ($currentStep['type'] ?? '') === 'yes_no') {
+                if ($currentStep && ($currentStep['type'] ?? '') === 'choice' && ! empty($currentStep['choices'])) {
+                    $choices = $currentStep['choices'];
+                    if (count($choices) <= 3) {
+                        $buttons = [];
+                        foreach ($choices as $i => $choice) {
+                            $buttons[] = [
+                                'type' => 'reply',
+                                'reply' => [
+                                    'id' => 'choice_' . ($i + 1),
+                                    'title' => mb_substr($choice, 0, 20),
+                                ],
+                            ];
+                        }
+
+                        $this->sendWhatsAppInteractive($from, [
+                            'type' => 'button',
+                            'body' => ['text' => $currentStep['question']],
+                            'action' => ['buttons' => $buttons],
+                        ]);
+
+                        return true;
+                    } elseif (count($choices) <= 10) {
+                        $rows = [];
+                        foreach ($choices as $i => $choice) {
+                            $rows[] = [
+                                'id' => 'choice_' . ($i + 1),
+                                'title' => mb_substr($choice, 0, 24),
+                            ];
+                        }
+
+                        $this->sendWhatsAppInteractive($from, [
+                            'type' => 'list',
+                            'body' => ['text' => $currentStep['question']],
+                            'action' => [
+                                'button' => 'Ver opciones',
+                                'sections' => [['title' => 'Opciones', 'rows' => $rows]],
+                            ],
+                        ]);
+
+                        return true;
+                    }
+                } elseif ($currentStep && ($currentStep['type'] ?? '') === 'yes_no') {
                     $this->sendWhatsAppInteractive($from, [
                         'type' => 'button',
-                        'body' => [
-                            'text' => $currentStep['question'],
-                        ],
+                        'body' => ['text' => $currentStep['question']],
                         'action' => [
                             'buttons' => [
-                                ['type' => 'reply', 'reply' => ['id' => 'btn_yes', 'title' => 'Si']],
+                                ['type' => 'reply', 'reply' => ['id' => 'btn_si', 'title' => 'Sí']],
                                 ['type' => 'reply', 'reply' => ['id' => 'btn_no', 'title' => 'No']],
                             ],
                         ],
                     ]);
+
+                    return true;
                 }
             }
         }
+
+        return false;
     }
 
     protected function tenantHasFeature(string $tenantId, string $feature): bool

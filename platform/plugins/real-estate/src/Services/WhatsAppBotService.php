@@ -311,14 +311,23 @@ class WhatsAppBotService
             return;
         }
 
-        $message = $this->buildAgentNotificationMessage($data);
+        $templateName = $config->whatsapp_template_name ?: null;
 
         try {
-            $this->sendWhatsAppReply($agentPhone, $message);
+            if ($templateName) {
+                $sent = $this->sendWhatsAppTemplate($agentPhone, $templateName, $data);
+
+                if (! $sent) {
+                    $this->sendWhatsAppReply($agentPhone, $this->buildAgentNotificationMessage($data));
+                }
+            } else {
+                $this->sendWhatsAppReply($agentPhone, $this->buildAgentNotificationMessage($data));
+            }
 
             Log::info('WhatsAppBot: Agent notification sent via WhatsApp', [
                 'tenant' => $tenantId,
                 'agent_phone' => $agentPhone,
+                'template' => $templateName,
             ]);
         } catch (\Exception $e) {
             Log::warning('WhatsAppBot: Failed to send WhatsApp notification to agent', [
@@ -327,6 +336,68 @@ class WhatsAppBotService
                 'error' => $e->getMessage(),
             ]);
         }
+    }
+
+    protected function sendWhatsAppTemplate(string $to, string $templateName, array $data): bool
+    {
+        $phoneNumberId = setting('crm_meta_whatsapp_phone_id');
+        $token = setting('crm_meta_page_access_token');
+
+        if (! $phoneNumberId || ! $token) {
+            return false;
+        }
+
+        $clientName = $data['client_name'] ?? 'Sin nombre';
+        $clientPhone = $data['client_phone'] ?? '';
+        $intent = $data['option_label'] ?? $data['intent'] ?? 'Consulta';
+
+        $collectedText = '';
+        foreach ($data['collected_data'] ?? [] as $item) {
+            $question = $item['question'] ?? '';
+            $answer = $item['answer'] ?? '';
+            $collectedText .= "• {$question}: {$answer}\n";
+        }
+
+        $collectedText = $collectedText ?: 'Sin datos adicionales';
+        $dateStr = now()->format('d/m/Y H:i');
+
+        $response = Http::withHeaders([
+            'Authorization' => 'Bearer ' . $token,
+            'Content-Type' => 'application/json',
+        ])->post("https://graph.facebook.com/v21.0/{$phoneNumberId}/messages", [
+            'messaging_product' => 'whatsapp',
+            'to' => $to,
+            'type' => 'template',
+            'template' => [
+                'name' => $templateName,
+                'language' => ['code' => 'es'],
+                'components' => [
+                    [
+                        'type' => 'body',
+                        'parameters' => [
+                            ['type' => 'text', 'text' => $clientName],
+                            ['type' => 'text', 'text' => $clientPhone],
+                            ['type' => 'text', 'text' => $intent],
+                            ['type' => 'text', 'text' => mb_substr($collectedText, 0, 1024)],
+                            ['type' => 'text', 'text' => $dateStr],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        if (! $response->successful()) {
+            Log::warning('WhatsAppBot: Template send failed, will try free-form', [
+                'to' => $to,
+                'template' => $templateName,
+                'status' => $response->status(),
+                'error' => $response->json('error.message', $response->body()),
+            ]);
+
+            return false;
+        }
+
+        return true;
     }
 
     protected function buildAgentNotificationMessage(array $data): string

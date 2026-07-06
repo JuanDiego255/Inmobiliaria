@@ -257,17 +257,32 @@
                         placeholder="50688887777" />
                     <small class="form-text text-muted">
                         Número con código de país (ej: 50688887777). Cuando el bot complete un flujo, enviará un resumen por WhatsApp a este número.
-                        <strong>Costo: ~$0.014 por notificación.</strong>
                     </small>
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="form-group mb-3">
-                    <label class="text-title-field">&nbsp;</label>
-                    <div class="cd-wa-info" style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:12px 14px;font-size:13px;color:#166534">
-                        <span class="material-icons" style="font-size:16px;vertical-align:middle;margin-right:4px">info</span>
-                        El bot enviará al agente un mensaje con el nombre del cliente, teléfono, trámite solicitado y toda la info recopilada.
-                    </div>
+                    <label class="text-title-field" for="whatsapp_template_name">
+                        <span class="material-icons" style="font-size:16px;vertical-align:middle;color:#25d366">description</span>
+                        Nombre del template (Meta)
+                    </label>
+                    <input type="text" class="form-control" id="whatsapp_template_name" name="whatsapp_template_name"
+                        value="{{ $mailConfig->whatsapp_template_name ?? '' }}"
+                        placeholder="lead_notification" />
+                    <small class="form-text text-muted">
+                        Nombre exacto del template aprobado en Meta Business Manager (solo minúsculas y guion bajo). Sin template, se envía texto libre — funciona solo si hay conversación activa.
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:14px 16px;font-size:13px;color:#166534;margin-bottom:16px">
+                    <span class="material-icons" style="font-size:16px;vertical-align:middle;margin-right:4px">info</span>
+                    <strong>Con template:</strong> la notificación llega siempre (~$0.014/msg).
+                    <strong>Sin template:</strong> solo funciona si el agente chateó con el bot en las últimas 24h ($0).
+                    El correo electrónico siempre se envía como respaldo.
                 </div>
             </div>
         </div>

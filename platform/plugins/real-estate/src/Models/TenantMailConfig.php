@@ -22,6 +22,7 @@ class TenantMailConfig extends Model
         'mail_from_name',
         'notification_emails',
         'notification_whatsapp',
+        'whatsapp_template_name',
         'is_active',
     ];
 

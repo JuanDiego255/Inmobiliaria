@@ -299,6 +299,172 @@
         {!! Form::close() !!}
     </section>
 
+    {{-- ═══════════ PREMIUM FEATURES ═══════════ --}}
+    <section class="cd-card cd-settings-card">
+        <div class="cd-sc-head">
+            <div class="cd-sc-icon" style="background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff">
+                <span class="material-icons">workspace_premium</span>
+            </div>
+            <div>
+                <h3>Funcionalidades Premium</h3>
+                <p>Activá o desactivá funcionalidades avanzadas para este tenant según su plan.</p>
+            </div>
+        </div>
+
+        {!! Form::open(['route' => 'crm.bot-flow.save-features', 'method' => 'POST']) !!}
+        <input type="hidden" name="tenant_id" value="{{ $tenantId }}">
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="cd-premium-feature">
+                    <div class="cd-pf-header">
+                        <span class="material-icons cd-pf-icon" style="color:#3b82f6">photo_camera</span>
+                        <div>
+                            <strong>Fotos de propiedades</strong>
+                            <small>Envía imágenes de propiedades por WhatsApp junto con los resultados de búsqueda.</small>
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <input type="hidden" name="photos_enabled" value="0">
+                        <label class="cd-toggle-label">
+                            <input type="checkbox" name="photos_enabled" value="1" {{ ($features->photos_enabled ?? false) ? 'checked' : '' }}>
+                            <span class="cd-toggle-switch"></span>
+                            <span>Activar fotos</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="cd-premium-feature">
+                    <div class="cd-pf-header">
+                        <span class="material-icons cd-pf-icon" style="color:#8b5cf6">touch_app</span>
+                        <div>
+                            <strong>Botones interactivos</strong>
+                            <small>Usa botones y listas de WhatsApp para menús y opciones en vez de texto plano.</small>
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <input type="hidden" name="interactive_buttons_enabled" value="0">
+                        <label class="cd-toggle-label">
+                            <input type="checkbox" name="interactive_buttons_enabled" value="1" {{ ($features->interactive_buttons_enabled ?? false) ? 'checked' : '' }}>
+                            <span class="cd-toggle-switch"></span>
+                            <span>Activar botones</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-3">
+            <div class="col-md-6">
+                <div class="cd-premium-feature">
+                    <div class="cd-pf-header">
+                        <span class="material-icons cd-pf-icon" style="color:#10b981">dashboard</span>
+                        <div>
+                            <strong>Dashboard de conversaciones</strong>
+                            <small>Panel con métricas de conversaciones, leads generados y actividad del bot.</small>
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <input type="hidden" name="dashboard_enabled" value="0">
+                        <label class="cd-toggle-label">
+                            <input type="checkbox" name="dashboard_enabled" value="1" {{ ($features->dashboard_enabled ?? false) ? 'checked' : '' }}>
+                            <span class="cd-toggle-switch"></span>
+                            <span>Activar dashboard</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="cd-premium-feature">
+                    <div class="cd-pf-header">
+                        <span class="material-icons cd-pf-icon" style="color:#ef4444">picture_as_pdf</span>
+                        <div>
+                            <strong>PDFs y documentos</strong>
+                            <small>Genera y envía fichas técnicas de propiedades como PDF por WhatsApp.</small>
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <input type="hidden" name="pdf_documents_enabled" value="0">
+                        <label class="cd-toggle-label">
+                            <input type="checkbox" name="pdf_documents_enabled" value="1" {{ ($features->pdf_documents_enabled ?? false) ? 'checked' : '' }}>
+                            <span class="cd-toggle-switch"></span>
+                            <span>Activar PDFs</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-3">
+            <div class="col-md-4">
+                <div class="form-group mb-3">
+                    <label class="text-title-field" for="plan_name">Nombre del plan</label>
+                    <select class="form-control" id="plan_name" name="plan_name">
+                        <option value="">Sin plan</option>
+                        <option value="basico" {{ ($features->plan_name ?? '') === 'basico' ? 'selected' : '' }}>Básico</option>
+                        <option value="profesional" {{ ($features->plan_name ?? '') === 'profesional' ? 'selected' : '' }}>Profesional</option>
+                        <option value="premium" {{ ($features->plan_name ?? '') === 'premium' ? 'selected' : '' }}>Premium</option>
+                        <option value="enterprise" {{ ($features->plan_name ?? '') === 'enterprise' ? 'selected' : '' }}>Enterprise</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group mb-3">
+                    <label class="text-title-field" for="plan_expires_at">Expiración del plan</label>
+                    <input type="date" class="form-control" id="plan_expires_at" name="plan_expires_at"
+                        value="{{ $features && $features->plan_expires_at ? $features->plan_expires_at->format('Y-m-d') : '' }}" />
+                    <small class="form-text text-muted">Dejá vacío para acceso sin límite de tiempo.</small>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group mb-3">
+                    <label class="text-title-field">Estado del plan</label>
+                    <div class="mt-2">
+                        @if($features && $features->plan_expires_at)
+                            @if($features->plan_expires_at->isPast())
+                                <span class="badge" style="background:#fef2f2;color:#991b1b;padding:6px 12px;border-radius:6px;font-size:13px">
+                                    <span class="material-icons" style="font-size:14px;vertical-align:middle">warning</span> Expirado
+                                </span>
+                            @else
+                                <span class="badge" style="background:#ecfdf5;color:#065f46;padding:6px 12px;border-radius:6px;font-size:13px">
+                                    <span class="material-icons" style="font-size:14px;vertical-align:middle">check_circle</span>
+                                    Activo — vence {{ $features->plan_expires_at->format('d/m/Y') }}
+                                </span>
+                            @endif
+                        @elseif($features && ($features->photos_enabled || $features->interactive_buttons_enabled || $features->dashboard_enabled || $features->pdf_documents_enabled))
+                            <span class="badge" style="background:#ecfdf5;color:#065f46;padding:6px 12px;border-radius:6px;font-size:13px">
+                                <span class="material-icons" style="font-size:14px;vertical-align:middle">all_inclusive</span> Sin expiración
+                            </span>
+                        @else
+                            <span class="badge" style="background:#f3f4f6;color:#6b7280;padding:6px 12px;border-radius:6px;font-size:13px">
+                                Sin plan activo
+                            </span>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:14px 16px;font-size:13px;color:#92400e;margin-bottom:16px">
+                    <span class="material-icons" style="font-size:16px;vertical-align:middle;margin-right:4px">info</span>
+                    <strong>Nota:</strong> Las funcionalidades premium se desactivan automáticamente cuando el plan expira.
+                    Si no se establece fecha de expiración, las funcionalidades permanecen activas indefinidamente.
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-3">
+            <button type="submit" class="cd-btn-primary">
+                <span class="material-icons" style="font-size:18px;vertical-align:middle">save</span> Guardar funcionalidades
+            </button>
+        </div>
+
+        {!! Form::close() !!}
+    </section>
+
     @else
     <section class="cd-card cd-settings-card">
         <p style="text-align:center;color:var(--cd-ink-400);padding:40px">No hay tenants registrados.</p>
@@ -356,6 +522,11 @@
 .cd-chat-msg { padding:10px 14px;border-radius:12px;max-width:85%;font-size:13px;line-height:1.5;white-space:pre-line }
 .cd-chat-bot { background:#e8f4e8;align-self:flex-start;border-bottom-left-radius:4px }
 .cd-chat-user { background:#e3f2fd;align-self:flex-end;border-bottom-right-radius:4px }
+.cd-premium-feature { background: var(--cd-soft-bg); border-radius: var(--cd-radius-sm); padding: 16px; border: 1px solid var(--cd-line-soft); }
+.cd-pf-header { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 8px; }
+.cd-pf-header strong { display: block; font-size: 14px; font-weight: 600; color: var(--cd-ink-900); }
+.cd-pf-header small { display: block; font-size: 12px; color: var(--cd-ink-400); margin-top: 2px; line-height: 1.4; }
+.cd-pf-icon { font-size: 28px !important; flex-shrink: 0; }
 </style>
 @endpush
 

@@ -3,6 +3,7 @@
 namespace Botble\RealEstate\Http\Controllers;
 
 use Botble\Base\Http\Controllers\BaseController;
+use Botble\RealEstate\Models\TenantFeature;
 use Botble\RealEstate\Models\TenantMailConfig;
 use Botble\RealEstate\Models\WhatsAppBotFlow;
 use Illuminate\Http\Request;
@@ -18,10 +19,11 @@ class BotFlowController extends BaseController
 
         $flow = $tenantId ? WhatsAppBotFlow::where('tenant_id', $tenantId)->first() : null;
         $mailConfig = $tenantId ? TenantMailConfig::where('tenant_id', $tenantId)->first() : null;
+        $features = $tenantId ? TenantFeature::where('tenant_id', $tenantId)->first() : null;
 
         page_title()->setTitle('Entrenamiento del Bot');
 
-        return view('plugins/real-estate::crm.bot-flow', compact('flow', 'mailConfig', 'tenantId', 'tenants'));
+        return view('plugins/real-estate::crm.bot-flow', compact('flow', 'mailConfig', 'features', 'tenantId', 'tenants'));
     }
 
     public function saveFlow(Request $request)
@@ -153,6 +155,45 @@ class BotFlowController extends BaseController
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
         }
+    }
+
+    public function saveFeatures(Request $request)
+    {
+        $tenantId = $request->input('tenant_id');
+
+        if (! $tenantId) {
+            return redirect()->back()->with('error_msg', 'Seleccioná un tenant.');
+        }
+
+        $validator = Validator::make($request->all(), [
+            'photos_enabled' => 'boolean',
+            'interactive_buttons_enabled' => 'boolean',
+            'dashboard_enabled' => 'boolean',
+            'pdf_documents_enabled' => 'boolean',
+            'plan_name' => 'nullable|string|max:50',
+            'plan_expires_at' => 'nullable|date',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        TenantFeature::updateOrCreate(
+            ['tenant_id' => $tenantId],
+            [
+                'photos_enabled' => $request->boolean('photos_enabled'),
+                'interactive_buttons_enabled' => $request->boolean('interactive_buttons_enabled'),
+                'dashboard_enabled' => $request->boolean('dashboard_enabled'),
+                'pdf_documents_enabled' => $request->boolean('pdf_documents_enabled'),
+                'plan_name' => $request->input('plan_name') ?: null,
+                'plan_started_at' => $request->boolean('photos_enabled') || $request->boolean('interactive_buttons_enabled') || $request->boolean('dashboard_enabled') || $request->boolean('pdf_documents_enabled') ? now() : null,
+                'plan_expires_at' => $request->input('plan_expires_at') ?: null,
+            ]
+        );
+
+        return redirect()
+            ->route('crm.bot-flow.index', ['tenant' => $tenantId])
+            ->with('success_msg', '¡Funcionalidades premium actualizadas!');
     }
 
     protected function validateFlowConfig(array $config): bool

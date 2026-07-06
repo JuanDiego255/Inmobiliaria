@@ -12,6 +12,7 @@ use Botble\RealEstate\Models\WhatsAppConversation;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Botble\RealEstate\Models\TenantFeature;
 use Illuminate\Support\Facades\Log;
 
 class WhatsAppBotService
@@ -25,6 +26,8 @@ class WhatsAppBotService
     protected ?string $currentTenantId = null;
 
     protected ?string $currentTenantName = null;
+
+    protected array $lastSearchResults = [];
 
     public function __construct(PropertySearchService $searchService, BotFlowService $flowService, TenantMailService $mailService)
     {
@@ -83,6 +86,10 @@ class WhatsAppBotService
         ]);
 
         $this->sendWhatsAppReply($from, $reply);
+
+        if ($tenantId && $this->tenantHasFeature($tenantId, 'photos') && ! empty($this->lastSearchResults)) {
+            $this->sendPropertyPhotos($from, $this->lastSearchResults);
+        }
     }
 
     protected function getActiveTenantId(string $phone): ?string
@@ -251,11 +258,19 @@ class WhatsAppBotService
         if ($this->flowService->wantsToRestart($message)) {
             $result = $this->flowService->processMessage($message, $flow, null);
 
+            if ($this->tenantHasFeature($tenantId, 'interactive_buttons')) {
+                $this->sendFlowAsInteractive($from, $result, $flow);
+            }
+
             return $result;
         }
 
         $currentState = $this->flowService->getFlowState($from, $tenantId);
         $result = $this->flowService->processMessage($message, $flow, $currentState);
+
+        if ($this->tenantHasFeature($tenantId, 'interactive_buttons') && ! ($result['completed'] ?? false)) {
+            $this->sendFlowAsInteractive($from, $result, $flow);
+        }
 
         return $result;
     }
@@ -704,6 +719,23 @@ class WhatsAppBotService
     {
         $properties = $this->searchService->searchProperties($params);
 
+        $this->lastSearchResults = [];
+        foreach ($properties as $prop) {
+            $image = $prop->image;
+            if ($image) {
+                $imageUrl = \Botble\Media\Facades\RvMedia::getImageUrl($image, 'medium');
+                if ($imageUrl && ! str_starts_with($imageUrl, 'data:')) {
+                    if (! str_starts_with($imageUrl, 'http')) {
+                        $imageUrl = url($imageUrl);
+                    }
+                    $this->lastSearchResults[] = [
+                        'name' => $prop->name,
+                        'image_url' => $imageUrl,
+                    ];
+                }
+            }
+        }
+
         if ($properties->isEmpty()) {
             return json_encode([
                 'results' => 0,
@@ -919,6 +951,213 @@ PROMPT;
         } catch (\Exception $e) {
             Log::error('WhatsAppBot: Exception sending reply', ['error' => $e->getMessage()]);
         }
+    }
+
+    public function sendWhatsAppImage(string $to, string $imageUrl, string $caption = ''): void
+    {
+        $phoneNumberId = setting('crm_meta_whatsapp_phone_id');
+        $token = setting('crm_meta_page_access_token');
+
+        if (! $phoneNumberId || ! $token) {
+            return;
+        }
+
+        try {
+            $payload = [
+                'messaging_product' => 'whatsapp',
+                'to' => $to,
+                'type' => 'image',
+                'image' => [
+                    'link' => $imageUrl,
+                ],
+            ];
+
+            if ($caption) {
+                $payload['image']['caption'] = mb_substr($caption, 0, 1024);
+            }
+
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $token,
+                'Content-Type' => 'application/json',
+            ])->post("https://graph.facebook.com/v21.0/{$phoneNumberId}/messages", $payload);
+
+            if (! $response->successful()) {
+                Log::warning('WhatsAppBot: Failed to send image', [
+                    'to' => $to,
+                    'status' => $response->status(),
+                    'error' => $response->json('error.message', ''),
+                ]);
+            }
+        } catch (\Exception $e) {
+            Log::error('WhatsAppBot: Exception sending image', ['error' => $e->getMessage()]);
+        }
+    }
+
+    public function sendWhatsAppInteractive(string $to, array $interactive): void
+    {
+        $phoneNumberId = setting('crm_meta_whatsapp_phone_id');
+        $token = setting('crm_meta_page_access_token');
+
+        if (! $phoneNumberId || ! $token) {
+            return;
+        }
+
+        try {
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $token,
+                'Content-Type' => 'application/json',
+            ])->post("https://graph.facebook.com/v21.0/{$phoneNumberId}/messages", [
+                'messaging_product' => 'whatsapp',
+                'to' => $to,
+                'type' => 'interactive',
+                'interactive' => $interactive,
+            ]);
+
+            if (! $response->successful()) {
+                Log::warning('WhatsAppBot: Failed to send interactive message', [
+                    'to' => $to,
+                    'status' => $response->status(),
+                    'error' => $response->json('error.message', ''),
+                ]);
+            }
+        } catch (\Exception $e) {
+            Log::error('WhatsAppBot: Exception sending interactive', ['error' => $e->getMessage()]);
+        }
+    }
+
+    public function sendWhatsAppDocument(string $to, string $documentUrl, string $filename, string $caption = ''): void
+    {
+        $phoneNumberId = setting('crm_meta_whatsapp_phone_id');
+        $token = setting('crm_meta_page_access_token');
+
+        if (! $phoneNumberId || ! $token) {
+            return;
+        }
+
+        try {
+            $payload = [
+                'messaging_product' => 'whatsapp',
+                'to' => $to,
+                'type' => 'document',
+                'document' => [
+                    'link' => $documentUrl,
+                    'filename' => $filename,
+                ],
+            ];
+
+            if ($caption) {
+                $payload['document']['caption'] = mb_substr($caption, 0, 1024);
+            }
+
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $token,
+                'Content-Type' => 'application/json',
+            ])->post("https://graph.facebook.com/v21.0/{$phoneNumberId}/messages", $payload);
+
+            if (! $response->successful()) {
+                Log::warning('WhatsAppBot: Failed to send document', [
+                    'to' => $to,
+                    'status' => $response->status(),
+                    'error' => $response->json('error.message', ''),
+                ]);
+            }
+        } catch (\Exception $e) {
+            Log::error('WhatsAppBot: Exception sending document', ['error' => $e->getMessage()]);
+        }
+    }
+
+    protected function sendPropertyPhotos(string $to, array $results): void
+    {
+        $maxPhotos = 3;
+        $sent = 0;
+
+        foreach ($results as $result) {
+            if ($sent >= $maxPhotos) {
+                break;
+            }
+
+            if (! empty($result['image_url'])) {
+                $this->sendWhatsAppImage($to, $result['image_url'], $result['name'] ?? '');
+                $sent++;
+            }
+        }
+    }
+
+    protected function sendFlowAsInteractive(string $from, array $result, $flow): void
+    {
+        $state = $result['metadata'] ?? [];
+        $flowState = $state['flow_state'] ?? '';
+
+        if ($flowState === 'awaiting_option') {
+            $options = $flow->flow_config['options'] ?? [];
+            if (count($options) <= 10 && count($options) >= 1) {
+                $rows = [];
+                foreach ($options as $option) {
+                    $rows[] = [
+                        'id' => 'opt_' . ($option['key'] ?? ''),
+                        'title' => mb_substr($option['label'] ?? '', 0, 24),
+                        'description' => mb_substr($option['intent'] ?? '', 0, 72),
+                    ];
+                }
+
+                $this->sendWhatsAppInteractive($from, [
+                    'type' => 'list',
+                    'header' => [
+                        'type' => 'text',
+                        'text' => mb_substr($flow->name ?? 'Menu', 0, 60),
+                    ],
+                    'body' => [
+                        'text' => $flow->greeting_message ?: 'Que tramite desea realizar?',
+                    ],
+                    'action' => [
+                        'button' => 'Ver opciones',
+                        'sections' => [
+                            [
+                                'title' => 'Opciones',
+                                'rows' => $rows,
+                            ],
+                        ],
+                    ],
+                ]);
+            }
+        } elseif ($flowState === 'collecting') {
+            $selectedKey = $state['selected_option'] ?? '';
+            $currentStepIndex = $state['current_step'] ?? 0;
+            $options = $flow->flow_config['options'] ?? [];
+            $selectedOption = null;
+            foreach ($options as $option) {
+                if ($option['key'] === $selectedKey) {
+                    $selectedOption = $option;
+                    break;
+                }
+            }
+
+            if ($selectedOption) {
+                $steps = $selectedOption['steps'] ?? [];
+                $currentStep = $steps[$currentStepIndex] ?? null;
+
+                if ($currentStep && ($currentStep['type'] ?? '') === 'yes_no') {
+                    $this->sendWhatsAppInteractive($from, [
+                        'type' => 'button',
+                        'body' => [
+                            'text' => $currentStep['question'],
+                        ],
+                        'action' => [
+                            'buttons' => [
+                                ['type' => 'reply', 'reply' => ['id' => 'btn_yes', 'title' => 'Si']],
+                                ['type' => 'reply', 'reply' => ['id' => 'btn_no', 'title' => 'No']],
+                            ],
+                        ],
+                    ]);
+                }
+            }
+        }
+    }
+
+    protected function tenantHasFeature(string $tenantId, string $feature): bool
+    {
+        $features = TenantFeature::for($tenantId);
+        return $features->hasFeature($feature);
     }
 
     protected function getOrCreateLead(string $phone, string $name): CrmLead

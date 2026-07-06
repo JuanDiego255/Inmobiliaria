@@ -442,6 +442,26 @@ Route::group(['namespace' => 'Botble\RealEstate\Http\Controllers', 'middleware' 
                         'uses' => 'BotFlowController@testMail',
                         'permission' => 'crm-meta.settings',
                     ]);
+
+                    Route::post('save-features', [
+                        'as' => 'save-features',
+                        'uses' => 'BotFlowController@saveFeatures',
+                        'permission' => 'crm-meta.settings',
+                    ]);
+                });
+
+                Route::group(['prefix' => 'bot-dashboard', 'as' => 'bot-dashboard.'], function () {
+                    Route::get('/', [
+                        'as' => 'index',
+                        'uses' => 'BotDashboardController@index',
+                        'permission' => 'crm-meta.settings',
+                    ]);
+
+                    Route::post('stats', [
+                        'as' => 'stats',
+                        'uses' => 'BotDashboardController@apiStats',
+                        'permission' => 'crm-meta.settings',
+                    ]);
                 });
             });
 

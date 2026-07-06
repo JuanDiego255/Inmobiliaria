@@ -551,13 +551,16 @@ function initToggles() {
         if (!cb || !sw) return;
         if (cb.checked) sw.classList.add('is-on');
         else sw.classList.remove('is-on');
-        cb.addEventListener('change', function() {
-            if (this.checked) sw.classList.add('is-on');
+
+        function updateVisual() {
+            if (cb.checked) sw.classList.add('is-on');
             else sw.classList.remove('is-on');
-        });
-        sw.addEventListener('click', function() {
+        }
+
+        label.addEventListener('click', function(e) {
+            e.preventDefault();
             cb.checked = !cb.checked;
-            cb.dispatchEvent(new Event('change'));
+            updateVisual();
         });
     });
 }

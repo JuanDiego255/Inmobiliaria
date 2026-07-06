@@ -173,7 +173,6 @@ SELECT t.migration, 1 FROM (
     UNION ALL SELECT '2026_06_29_000001_add_virtual_tour_url_to_properties_and_projects'
     UNION ALL SELECT '2026_07_02_000001_add_tenant_id_to_whatsapp_conversations'
     UNION ALL SELECT '2026_07_04_000001_create_whatsapp_bot_flows_and_mail_config_tables'
-    UNION ALL SELECT '2026_07_05_000001_add_notification_whatsapp_to_mail_configs'
 
     -- === PLUGINS: Translation ===
     UNION ALL SELECT '2016_10_07_193005_create_translations_table'

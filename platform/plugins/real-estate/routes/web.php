@@ -329,6 +329,12 @@ Route::group(['namespace' => 'Botble\RealEstate\Http\Controllers', 'middleware' 
                 'permission' => 'crm-lead.create',
             ]);
 
+            Route::get('properties/search', [
+                'as' => 'properties.search',
+                'uses' => 'CrmPropertySearchController@search',
+                'permission' => 'crm-lead.index',
+            ]);
+
             Route::group(['prefix' => 'activities', 'as' => 'activities.'], function () {
                 Route::post('/', [
                     'as' => 'store',
@@ -350,13 +356,13 @@ Route::group(['namespace' => 'Botble\RealEstate\Http\Controllers', 'middleware' 
             });
 
             Route::group(['prefix' => 'tasks', 'as' => 'tasks.'], function () {
-                Route::get('/', [
+                Route::match(['GET', 'POST'], '/', [
                     'as' => 'index',
                     'uses' => 'CrmTaskController@index',
                     'permission' => 'crm-task.index',
                 ]);
 
-                Route::post('/', [
+                Route::post('store', [
                     'as' => 'store',
                     'uses' => 'CrmTaskController@store',
                     'permission' => 'crm-task.create',
@@ -467,7 +473,19 @@ Route::group(['namespace' => 'Botble\RealEstate\Http\Controllers', 'middleware' 
             });
 
             Route::group(['prefix' => 'reminders', 'as' => 'reminders.'], function () {
-                Route::post('/', [
+                Route::match(['GET', 'POST'], '/', [
+                    'as' => 'index',
+                    'uses' => 'CrmReminderController@index',
+                    'permission' => 'crm-reminder.index',
+                ]);
+
+                Route::delete('{id}', [
+                    'as' => 'destroy',
+                    'uses' => 'CrmReminderController@destroy',
+                    'permission' => 'crm-reminder.index',
+                ])->wherePrimaryKey();
+
+                Route::post('store', [
                     'as' => 'store',
                     'uses' => 'CrmReminderController@store',
                     'permission' => 'crm-reminder.create',

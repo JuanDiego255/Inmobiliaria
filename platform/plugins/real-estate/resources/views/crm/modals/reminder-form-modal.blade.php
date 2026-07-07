@@ -19,7 +19,7 @@
                     </div>
                     <div class="mb-3" id="reminderLeadSelectGroup">
                         <label class="form-label">Lead relacionado</label>
-                        <select class="form-select" name="lead_id_select" id="reminderLeadSelect">
+                        <select class="form-select crm-lead-select2" name="lead_id_select" id="reminderLeadSelect">
                             <option value="">— Ninguno —</option>
                         </select>
                     </div>

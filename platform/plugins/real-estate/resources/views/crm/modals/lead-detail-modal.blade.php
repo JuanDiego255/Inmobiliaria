@@ -68,6 +68,20 @@
                                 <span class="material-icons">add_circle_outline</span> Registrar Actividad
                             </button>
                         </div>
+                        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px">
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="CRM_quickActivity('call', 'Llamada de seguimiento realizada')" title="Registrar llamada">
+                                <span class="material-icons" style="font-size:15px;vertical-align:middle">call</span> Llamada
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="CRM_quickActivity('email', 'Email de seguimiento enviado')" title="Registrar email">
+                                <span class="material-icons" style="font-size:15px;vertical-align:middle">mail_outline</span> Email
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="CRM_quickActivity('whatsapp', 'Mensaje de WhatsApp enviado')" title="Registrar WhatsApp">
+                                <span class="material-icons" style="font-size:15px;vertical-align:middle">chat</span> WhatsApp
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="CRM_quickActivity('visit', 'Visita a propiedad realizada')" title="Registrar visita">
+                                <span class="material-icons" style="font-size:15px;vertical-align:middle">event_available</span> Visita
+                            </button>
+                        </div>
                     </div>
 
                     {{-- Tab Propiedades --}}

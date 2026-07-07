@@ -2,40 +2,32 @@
 
 namespace Botble\RealEstate\Http\Controllers;
 
+use Botble\ACL\Models\User;
+use Botble\Base\Facades\Assets;
+use Botble\Base\Facades\PageTitle;
 use Botble\Base\Http\Controllers\BaseController;
 use Botble\Base\Http\Responses\BaseHttpResponse;
 use Botble\RealEstate\Enums\CrmTaskStatusEnum;
 use Botble\RealEstate\Http\Requests\CrmTaskRequest;
 use Botble\RealEstate\Models\CrmTask;
+use Botble\RealEstate\Tables\CrmTaskTable;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 
 class CrmTaskController extends BaseController
 {
-    public function index(Request $request, BaseHttpResponse $response)
+    public function index(CrmTaskTable $table)
     {
-        $query = CrmTask::query()
-            ->with(['assignedUser', 'lead'])
-            ->orderByRaw("FIELD(status, 'pending', 'in_progress', 'completed', 'cancelled')")
-            ->orderByRaw('CASE WHEN due_date IS NULL THEN 1 ELSE 0 END, due_date ASC')
-            ->latest();
+        PageTitle::setTitle('CRM - Tareas');
+        Assets::addStylesDirectly(['vendor/core/plugins/real-estate/css/crm-dashboard.css']);
+        Assets::addScriptsDirectly(['vendor/core/plugins/real-estate/js/crm-modals.js', 'vendor/core/plugins/real-estate/js/crm-tasks.js']);
 
-        if ($request->filled('status')) {
-            $query->where('status', $request->input('status'));
-        }
+        $users = User::query()->select('id', 'first_name', 'last_name', 'email')->get();
 
-        if ($request->filled('assigned_to')) {
-            $query->where('assigned_to', $request->input('assigned_to'));
-        }
+        $table->setView('plugins/real-estate::crm.tasks');
 
-        if ($request->filled('priority')) {
-            $query->where('priority', $request->input('priority'));
-        }
-
-        $tasks = $query->paginate(50);
-
-        return $response->setData($tasks);
+        return $table->renderTable(compact('users'));
     }
 
     public function store(CrmTaskRequest $request, BaseHttpResponse $response)

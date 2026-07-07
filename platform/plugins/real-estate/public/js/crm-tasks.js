@@ -3,12 +3,12 @@
 
     var ROUTES = {
         tasksIndex: '/admin/real-estate/crm/tasks',
-        tasksStore: '/admin/real-estate/crm/tasks',
+        tasksStore: '/admin/real-estate/crm/tasks/store',
         tasksUpdate: '/admin/real-estate/crm/tasks/{id}',
         tasksDestroy: '/admin/real-estate/crm/tasks/{id}',
         tasksUpdateStatus: '/admin/real-estate/crm/tasks/{id}/status',
         myTasks: '/admin/real-estate/crm/tasks/my-tasks',
-        remindersStore: '/admin/real-estate/crm/reminders',
+        remindersStore: '/admin/real-estate/crm/reminders/store',
         remindersPending: '/admin/real-estate/crm/reminders/pending',
         remindersDismiss: '/admin/real-estate/crm/reminders/{id}/dismiss',
         remindersDismissAll: '/admin/real-estate/crm/reminders/dismiss-all',

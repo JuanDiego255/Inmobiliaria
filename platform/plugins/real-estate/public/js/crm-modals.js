@@ -12,6 +12,10 @@
         activitiesComplete: '/admin/real-estate/crm/activities/{id}/complete',
         importConsults: '/admin/real-estate/crm/import-consults',
         leadsUpdateStage: '/admin/real-estate/crm/leads/{id}/stage',
+        leadsAddProperty: '/admin/real-estate/crm/leads/{id}/properties',
+        leadsRemoveProperty: '/admin/real-estate/crm/leads/{id}/properties/{propertyId}',
+        propertiesSearch: '/admin/real-estate/crm/properties/search',
+        activitiesQuick: '/admin/real-estate/crm/activities',
     };
 
     function getRoute(name, params) {
@@ -160,6 +164,17 @@
                 });
             });
         }
+
+        // Initialize Select2 on lead dropdowns in modals
+        setTimeout(function() {
+            if (window.jQuery && jQuery.fn.select2) {
+                jQuery('.crm-lead-select2').select2({
+                    placeholder: 'Buscar lead...',
+                    allowClear: true,
+                    width: '100%'
+                });
+            }
+        }, 200);
     }
 
     function openLeadForm(lead) {
@@ -301,12 +316,46 @@
                     + (p.pivot && p.pivot.notes ? '<br><span style="font-size:12px;color:var(--cd-ink-400);font-weight:300">' + escapeHtml(p.pivot.notes) + '</span>' : '')
                     + '</div>'
                     + '<span class="cd-interest-pill ' + level + '">' + level + '</span>'
+                    + '<span class="material-icons" style="cursor:pointer;font-size:16px;color:var(--cd-ink-400)" onclick="CRM_removePropertyFromLead(' + p.id + ')" title="Desvincular">close</span>'
                     + '</div>';
                 propList.insertAdjacentHTML('beforeend', html);
             });
         } else {
             propEmpty.style.display = '';
         }
+
+        // Add property form
+        var addPropHtml = '<div class="cd-prop-add" style="margin-top:16px;padding-top:16px;border-top:1px solid var(--cd-line-soft)">';
+        addPropHtml += '<div style="display:flex;gap:8px;align-items:end">';
+        addPropHtml += '<div style="flex:1"><label style="font-size:11px;color:var(--cd-ink-400);margin-bottom:4px;display:block">Buscar propiedad</label>';
+        addPropHtml += '<select id="detailPropertySearch" style="width:100%"><option></option></select></div>';
+        addPropHtml += '<div><label style="font-size:11px;color:var(--cd-ink-400);margin-bottom:4px;display:block">Interés</label>';
+        addPropHtml += '<select id="detailPropertyInterest" class="form-select form-select-sm" style="width:100px"><option value="medium">Medio</option><option value="high">Alto</option><option value="low">Bajo</option></select></div>';
+        addPropHtml += '<button type="button" class="btn btn-sm btn-primary" onclick="CRM_addPropertyToLead()" style="height:31px"><span class="material-icons" style="font-size:16px">add</span></button>';
+        addPropHtml += '</div></div>';
+        propList.insertAdjacentHTML('beforeend', addPropHtml);
+
+        // Initialize Select2 on property search
+        setTimeout(function() {
+            if (window.jQuery && jQuery.fn.select2) {
+                jQuery('#detailPropertySearch').select2({
+                    placeholder: 'Escribí para buscar...',
+                    minimumInputLength: 2,
+                    ajax: {
+                        url: getRoute('propertiesSearch'),
+                        dataType: 'json',
+                        delay: 300,
+                        data: function(params) { return { q: params.term }; },
+                        processResults: function(data) {
+                            return { results: (data.data || []).map(function(p) {
+                                return { id: p.id, text: p.name + ' - ' + (p.price_formatted || '') };
+                            })};
+                        }
+                    },
+                    dropdownParent: jQuery('#crmLeadDetailModal')
+                });
+            }
+        }, 100);
 
         // Activities tab
         var actTimeline = document.getElementById('detailActivitiesTimeline');
@@ -346,6 +395,49 @@
         } else {
             actEmpty.style.display = '';
         }
+    }
+
+    // ---- Property Management ----
+    function CRM_addPropertyToLead() {
+        var modal = document.getElementById('crmLeadDetailModal');
+        var leadId = modal.dataset.leadId;
+        var propertyId = jQuery('#detailPropertySearch').val();
+        var interestLevel = document.getElementById('detailPropertyInterest').value;
+        if (!propertyId) { showToast('Seleccioná una propiedad', 'warning'); return; }
+        ajaxRequest('POST', getRoute('leadsAddProperty', {id: leadId}), {
+            property_id: propertyId, interest_level: interestLevel
+        }, function(err) {
+            if (err) { showToast(err, 'error'); return; }
+            showToast('Propiedad vinculada');
+            window.CRM_openLeadDetail(leadId);
+        });
+    }
+
+    function CRM_removePropertyFromLead(propertyId) {
+        if (!confirm('¿Desvincular esta propiedad?')) return;
+        var modal = document.getElementById('crmLeadDetailModal');
+        var leadId = modal.dataset.leadId;
+        ajaxRequest('DELETE', getRoute('leadsRemoveProperty', {id: leadId, propertyId: propertyId}), {}, function(err) {
+            if (err) { showToast(err, 'error'); return; }
+            showToast('Propiedad desvinculada');
+            window.CRM_openLeadDetail(leadId);
+        });
+    }
+
+    // ---- Quick Activity ----
+    function CRM_quickActivity(type, description) {
+        var modal = document.getElementById('crmLeadDetailModal');
+        var leadId = modal.dataset.leadId;
+        if (!leadId) return;
+        ajaxRequest('POST', getRoute('activitiesStore'), {
+            lead_id: leadId,
+            type: type,
+            description: description
+        }, function(err) {
+            if (err) { showToast(err, 'error'); return; }
+            showToast('Actividad registrada');
+            window.CRM_openLeadDetail(leadId);
+        });
     }
 
     // ---- Activity Form Modal ----
@@ -457,6 +549,9 @@
     window.CRM_showToast = showToast;
     window.CRM_ajaxRequest = ajaxRequest;
     window.CRM_getRoute = getRoute;
+    window.CRM_addPropertyToLead = CRM_addPropertyToLead;
+    window.CRM_removePropertyFromLead = CRM_removePropertyFromLead;
+    window.CRM_quickActivity = CRM_quickActivity;
 
     // Init when DOM ready
     if (document.readyState === 'loading') {

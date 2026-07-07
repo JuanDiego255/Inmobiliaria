@@ -21,7 +21,7 @@
                 <div class="modal-body">
                     <div class="mb-3" id="activityLeadSelectGroup">
                         <label class="form-label">Lead <span class="text-danger">*</span></label>
-                        <select class="form-select" name="lead_id_select" id="activityLeadSelect">
+                        <select class="form-select crm-lead-select2" name="lead_id_select" id="activityLeadSelect">
                             <option value="">— Seleccionar lead —</option>
                         </select>
                     </div>

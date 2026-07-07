@@ -28,7 +28,7 @@
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Lead relacionado</label>
-                            <select class="form-select" name="lead_id" id="taskLeadId">
+                            <select class="form-select crm-lead-select2" name="lead_id" id="taskLeadId">
                                 <option value="">— Ninguno —</option>
                             </select>
                         </div>

@@ -337,8 +337,8 @@ class RealEstateServiceProvider extends ServiceProvider
                 ])
                 ->registerItem([
                     'id' => 'cms-plugins-board',
-                    'priority' => 7,
-                    'parent_id' => 'cms-plugins-real-estate',
+                    'priority' => 10,
+                    'parent_id' => 'cms-plugins-crm',
                     'name' => 'plugins/real-estate::board.name',
                     'url' => route('board.index'),
                     'permissions' => ['board.index'],
@@ -375,12 +375,30 @@ class RealEstateServiceProvider extends ServiceProvider
                     'url' => route('crm.pipeline'),
                     'permissions' => ['crm-lead.index'],
                 ])
+                ->registerItem([
+                    'id' => 'cms-plugins-crm-tasks',
+                    'priority' => 3,
+                    'parent_id' => 'cms-plugins-crm',
+                    'name' => 'Tareas',
+                    'icon' => 'fas fa-tasks',
+                    'url' => route('crm.tasks.index'),
+                    'permissions' => ['crm-lead.index'],
+                ])
+                ->registerItem([
+                    'id' => 'cms-plugins-crm-reminders',
+                    'priority' => 4,
+                    'parent_id' => 'cms-plugins-crm',
+                    'name' => 'Recordatorios',
+                    'icon' => 'fas fa-bell',
+                    'url' => route('crm.reminders.pending'),
+                    'permissions' => ['crm-lead.index'],
+                ])
                 ->when(
                     in_array(request()->getHost(), config('tenancy.central_domains', [])),
                     function ($menu) {
                         $menu->registerItem([
                             'id' => 'cms-plugins-crm-meta',
-                            'priority' => 3,
+                            'priority' => 5,
                             'parent_id' => 'cms-plugins-crm',
                             'name' => 'Meta Integración',
                             'url' => route('crm.meta-settings'),
@@ -388,15 +406,33 @@ class RealEstateServiceProvider extends ServiceProvider
                         ])
                         ->registerItem([
                             'id' => 'cms-plugins-crm-bot-flow',
-                            'priority' => 4,
+                            'priority' => 6,
                             'parent_id' => 'cms-plugins-crm',
                             'name' => 'Entrenamiento Bot',
                             'url' => route('crm.bot-flow.index'),
                             'permissions' => ['crm-meta.settings'],
                         ])
                         ->registerItem([
+                            'id' => 'cms-plugins-crm-bot-dashboard',
+                            'priority' => 7,
+                            'parent_id' => 'cms-plugins-crm',
+                            'name' => 'Dashboard Bot',
+                            'icon' => 'fas fa-chart-line',
+                            'url' => route('crm.bot-dashboard.index'),
+                            'permissions' => ['crm-meta.settings'],
+                        ])
+                        ->registerItem([
+                            'id' => 'cms-plugins-crm-webhook-logs',
+                            'priority' => 8,
+                            'parent_id' => 'cms-plugins-crm',
+                            'name' => 'Webhook Logs',
+                            'icon' => 'fas fa-list-alt',
+                            'url' => route('crm.meta-logs'),
+                            'permissions' => ['crm-meta.settings'],
+                        ])
+                        ->registerItem([
                             'id' => 'cms-plugins-crm-help',
-                            'priority' => 5,
+                            'priority' => 9,
                             'parent_id' => 'cms-plugins-crm',
                             'name' => 'Ayuda API',
                             'url' => route('crm.meta-help'),

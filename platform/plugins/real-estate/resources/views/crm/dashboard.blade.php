@@ -59,11 +59,11 @@
                     @endphp
                     <div class="cd-pipe" id="cd-pipe">
                         @foreach ($pipelineSummary as $stage => $count)
-                            <div class="cd-pl-row">
+                            <a href="{{ route('crm.pipeline') }}?stage={{ $stage }}" class="cd-pl-row cd-pl-link">
                                 <span class="cd-pl-name"><span class="cd-d" style="background:var({{ $stageColors[$stage] ?? '--cd-s-nuevo' }})"></span>{{ $stageLabels[$stage] ?? $stage }}</span>
                                 <div class="cd-pl-track"><div class="cd-pl-fill" data-v="{{ $count }}" style="background:var({{ $stageColors[$stage] ?? '--cd-s-nuevo' }})"></div></div>
                                 <span class="cd-pl-val cd-tnum">{{ $count }}</span>
-                            </div>
+                            </a>
                         @endforeach
                     </div>
                     <div class="cd-pl-foot">

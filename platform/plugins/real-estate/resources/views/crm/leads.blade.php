@@ -44,3 +44,15 @@
 @include('plugins/real-estate::crm.modals.task-form-modal')
 @include('plugins/real-estate::crm.modals.reminder-form-modal')
 @endsection
+
+@push('footer')
+<script>
+    $(document).on('click', '.crm-lead-link', function(e) {
+        e.preventDefault();
+        var leadId = $(this).data('lead-id');
+        if (typeof CRM_openLeadDetail === 'function') {
+            CRM_openLeadDetail(leadId);
+        }
+    });
+</script>
+@endpush

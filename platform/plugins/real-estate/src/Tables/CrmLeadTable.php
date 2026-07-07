@@ -33,7 +33,7 @@ class CrmLeadTable extends TableAbstract
         $data = $this->table
             ->eloquent($this->query())
             ->editColumn('name', function (CrmLead $item) {
-                return BaseHelper::clean($item->name);
+                return '<a href="javascript:void(0)" class="crm-lead-link" data-lead-id="' . $item->id . '">' . e($item->name) . '</a>';
             })
             ->editColumn('stage', function (CrmLead $item) {
                 if (! $item->stage) {

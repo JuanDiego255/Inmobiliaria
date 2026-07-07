@@ -56,6 +56,30 @@
                 col.appendChild(card);
             });
         });
+
+        highlightStageFromUrl();
+    }
+
+    function highlightStageFromUrl() {
+        var params = new URLSearchParams(window.location.search);
+        var stage = params.get('stage');
+        if (!stage) return;
+
+        var col = document.querySelector('.cd-pipeline-col[data-stage="' + stage + '"]');
+        if (!col) return;
+
+        setTimeout(function () {
+            col.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+        }, 150);
+
+        col.classList.add('cd-stage-highlight');
+        setTimeout(function () {
+            col.classList.remove('cd-stage-highlight');
+            col.classList.add('cd-stage-highlight-fade');
+            setTimeout(function () {
+                col.classList.remove('cd-stage-highlight-fade');
+            }, 600);
+        }, 2500);
     }
 
     function createLeadCard(lead) {

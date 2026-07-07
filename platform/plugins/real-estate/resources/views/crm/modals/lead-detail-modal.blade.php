@@ -33,7 +33,16 @@
                                     <tr><th>Nombre</th><td id="detailName"></td></tr>
                                     <tr><th>Email</th><td id="detailEmail"></td></tr>
                                     <tr><th>Teléfono</th><td id="detailPhone"></td></tr>
-                                    <tr><th>Etapa</th><td id="detailStage"></td></tr>
+                                    <tr><th>Etapa</th>
+                                        <td>
+                                            <select id="detailStageSelect" class="form-control form-control-sm" style="width:auto;display:inline-block;font-size:13px;padding:4px 8px;border-radius:6px;cursor:pointer">
+                                                @foreach(\Botble\RealEstate\Enums\CrmLeadStageEnum::labels() as $value => $label)
+                                                    <option value="{{ $value }}">{{ $label }}</option>
+                                                @endforeach
+                                            </select>
+                                            <span id="detailStageStatus" style="font-size:11px;color:var(--cd-ink-400);margin-left:6px;display:none"></span>
+                                        </td>
+                                    </tr>
                                     <tr><th>Fuente</th><td id="detailSource"></td></tr>
                                 </table>
                             </div>

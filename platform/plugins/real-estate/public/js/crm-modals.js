@@ -11,6 +11,7 @@
         activitiesListForLead: '/admin/real-estate/crm/activities/lead/{id}',
         activitiesComplete: '/admin/real-estate/crm/activities/{id}/complete',
         importConsults: '/admin/real-estate/crm/import-consults',
+        leadsUpdateStage: '/admin/real-estate/crm/leads/{id}/stage',
     };
 
     function getRoute(name, params) {
@@ -127,6 +128,38 @@
                 openActivityForm(null);
             });
         });
+
+        // Inline stage change from detail modal
+        var stageSelect = document.getElementById('detailStageSelect');
+        if (stageSelect) {
+            stageSelect.addEventListener('change', function () {
+                var modal = document.getElementById('crmLeadDetailModal');
+                var leadId = modal ? modal.dataset.leadId : null;
+                if (!leadId) return;
+
+                var newStage = stageSelect.value;
+                var statusEl = document.getElementById('detailStageStatus');
+                statusEl.textContent = 'Guardando...';
+                statusEl.style.color = 'var(--cd-ink-400)';
+                statusEl.style.display = 'inline';
+
+                ajaxRequest('PATCH', getRoute('leadsUpdateStage', { id: leadId }), { stage: newStage }, function (err) {
+                    if (err) {
+                        statusEl.textContent = 'Error al guardar';
+                        statusEl.style.color = '#ef4444';
+                        return;
+                    }
+                    statusEl.textContent = '✓ Guardado';
+                    statusEl.style.color = '#10b981';
+                    setTimeout(function () { statusEl.style.display = 'none'; }, 2000);
+
+                    // Notify dashboard if callback exists
+                    if (typeof window.CRM_onLeadSaved === 'function') {
+                        window.CRM_onLeadSaved(null, 'PATCH');
+                    }
+                });
+            });
+        }
     }
 
     function openLeadForm(lead) {
@@ -232,10 +265,13 @@
         document.getElementById('detailCreated').textContent = lead.created_at ? lead.created_at.substring(0, 10) : '—';
         document.getElementById('detailNotes').textContent = lead.notes || 'Sin notas.';
 
-        // Stage badge
-        var stageLabels = { nuevo:'Nuevo', contactado:'Contactado', calificado:'Calificado', en_negociacion:'En Negociación', ganado:'Ganado', perdido:'Perdido' };
+        // Stage dropdown
         var stageKey = enumVal(lead.stage);
-        document.getElementById('detailStage').textContent = stageLabels[stageKey] || enumLabel(lead.stage);
+        var stageSelect = document.getElementById('detailStageSelect');
+        if (stageSelect) stageSelect.value = stageKey;
+
+        // Store lead ID on modal for stage change handler
+        document.getElementById('crmLeadDetailModal').dataset.leadId = lead.id;
 
         var sourceLabels = { manual:'Manual', website:'Sitio Web', consult:'Consulta', referral:'Referido', social:'Redes Sociales', phone:'Teléfono', facebook_lead_ad:'Facebook Lead Ad', whatsapp:'WhatsApp', messenger:'Messenger', instagram_dm:'Instagram DM', other:'Otro' };
         var sourceKey = enumVal(lead.source);

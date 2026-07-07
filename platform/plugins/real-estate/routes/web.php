@@ -323,6 +323,12 @@ Route::group(['namespace' => 'Botble\RealEstate\Http\Controllers', 'middleware' 
                 ])->where('propertyId', '[0-9]+');
             });
 
+            Route::get('export-leads', [
+                'as' => 'export-leads',
+                'uses' => 'ExportCrmLeadController@download',
+                'permission' => 'crm-lead.index',
+            ]);
+
             Route::post('import-consults', [
                 'as' => 'import-consults',
                 'uses' => 'CrmLeadController@importConsults',

@@ -25,6 +25,9 @@
                 <a class="cd-qbtn" href="{{ route('crm.pipeline') }}" style="width:auto;padding:9px 16px">
                     <span class="cd-qi"><span class="material-icons">view_kanban</span></span> Pipeline
                 </a>
+                <a class="cd-qbtn" href="{{ route('crm.export-leads') }}" style="width:auto;padding:9px 16px">
+                    <span class="cd-qi"><span class="material-icons">file_download</span></span> Exportar Excel
+                </a>
                 <button type="button" class="cd-qbtn cd-primary btn-crm-new-lead" style="width:auto;padding:9px 16px">
                     <span class="cd-qi"><span class="material-icons">person_add</span></span> Nuevo Lead
                 </button>

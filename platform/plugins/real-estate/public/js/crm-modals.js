@@ -230,6 +230,33 @@
             submitBtn.innerHTML = '<span class="material-icons" style="font-size:16px">save</span> Guardar';
 
             if (err) {
+                // Check if it's a duplicate warning (409)
+                if (resp && resp.data && resp.data.duplicates) {
+                    var dupes = resp.data.duplicates;
+                    var msg = 'Posibles duplicados encontrados:\n';
+                    dupes.forEach(function(d) {
+                        msg += '- ' + d.name + ' (' + (d.email || d.phone || '') + ')\n';
+                    });
+                    msg += '\n¿Desea crear el lead de todas formas?';
+                    if (confirm(msg)) {
+                        data.force_create = 1;
+                        submitBtn.disabled = true;
+                        submitBtn.innerHTML = '<span class="material-icons" style="font-size:16px;animation:spin 1s linear infinite">refresh</span> Guardando...';
+                        ajaxRequest('POST', getRoute('leadsStore'), data, function(err2, resp2) {
+                            submitBtn.disabled = false;
+                            submitBtn.innerHTML = '<span class="material-icons" style="font-size:16px">save</span> Guardar';
+                            if (err2) { showToast(err2, 'error'); return; }
+                            showToast(resp2.message || 'Lead creado correctamente', 'success');
+                            if (leadFormModal) leadFormModal.hide();
+                            if (typeof window.CRM_onLeadSaved === 'function') {
+                                window.CRM_onLeadSaved(resp2.data, 'POST');
+                            } else {
+                                setTimeout(function () { location.reload(); }, 600);
+                            }
+                        });
+                    }
+                    return;
+                }
                 showToast(err, 'error');
                 return;
             }

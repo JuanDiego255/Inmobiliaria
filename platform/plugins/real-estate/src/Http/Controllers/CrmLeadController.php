@@ -14,6 +14,7 @@ use Botble\RealEstate\Models\Consult;
 use Botble\RealEstate\Models\CrmLead;
 use Botble\RealEstate\Tables\CrmLeadTable;
 use Exception;
+use Botble\RealEstate\Services\CrmAutomationService;
 use Illuminate\Http\Request;
 
 class CrmLeadController extends BaseController
@@ -91,7 +92,23 @@ class CrmLeadController extends BaseController
 
     public function store(CrmLeadRequest $request, BaseHttpResponse $response)
     {
+        $email = $request->input('email');
+        $phone = $request->input('phone');
+
+        // Check for duplicates unless force_create is set
+        if (!$request->boolean('force_create')) {
+            $duplicates = CrmAutomationService::findDuplicates($email, $phone);
+            if ($duplicates->isNotEmpty()) {
+                return $response
+                    ->setError()
+                    ->setCode(409)
+                    ->setMessage('Se encontraron posibles duplicados.')
+                    ->setData(['duplicates' => $duplicates]);
+            }
+        }
+
         $lead = CrmLead::query()->create($request->validated());
+        CrmAutomationService::onLeadCreated($lead);
 
         return $response
             ->setMessage('Lead creado correctamente.')
@@ -139,7 +156,13 @@ class CrmLeadController extends BaseController
         ]);
 
         $lead = CrmLead::query()->findOrFail($id);
-        $lead->update(['stage' => $request->input('stage')]);
+        $oldStage = $lead->stage instanceof \Botble\Base\Supports\Enum ? $lead->stage->getValue() : (string) $lead->stage;
+        $newStage = $request->input('stage');
+
+        if ($oldStage !== $newStage) {
+            $lead->update(['stage' => $newStage]);
+            CrmAutomationService::onStageChanged($lead, $oldStage, $newStage);
+        }
 
         return $response
             ->setMessage('Etapa actualizada.')

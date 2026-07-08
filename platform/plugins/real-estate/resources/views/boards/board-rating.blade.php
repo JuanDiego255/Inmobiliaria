@@ -79,19 +79,23 @@
         ];
     @endphp
 
-    <div class="cd-pipeline-board cd-rating-board">
+    <div class="cd-rating-board">
         @foreach ($columns as $statusKey => $column)
-            <div class="cd-pipeline-col">
-                <div class="cd-pipeline-col-head">
+            <div class="cd-rating-col">
+                <div class="cd-rating-col-head" style="border-left-color:var({{ $colColors[$statusKey] }})">
                     <span class="cd-pipeline-col-dot" style="background:var({{ $colColors[$statusKey] }})"></span>
                     <span class="cd-pipeline-col-title">{{ $column['label'] }}</span>
                     <span class="cd-pipeline-col-count cd-tnum">{{ $column['properties']->count() }}</span>
                 </div>
-                <div class="cd-pipeline-col-body">
+                <div class="cd-rating-col-body">
                     @forelse ($column['properties'] as $property)
                         <div class="cd-prop-card">
                             @if (!empty($property->formatted_images) && count($property->formatted_images) > 0)
-                                <div class="cd-prop-card-img" style="background-image:url('{{ $property->formatted_images[0] }}')"></div>
+                                <img src="{{ $property->formatted_images[0] }}" class="cd-prop-card-img" alt="{{ $property->name }}" loading="lazy">
+                            @else
+                                <div class="cd-prop-card-img cd-prop-card-img--empty">
+                                    <span class="material-icons">home</span>
+                                </div>
                             @endif
                             <div class="cd-prop-card-body">
                                 <div class="cd-prop-card-name">{{ $property->name }}</div>
@@ -130,7 +134,7 @@
                             @endif
                         </div>
                     @empty
-                        <div class="cd-pipeline-empty" style="display:block">
+                        <div class="cd-rating-empty">
                             <span class="material-icons">{{ $colIcons[$statusKey] }}</span>
                             Sin propiedades
                         </div>

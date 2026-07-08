@@ -28,6 +28,7 @@ class CrmDashboardController extends BaseController
             'vendor/core/plugins/real-estate/js/crm-tasks.js',
             'vendor/core/plugins/real-estate/js/crm-dashboard.js',
         ]);
+        Assets::addScripts('apexchart')->addStyles('apexchart');
 
         $today = Carbon::today();
 
@@ -72,6 +73,57 @@ class CrmDashboardController extends BaseController
             ->orderBy('first_name')
             ->get();
 
+        // Conversion funnel data
+        $totalLeads = CrmLead::query()->count();
+        $funnelStages = ['nuevo', 'contactado', 'calificado', 'en_negociacion', 'ganado'];
+        $stageLabels = CrmLeadStageEnum::labels();
+        $funnelData = [];
+        foreach ($funnelStages as $stage) {
+            $count = $pipelineSummary[$stage] ?? 0;
+            $funnelData[] = [
+                'stage' => $stageLabels[$stage] ?? ucfirst(str_replace('_', ' ', $stage)),
+                'value' => $stage,
+                'count' => $count,
+                'percentage' => $totalLeads > 0 ? round(($count / $totalLeads) * 100, 1) : 0,
+            ];
+        }
+
+        // Agent performance
+        $agentPerformance = [];
+        foreach ($agents as $agent) {
+            $agentLeads = CrmLead::query()->where('assigned_agent_id', $agent->id);
+            $total = (clone $agentLeads)->count();
+            $won = (clone $agentLeads)->where('stage', 'ganado')->count();
+            $lost = (clone $agentLeads)->where('stage', 'perdido')->count();
+            $active = (clone $agentLeads)->whereNotIn('stage', ['ganado', 'perdido'])->count();
+            $avgScore = (clone $agentLeads)->avg('score') ?? 0;
+
+            $activitiesCount = CrmActivity::query()
+                ->whereIn('lead_id', CrmLead::query()->where('assigned_agent_id', $agent->id)->pluck('id'))
+                ->count();
+
+            $tasksCompleted = CrmTask::query()
+                ->where('status', 'completed')
+                ->whereIn('lead_id', CrmLead::query()->where('assigned_agent_id', $agent->id)->pluck('id'))
+                ->count();
+
+            $agentPerformance[] = [
+                'id' => $agent->id,
+                'name' => $agent->first_name . ' ' . $agent->last_name,
+                'total' => $total,
+                'won' => $won,
+                'lost' => $lost,
+                'active' => $active,
+                'activities' => $activitiesCount,
+                'tasks_completed' => $tasksCompleted,
+                'avg_score' => round($avgScore),
+                'win_rate' => $total > 0 ? round(($won / $total) * 100, 1) : 0,
+            ];
+        }
+
+        // Sort by win rate descending
+        usort($agentPerformance, fn($a, $b) => $b['win_rate'] <=> $a['win_rate']);
+
         $myTasks = CrmTask::query()
             ->with(['lead'])
             ->where('assigned_to', auth()->id())
@@ -92,7 +144,10 @@ class CrmDashboardController extends BaseController
             'pipelineSummary',
             'agents',
             'myTasks',
-            'adminUsers'
+            'adminUsers',
+            'funnelData',
+            'agentPerformance',
+            'totalLeads'
         ));
     }
 }

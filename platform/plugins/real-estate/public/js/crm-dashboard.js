@@ -57,9 +57,69 @@
         });
     }
 
+    function initFunnelChart() {
+        var el = document.getElementById('funnelChart');
+        if (!el || typeof ApexCharts === 'undefined') return;
+
+        var dataEl = document.getElementById('funnelData');
+        if (!dataEl) return;
+        var data = JSON.parse(dataEl.textContent);
+
+        var options = {
+            chart: {
+                type: 'bar',
+                height: 320,
+                toolbar: { show: false },
+                fontFamily: 'Poppins, sans-serif',
+            },
+            plotOptions: {
+                bar: {
+                    horizontal: true,
+                    barHeight: '65%',
+                    borderRadius: 6,
+                    distributed: true,
+                }
+            },
+            colors: ['#717fe0', '#3b82f6', '#eab308', '#f97316', '#10b981'],
+            dataLabels: {
+                enabled: true,
+                formatter: function(val, opt) {
+                    var pct = data[opt.dataPointIndex] ? data[opt.dataPointIndex].percentage : 0;
+                    return val + ' (' + pct + '%)';
+                },
+                style: { fontSize: '13px', fontWeight: 600 },
+            },
+            series: [{
+                name: 'Leads',
+                data: data.map(function(d) { return d.count; })
+            }],
+            xaxis: {
+                categories: data.map(function(d) { return d.stage; }),
+                labels: { style: { fontSize: '13px' } }
+            },
+            yaxis: {
+                labels: { style: { fontSize: '13px', fontWeight: 600 } }
+            },
+            legend: { show: false },
+            tooltip: {
+                y: {
+                    formatter: function(val) { return val + ' leads'; }
+                }
+            },
+            grid: {
+                borderColor: '#e5e7eb',
+                xaxis: { lines: { show: true } },
+                yaxis: { lines: { show: false } }
+            }
+        };
+
+        new ApexCharts(el, options).render();
+    }
+
     function init() {
         initReveal();
         initClickables();
+        initFunnelChart();
     }
 
     if (document.readyState === 'loading') {

@@ -7,6 +7,7 @@ use Botble\RealEstate\Enums\BoardStatusEnum;
 use Botble\RealEstate\Http\Requests\BoardRequest;
 use Botble\RealEstate\Models\Board;
 use Botble\RealEstate\Models\Client;
+use Botble\RealEstate\Models\CrmLead;
 
 class BoardForm extends FormAbstract
 {
@@ -17,6 +18,13 @@ class BoardForm extends FormAbstract
             ->latest()
             ->get()
             ->mapWithKeys(fn (Client $item) => [$item->getKey() => $item->name])
+            ->all();
+
+        $leads = CrmLead::query()
+            ->select('name', 'id')
+            ->latest()
+            ->get()
+            ->mapWithKeys(fn (CrmLead $item) => [$item->getKey() => $item->name])
             ->all();
 
         $this
@@ -41,11 +49,19 @@ class BoardForm extends FormAbstract
             ])
             ->add('client_id', 'customSelect', [
                 'label' => trans('plugins/real-estate::board.form.client'),
-                'required' => true,
+                'required' => false,
                 'attr' => [
                     'class' => 'form-control select-search-full',
                 ],
                 'choices' => ['' => trans('plugins/real-estate::board.form.select_client')] + $clients,
+            ])
+            ->add('lead_id', 'customSelect', [
+                'label' => 'Lead (CRM)',
+                'required' => false,
+                'attr' => [
+                    'class' => 'form-control select-search-full',
+                ],
+                'choices' => ['' => '-- Seleccionar Lead --'] + $leads,
             ])
             ->add('status', 'customSelect', [
                 'label' => trans('core/base::tables.status'),

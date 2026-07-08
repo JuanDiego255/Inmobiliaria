@@ -87,6 +87,29 @@
 
                     {{-- Tab Propiedades --}}
                     <div class="tab-pane fade" id="tabProperties">
+                        <div id="detailBoardSection" style="display:none;margin-bottom:16px;padding:14px 16px;background:var(--cd-bg-raised);border-radius:var(--cd-radius-sm);border:1px solid var(--cd-line-soft)">
+                            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+                                <span style="font-size:13px;font-weight:600;color:var(--cd-ink-700)">
+                                    <span class="material-icons" style="font-size:16px;vertical-align:middle;margin-right:4px">dashboard</span>
+                                    Tablero compartido
+                                </span>
+                                <a id="detailBoardViewLink" href="#" target="_blank" style="font-size:12px;color:var(--cd-accent);text-decoration:none">
+                                    Ver tablero <span class="material-icons" style="font-size:14px;vertical-align:middle">open_in_new</span>
+                                </a>
+                            </div>
+                            <div style="display:flex;gap:8px;align-items:center">
+                                <input type="text" id="detailBoardUrl" readonly style="flex:1;font-size:12px;padding:6px 10px;border:1px solid var(--cd-line);border-radius:6px;background:var(--cd-bg);color:var(--cd-ink-600);font-family:monospace" />
+                                <button type="button" onclick="CRM_copyBoardUrl()" class="btn btn-sm btn-outline-secondary" title="Copiar enlace" style="height:31px">
+                                    <span class="material-icons" style="font-size:16px">content_copy</span>
+                                </button>
+                                <a id="detailBoardWhatsApp" href="#" target="_blank" class="btn btn-sm btn-outline-success" title="Compartir por WhatsApp" style="height:31px">
+                                    <span class="material-icons" style="font-size:16px">chat</span>
+                                </a>
+                                <a id="detailBoardEmail" href="#" class="btn btn-sm btn-outline-primary" title="Compartir por Email" style="height:31px">
+                                    <span class="material-icons" style="font-size:16px">mail_outline</span>
+                                </a>
+                            </div>
+                        </div>
                         <div id="detailPropertiesList"></div>
                         <div class="cd-empty" id="detailPropertiesEmpty">
                             <span class="material-icons">home_work</span>

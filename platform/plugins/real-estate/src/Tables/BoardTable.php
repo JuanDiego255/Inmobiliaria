@@ -35,7 +35,13 @@ class BoardTable extends TableAbstract
         $data = $this->table
             ->eloquent($this->query())
             ->editColumn('client_name', function (Board $item) {
-                return $item->client->name;
+                if ($item->client && $item->client->name) {
+                    return e($item->client->name);
+                }
+                if ($item->lead) {
+                    return '<span style="color:var(--cd-accent)">' . e($item->lead->name) . ' (Lead)</span>';
+                }
+                return '—';
             })
             ->editColumn('properties_count', function (Board $item) {
                 return $item->properties_count;
@@ -53,10 +59,11 @@ class BoardTable extends TableAbstract
                 're_boards.id',
                 're_boards.name',
                 're_boards.client_id',
+                're_boards.lead_id',
                 're_boards.created_at',
                 're_boards.status',
             ])
-            ->with('client')
+            ->with(['client', 'lead'])
             ->withCount('properties');
 
         return $this->applyScopes($query);
@@ -68,7 +75,7 @@ class BoardTable extends TableAbstract
             IdColumn::make(),
             NameColumn::make()->route('board.edit'),
             Column::make('client_name')
-                ->title(trans('plugins/real-estate::board.form.client'))
+                ->title(trans('plugins/real-estate::board.form.client') . ' / Lead')
                 ->searchable(false)
                 ->orderable(false),
             Column::make('properties_count')

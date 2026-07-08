@@ -11,6 +11,7 @@ use Botble\RealEstate\Enums\CrmLeadStageEnum;
 use Botble\RealEstate\Http\Requests\CrmLeadRequest;
 use Botble\RealEstate\Models\Account;
 use Botble\RealEstate\Models\Consult;
+use Botble\RealEstate\Models\Board;
 use Botble\RealEstate\Models\CrmLead;
 use Botble\RealEstate\Tables\CrmLeadTable;
 use Exception;
@@ -143,7 +144,7 @@ class CrmLeadController extends BaseController
     public function detail(int|string $id, BaseHttpResponse $response)
     {
         $lead = CrmLead::query()
-            ->with(['assignedAgent', 'currency', 'client', 'consult', 'properties', 'activities.user', 'tasks'])
+            ->with(['assignedAgent', 'currency', 'client', 'consult', 'properties', 'activities.user', 'tasks', 'boards', 'boards.properties'])
             ->findOrFail($id);
 
         return $response->setData($lead);
@@ -179,11 +180,30 @@ class CrmLeadController extends BaseController
 
         $lead = CrmLead::query()->findOrFail($id);
 
+        $propertyId = $request->input('property_id');
+
         $lead->properties()->syncWithoutDetaching([
-            $request->input('property_id') => [
+            $propertyId => [
                 'interest_level' => $request->input('interest_level', 'medium'),
                 'notes' => $request->input('notes'),
             ],
+        ]);
+
+        // Auto-create or update board for this lead
+        $board = Board::query()->where('lead_id', $lead->id)->first();
+
+        if (!$board) {
+            $board = Board::query()->create([
+                'name' => 'Propiedades para ' . $lead->name,
+                'lead_id' => $lead->id,
+                'client_id' => $lead->client_id,
+                'status' => 'active',
+            ]);
+        }
+
+        // Sync property to board too
+        $board->properties()->syncWithoutDetaching([
+            $propertyId => ['order' => $board->properties()->count()],
         ]);
 
         return $response
@@ -195,6 +215,12 @@ class CrmLeadController extends BaseController
     {
         $lead = CrmLead::query()->findOrFail($id);
         $lead->properties()->detach($propertyId);
+
+        // Also remove from lead's board
+        $board = Board::query()->where('lead_id', $lead->id)->first();
+        if ($board) {
+            $board->properties()->detach($propertyId);
+        }
 
         return $response
             ->setMessage('Propiedad removida del lead.')

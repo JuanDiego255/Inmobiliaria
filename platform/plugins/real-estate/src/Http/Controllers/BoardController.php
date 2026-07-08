@@ -39,7 +39,7 @@ class BoardController extends BaseController
 
     public function store(BoardRequest $request, BaseHttpResponse $response)
     {
-        $board = Board::query()->create($request->input());
+        $board = Board::query()->create($request->only(['name', 'description', 'client_id', 'lead_id', 'status']));
 
         event(new CreatedContentEvent(BOARD_MODULE_SCREEN_NAME, $request, $board));
 
@@ -51,7 +51,7 @@ class BoardController extends BaseController
 
     public function edit(int|string $id, FormBuilder $formBuilder, Request $request)
     {
-        $board = Board::query()->with(['client', 'properties'])->findOrFail($id);
+        $board = Board::query()->with(['client', 'lead', 'properties'])->findOrFail($id);
 
         event(new BeforeEditContentEvent($request, $board));
 
@@ -125,15 +125,17 @@ class BoardController extends BaseController
     public function getBoardsForProperty(Request $request, BaseHttpResponse $response)
     {
         $boards = Board::query()
-            ->with('client')
-            ->select(['id', 'name', 'client_id'])
+            ->with(['client', 'lead'])
+            ->select(['id', 'name', 'client_id', 'lead_id'])
             ->latest()
             ->get()
             ->map(function (Board $board) {
                 return [
                     'id' => $board->id,
                     'name' => $board->name,
-                    'client_name' => $board->client->name,
+                    'client_name' => $board->client ? $board->client->name : null,
+                    'lead_name' => $board->lead ? $board->lead->name : null,
+                    'owner_name' => $board->client ? $board->client->name : ($board->lead ? $board->lead->name : 'Sin asignar'),
                 ];
             });
 

@@ -13,7 +13,8 @@ class BoardRequest extends Request
         return [
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:5000'],
-            'client_id' => ['required', 'exists:re_clients,id'],
+            'client_id' => ['nullable', 'exists:re_clients,id'],
+            'lead_id' => ['nullable', 'exists:re_crm_leads,id'],
             'status' => Rule::in(BoardStatusEnum::values()),
         ];
     }

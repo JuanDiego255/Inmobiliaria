@@ -6,6 +6,7 @@ use Botble\Base\Casts\SafeContent;
 use Botble\Base\Models\BaseModel;
 use Botble\RealEstate\Enums\CrmLeadSourceEnum;
 use Botble\RealEstate\Enums\CrmLeadStageEnum;
+use Botble\RealEstate\Models\Board;
 use Botble\RealEstate\Models\CrmTask;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -83,5 +84,10 @@ class CrmLead extends BaseModel
     public function tasks(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(CrmTask::class, 'lead_id');
+    }
+
+    public function boards(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Board::class, 'lead_id');
     }
 }

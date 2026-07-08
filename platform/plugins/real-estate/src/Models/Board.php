@@ -5,6 +5,7 @@ namespace Botble\RealEstate\Models;
 use Botble\Base\Casts\SafeContent;
 use Botble\Base\Models\BaseModel;
 use Botble\RealEstate\Enums\BoardStatusEnum;
+use Botble\RealEstate\Models\CrmLead;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Str;
@@ -17,6 +18,7 @@ class Board extends BaseModel
         'name',
         'description',
         'client_id',
+        'lead_id',
         'token',
         'status',
     ];
@@ -43,6 +45,11 @@ class Board extends BaseModel
     public function client(): BelongsTo
     {
         return $this->belongsTo(Client::class)->withDefault();
+    }
+
+    public function lead(): BelongsTo
+    {
+        return $this->belongsTo(CrmLead::class)->withDefault();
     }
 
     public function properties(): BelongsToMany

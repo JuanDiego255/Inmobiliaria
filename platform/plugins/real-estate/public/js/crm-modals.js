@@ -366,6 +366,31 @@
             propEmpty.style.display = '';
         }
 
+        // Board section
+        var boardSection = document.getElementById('detailBoardSection');
+        if (boardSection) {
+            if (lead.boards && lead.boards.length > 0) {
+                var board = lead.boards[0]; // Use the first/primary board
+                boardSection.style.display = '';
+
+                var baseUrl = window.location.origin;
+                var publicUrl = baseUrl + '/board/' + board.token;
+
+                document.getElementById('detailBoardUrl').value = publicUrl;
+                document.getElementById('detailBoardViewLink').href = publicUrl;
+
+                var boardName = board.name || 'Tablero';
+                var waText = encodeURIComponent(boardName + '\n' + publicUrl);
+                document.getElementById('detailBoardWhatsApp').href = 'https://wa.me/?text=' + waText;
+
+                var emailSubject = encodeURIComponent(boardName);
+                var emailBody = encodeURIComponent('Te comparto las propiedades seleccionadas:\n' + publicUrl);
+                document.getElementById('detailBoardEmail').href = 'mailto:?subject=' + emailSubject + '&body=' + emailBody;
+            } else {
+                boardSection.style.display = 'none';
+            }
+        }
+
         // Add property form
         var addPropHtml = '<div class="cd-prop-add" style="margin-top:16px;padding-top:16px;border-top:1px solid var(--cd-line-soft)">';
         addPropHtml += '<div style="display:flex;gap:8px;align-items:end">';
@@ -464,6 +489,15 @@
             showToast('Propiedad desvinculada');
             window.CRM_openLeadDetail(leadId);
         });
+    }
+
+    // ---- Copy Board URL ----
+    function CRM_copyBoardUrl() {
+        var input = document.getElementById('detailBoardUrl');
+        if (!input) return;
+        input.select();
+        document.execCommand('copy');
+        showToast('Enlace copiado al portapapeles');
     }
 
     // ---- Quick Activity ----
@@ -594,6 +628,7 @@
     window.CRM_addPropertyToLead = CRM_addPropertyToLead;
     window.CRM_removePropertyFromLead = CRM_removePropertyFromLead;
     window.CRM_quickActivity = CRM_quickActivity;
+    window.CRM_copyBoardUrl = CRM_copyBoardUrl;
 
     // Init when DOM ready
     if (document.readyState === 'loading') {

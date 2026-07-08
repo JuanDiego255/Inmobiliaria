@@ -5,6 +5,7 @@ namespace Botble\RealEstate\Tables;
 use Botble\RealEstate\Enums\BoardStatusEnum;
 use Botble\RealEstate\Models\Board;
 use Botble\Table\Abstracts\TableAbstract;
+use Botble\Table\Actions\Action;
 use Botble\Table\Actions\DeleteAction;
 use Botble\Table\Actions\EditAction;
 use Botble\Table\BulkActions\DeleteBulkAction;
@@ -25,6 +26,11 @@ class BoardTable extends TableAbstract
         $this
             ->model(Board::class)
             ->addActions([
+                Action::make('rating')
+                    ->route('board.rating')
+                    ->icon('fa fa-eye')
+                    ->label('Ver calificación')
+                    ->color('info'),
                 EditAction::make()->route('board.edit'),
                 DeleteAction::make()->route('board.destroy'),
             ]);

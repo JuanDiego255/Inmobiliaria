@@ -6,6 +6,7 @@ use Botble\Base\Events\BeforeEditContentEvent;
 use Botble\Base\Events\CreatedContentEvent;
 use Botble\Base\Events\DeletedContentEvent;
 use Botble\Base\Events\UpdatedContentEvent;
+use Botble\Base\Facades\Assets;
 use Botble\Base\Facades\PageTitle;
 use Botble\Base\Forms\FormBuilder;
 use Botble\Base\Http\Controllers\BaseController;
@@ -373,5 +374,56 @@ class BoardController extends BaseController
         ]);
 
         return $response->setMessage(trans('plugins/real-estate::board.property_added'));
+    }
+
+    public function rating(int|string $id)
+    {
+        $board = Board::query()
+            ->with(['client', 'lead', 'properties' => function ($query) {
+                $query->with(['currency']);
+            }])
+            ->findOrFail($id);
+
+        PageTitle::setTitle('Calificación — ' . $board->name);
+
+        Assets::addStylesDirectly([
+            'vendor/core/plugins/real-estate/css/crm-dashboard.css',
+        ]);
+
+        $statuses = [
+            'properties' => 'Propiedades',
+            'interested' => 'Interesado',
+            'visited' => 'Visitado',
+            'discarded' => 'Descartado',
+        ];
+
+        $columns = [];
+        foreach ($statuses as $key => $label) {
+            $columns[$key] = [
+                'label' => $label,
+                'properties' => collect(),
+            ];
+        }
+
+        foreach ($board->properties as $property) {
+            $images = [];
+            if (! empty($property->images) && is_array($property->images)) {
+                foreach ($property->images as $image) {
+                    $images[] = RvMedia::getImageUrl($image, null, false, RvMedia::getDefaultImage());
+                }
+            }
+            $property->formatted_images = $images;
+
+            $status = $property->pivot->property_status ?: 'properties';
+            if (isset($columns[$status])) {
+                $columns[$status]['properties']->push($property);
+            } else {
+                $columns['properties']['properties']->push($property);
+            }
+        }
+
+        $ownerName = $board->client ? $board->client->name : ($board->lead ? $board->lead->name : 'Sin asignar');
+
+        return view('plugins/real-estate::boards.board-rating', compact('board', 'columns', 'statuses', 'ownerName'));
     }
 }

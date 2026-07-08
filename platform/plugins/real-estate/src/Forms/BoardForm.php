@@ -92,6 +92,10 @@ class BoardForm extends FormAbstract
                         'style' => 'margin-top: 0',
                     ],
                 ],
+                'rating' => [
+                    'title' => 'Calificación del cliente',
+                    'content' => '<a href="' . route('board.rating', $this->getModel()->id) . '" class="btn btn-info" style="display:inline-flex;align-items:center;gap:8px"><i class="fa fa-eye"></i> Ver calificación</a><p style="margin-top:10px;font-size:13px;color:#888">Ver cómo el cliente/lead ha clasificado las propiedades del tablero.</p>',
+                ],
             ]);
         }
     }

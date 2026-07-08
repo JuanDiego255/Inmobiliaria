@@ -562,6 +562,12 @@ Route::group(['namespace' => 'Botble\RealEstate\Http\Controllers', 'middleware' 
                 'uses' => 'BoardController@bulkAddProperties',
                 'permission' => 'board.edit',
             ]);
+
+            Route::get('{id}/rating', [
+                'as' => 'rating',
+                'uses' => 'BoardController@rating',
+                'permission' => 'board.index',
+            ])->wherePrimaryKey();
         });
     });
 

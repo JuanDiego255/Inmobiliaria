@@ -23,8 +23,7 @@ class CrmReminderTable extends TableAbstract
             ->model(CrmReminder::class)
             ->addActions([
                 DeleteAction::make()->route('crm.reminders.destroy'),
-            ])
-            ->escapeColumns([]);
+            ]);
     }
 
     public function ajax(): JsonResponse

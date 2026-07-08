@@ -25,8 +25,7 @@ class CrmTaskTable extends TableAbstract
             ->model(CrmTask::class)
             ->addActions([
                 DeleteAction::make()->route('crm.tasks.destroy'),
-            ])
-            ->escapeColumns([]);
+            ]);
     }
 
     public function ajax(): JsonResponse

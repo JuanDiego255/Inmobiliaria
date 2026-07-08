@@ -305,6 +305,21 @@
         document.getElementById('detailCloseDate').textContent = lead.expected_close_date || '—';
         document.getElementById('detailLastContact').textContent = lead.last_contacted_at || '—';
         document.getElementById('detailCreated').textContent = lead.created_at ? lead.created_at.substring(0, 10) : '—';
+
+        var scoreEl = document.getElementById('detailScore');
+        if (scoreEl) {
+            var score = lead.score || 0;
+            var color, label;
+            if (score >= 76) { color = '#10b981'; label = 'Muy alto'; }
+            else if (score >= 51) { color = '#f59e0b'; label = 'Alto'; }
+            else if (score >= 26) { color = '#3b82f6'; label = 'Medio'; }
+            else { color = '#94a3b8'; label = 'Bajo'; }
+            scoreEl.innerHTML = '<span style="display:inline-flex;align-items:center;gap:6px;font-weight:600;color:' + color + '">' +
+                '<span style="width:10px;height:10px;border-radius:50%;background:' + color + ';display:inline-block"></span>' +
+                score + '/100 — ' + label +
+            '</span>';
+        }
+
         document.getElementById('detailNotes').textContent = lead.notes || 'Sin notas.';
 
         // Stage dropdown

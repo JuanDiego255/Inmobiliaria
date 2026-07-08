@@ -143,7 +143,7 @@ class CrmLeadController extends BaseController
     public function detail(int|string $id, BaseHttpResponse $response)
     {
         $lead = CrmLead::query()
-            ->with(['assignedAgent', 'currency', 'client', 'consult', 'properties', 'activities.user'])
+            ->with(['assignedAgent', 'currency', 'client', 'consult', 'properties', 'activities.user', 'tasks'])
             ->findOrFail($id);
 
         return $response->setData($lead);
@@ -199,6 +199,16 @@ class CrmLeadController extends BaseController
         return $response
             ->setMessage('Propiedad removida del lead.')
             ->setData($lead->load('properties'));
+    }
+
+    public function recalculateScores(BaseHttpResponse $response)
+    {
+        $leads = CrmLead::query()->get();
+        foreach ($leads as $lead) {
+            CrmAutomationService::recalculateScore($lead);
+        }
+
+        return $response->setMessage('Scores recalculados para ' . $leads->count() . ' leads.');
     }
 
     public function importConsults(BaseHttpResponse $response)

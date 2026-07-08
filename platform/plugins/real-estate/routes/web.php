@@ -335,6 +335,12 @@ Route::group(['namespace' => 'Botble\RealEstate\Http\Controllers', 'middleware' 
                 'permission' => 'crm-lead.create',
             ]);
 
+            Route::post('recalculate-scores', [
+                'as' => 'recalculate-scores',
+                'uses' => 'CrmLeadController@recalculateScores',
+                'permission' => 'crm-lead.edit',
+            ]);
+
             Route::get('properties/search', [
                 'as' => 'properties.search',
                 'uses' => 'CrmPropertySearchController@search',

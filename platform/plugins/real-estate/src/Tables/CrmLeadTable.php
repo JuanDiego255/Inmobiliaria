@@ -56,6 +56,22 @@ class CrmLeadTable extends TableAbstract
 
                 return BaseHelper::clean($item->assignedAgent->first_name . ' ' . $item->assignedAgent->last_name);
             })
+            ->editColumn('score', function ($item) {
+                $score = $item->score ?? 0;
+                if ($score >= 76) {
+                    $color = '#10b981'; $label = 'Muy alto';
+                } elseif ($score >= 51) {
+                    $color = '#f59e0b'; $label = 'Alto';
+                } elseif ($score >= 26) {
+                    $color = '#3b82f6'; $label = 'Medio';
+                } else {
+                    $color = '#94a3b8'; $label = 'Bajo';
+                }
+                return '<span style="display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;color:' . $color . '">' .
+                    '<span style="width:8px;height:8px;border-radius:50%;background:' . $color . ';display:inline-block"></span>' .
+                    $score .
+                '</span>';
+            })
             ->filter(function ($query) {
                 $keyword = $this->request->input('search.value');
 
@@ -89,6 +105,7 @@ class CrmLeadTable extends TableAbstract
                 'stage',
                 'source',
                 'assigned_agent_id',
+                'score',
                 'created_at',
             ]);
 
@@ -112,6 +129,11 @@ class CrmLeadTable extends TableAbstract
                 ->title('Agente')
                 ->searchable(false)
                 ->orderable(false),
+            Column::make('score')
+                ->title('Score')
+                ->width(80)
+                ->searchable(false)
+                ->orderable(true),
             CreatedAtColumn::make(),
         ];
     }

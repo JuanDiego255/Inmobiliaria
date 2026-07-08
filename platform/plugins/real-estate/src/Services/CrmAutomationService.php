@@ -6,6 +6,7 @@ use Botble\RealEstate\Models\CrmActivity;
 use Botble\RealEstate\Models\CrmLead;
 use Botble\RealEstate\Models\CrmTask;
 use Illuminate\Support\Collection;
+use Botble\RealEstate\Models\Account;
 use Illuminate\Support\Facades\Auth;
 
 class CrmAutomationService
@@ -72,6 +73,8 @@ class CrmAutomationService
 
         // Update last_contacted_at
         $lead->update(['last_contacted_at' => now()]);
+
+        self::recalculateScore($lead);
     }
 
     /**
@@ -119,5 +122,80 @@ class CrmAutomationService
             'type' => 'note',
             'description' => 'Lead creado en el sistema.',
         ]);
+
+        self::autoAssignAgent($lead);
+        $lead->update(['score' => self::calculateScore($lead)]);
+    }
+
+    /**
+     * Calculate lead score (0-100 scale).
+     */
+    public static function calculateScore(CrmLead $lead): int
+    {
+        $score = 0;
+
+        if ($lead->email) $score += 15;
+        if ($lead->phone) $score += 15;
+        if ($lead->budget_min || $lead->budget_max) $score += 10;
+        if ($lead->expected_close_date) $score += 10;
+        if ($lead->notes) $score += 5;
+
+        $sourceScores = [
+            'referral' => 20,
+            'website' => 15, 'consult' => 15,
+            'facebook_lead_ad' => 10, 'whatsapp' => 10, 'instagram_dm' => 10, 'messenger' => 10, 'social' => 10,
+            'phone' => 8,
+            'manual' => 5, 'other' => 5,
+        ];
+        $sourceValue = $lead->source instanceof \Botble\Base\Supports\Enum ? $lead->source->getValue() : (string) $lead->source;
+        $score += $sourceScores[$sourceValue] ?? 5;
+
+        $activityCount = $lead->activities()->count();
+        $score += min($activityCount * 5, 15);
+
+        $propertyCount = $lead->properties()->count();
+        $score += min($propertyCount * 5, 10);
+
+        return min($score, 100);
+    }
+
+    /**
+     * Auto-assign lead to least-loaded agent.
+     */
+    public static function autoAssignAgent(CrmLead $lead): void
+    {
+        if ($lead->assigned_agent_id) {
+            return;
+        }
+
+        $agents = Account::query()->select('id')->get();
+        if ($agents->isEmpty()) {
+            return;
+        }
+
+        // Least-loaded: find agent with fewest active leads
+        $agentLoads = [];
+        foreach ($agents as $agent) {
+            $agentLoads[$agent->id] = CrmLead::query()
+                ->where('assigned_agent_id', $agent->id)
+                ->whereNotIn('stage', ['ganado', 'perdido'])
+                ->count();
+        }
+
+        asort($agentLoads);
+        $bestAgentId = array_key_first($agentLoads);
+
+        if ($bestAgentId) {
+            $lead->update(['assigned_agent_id' => $bestAgentId]);
+        }
+    }
+
+    /**
+     * Recalculate and persist lead score.
+     */
+    public static function recalculateScore(CrmLead $lead): void
+    {
+        $score = self::calculateScore($lead);
+        $lead->update(['score' => $score]);
     }
 }

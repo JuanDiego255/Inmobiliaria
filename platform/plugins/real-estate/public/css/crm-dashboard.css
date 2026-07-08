@@ -1169,3 +1169,5 @@ a.cd-pl-link:hover { background: var(--cd-accent-tint); }
     outline-offset: -2px;
     transition: outline .6s ease;
 }
+
+.cd-score-badge { font-size: 13px; }

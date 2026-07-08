@@ -33,6 +33,7 @@ class CrmLead extends BaseModel
         'lost_reason',
         'meta_lead_id',
         'meta_platform',
+        'score',
     ];
 
     protected $casts = [
@@ -44,6 +45,7 @@ class CrmLead extends BaseModel
         'budget_max' => 'float',
         'last_contacted_at' => 'datetime',
         'expected_close_date' => 'date',
+        'score' => 'integer',
     ];
 
     public function client(): BelongsTo

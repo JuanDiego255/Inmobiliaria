@@ -53,6 +53,7 @@
                                     <tr><th>Cierre estimado</th><td id="detailCloseDate"></td></tr>
                                     <tr><th>Último contacto</th><td id="detailLastContact"></td></tr>
                                     <tr><th>Creado</th><td id="detailCreated"></td></tr>
+                                    <tr><th>Score</th><td><span id="detailScore" class="cd-score-badge"></span></td></tr>
                                 </table>
                             </div>
                         </div>

@@ -57,7 +57,29 @@ class WhatsAppBotService
         $activeTenantId = $this->getActiveTenantId($from);
         $flowMetadata = null;
 
-        if (! $activeTenantId) {
+        if ($this->isVehicleMode()) {
+            $tenantId = $activeTenantId ?: $this->autoAssignVehicleTenant($from, $name);
+
+            $flowResult = $this->handleWithFlow($from, $name, $message, $tenantId);
+
+            if ($flowResult !== null) {
+                if ($flowResult['trigger_ai'] ?? false) {
+                    $flowMetadata = $flowResult['metadata'] ?? null;
+                    $contextMessage = $this->buildAiContextFromFlow($message, $flowMetadata);
+                    $reply = $this->handlePropertySearch($from, $name, $contextMessage, $tenantId);
+                    $this->onFlowCompleted($from, $name, $tenantId, $flowMetadata ?? []);
+                } else {
+                    $reply = $flowResult['reply'];
+                    $flowMetadata = $flowResult['metadata'] ?? null;
+
+                    if ($flowResult['completed'] ?? false) {
+                        $this->onFlowCompleted($from, $name, $tenantId, $flowMetadata ?? []);
+                    }
+                }
+            } else {
+                $reply = $this->handlePropertySearch($from, $name, $message, $tenantId);
+            }
+        } elseif (! $activeTenantId) {
             $result = $this->handleTenantSelection($from, $name, $message);
             $reply = $result['reply'];
             $tenantId = $result['tenant_id'];
@@ -172,6 +194,20 @@ class WhatsAppBotService
         }
 
         return false;
+    }
+
+    protected function autoAssignVehicleTenant(string $from, string $name): string
+    {
+        $tenants = $this->listAvailableTenants();
+        $tenant = $tenants->first();
+
+        if (! $tenant) {
+            return '';
+        }
+
+        $this->createLeadInTenant($tenant->id, $from, $name);
+
+        return $tenant->id;
     }
 
     protected function handleTenantSelection(string $from, string $name, string $message, bool $isReset = false): array

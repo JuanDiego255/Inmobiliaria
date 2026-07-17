@@ -125,6 +125,19 @@
     </section>
 
     {{-- ═══════════ TENANT SELECTOR ═══════════ --}}
+    @if(setting('crm_whatsapp_bot_vehicle_mode'))
+    <section class="cd-card cd-settings-card">
+        <div class="cd-sc-head">
+            <div class="cd-sc-icon" style="background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff">
+                <span class="material-icons">directions_car</span>
+            </div>
+            <div>
+                <h3>{{ setting('crm_whatsapp_bot_vehicle_dealer_name', 'Autos Grecia') }}</h3>
+                <p>En modo concesionario, el bot apunta directamente a <strong>{{ setting('crm_whatsapp_bot_vehicle_dealer_name', 'Autos Grecia') }}</strong> sin selección de empresa.</p>
+            </div>
+        </div>
+    </section>
+    @else
     <section class="cd-card cd-settings-card">
         <div class="cd-sc-head">
             <div class="cd-sc-icon cd-sc-meta">
@@ -149,6 +162,7 @@
             </div>
         </div>
     </section>
+    @endif
 
     @if($tenantId)
 

@@ -174,6 +174,20 @@ class BotFlowService
             'type' => $currentStep['type'] ?? 'free_text',
         ];
 
+        $aiAfterStep = $selectedOption['ai_after_step'] ?? null;
+        if ($aiAfterStep !== null && (int) $aiAfterStep === $currentStepIndex) {
+            $state['collected_data'] = $collectedData;
+            $state['flow_state'] = 'completed';
+            $state['current_step'] = $currentStepIndex + 1;
+
+            return [
+                'reply' => '',
+                'metadata' => $state,
+                'completed' => true,
+                'trigger_ai' => true,
+            ];
+        }
+
         $nextStepIndex = $currentStepIndex + 1;
 
         if ($nextStepIndex >= count($steps)) {

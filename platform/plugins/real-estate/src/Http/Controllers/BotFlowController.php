@@ -233,6 +233,10 @@ class BotFlowController extends BaseController
                         return false;
                     }
                 }
+
+                if (isset($option['ai_after_step']) && (int) $option['ai_after_step'] >= count($option['steps'])) {
+                    return false;
+                }
             }
         }
 

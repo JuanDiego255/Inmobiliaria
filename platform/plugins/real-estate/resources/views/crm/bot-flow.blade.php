@@ -155,6 +155,15 @@
     {{-- ═══════════ FLOW CONFIGURATION ═══════════ --}}
     <section class="cd-card cd-settings-card">
         <div class="cd-sc-head">
+            @if(setting('crm_whatsapp_bot_vehicle_mode'))
+            <div class="cd-sc-icon" style="background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff">
+                <span class="material-icons">directions_car</span>
+            </div>
+            <div>
+                <h3>Flujo de Conversación — Concesionario</h3>
+                <p>Definí las preguntas que el bot hará al cliente antes de buscar vehículos con IA.</p>
+            </div>
+            @else
             <div class="cd-sc-icon cd-sc-accent">
                 <span class="material-icons">smart_toy</span>
             </div>
@@ -162,7 +171,16 @@
                 <h3>Flujo de Conversación</h3>
                 <p>Definí las preguntas que el bot hará al cliente paso a paso.</p>
             </div>
+            @endif
         </div>
+
+        @if(setting('crm_whatsapp_bot_vehicle_mode'))
+        <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:14px 16px;font-size:13px;color:#92400e;margin-bottom:16px">
+            <span class="material-icons" style="font-size:16px;vertical-align:middle;margin-right:4px">directions_car</span>
+            <strong>Modo Concesionario activo.</strong> El flujo recopila información del cliente y luego la IA busca vehículos en el API externo.
+            Podés configurar en qué paso se activa la búsqueda IA usando la opción "Activar IA después de este paso" en cada opción del menú.
+        </div>
+        @endif
 
         {!! Form::open(['route' => 'crm.bot-flow.save', 'method' => 'POST']) !!}
         <input type="hidden" name="tenant_id" value="{{ $tenantId }}">
@@ -172,7 +190,7 @@
                 <div class="form-group mb-3">
                     <label class="text-title-field" for="greeting_message">Mensaje de bienvenida</label>
                     <textarea class="form-control" id="greeting_message" name="greeting_message" rows="3"
-                        placeholder="Ej: Hola, ¿Qué trámite desea realizar con nosotros?">{{ $flow?->greeting_message ?? '' }}</textarea>
+                        placeholder="{{ setting('crm_whatsapp_bot_vehicle_mode') ? 'Ej: ¡Hola! ¿Qué tipo de vehículo estás buscando?' : 'Ej: Hola, ¿Qué trámite desea realizar con nosotros?' }}">{{ $flow?->greeting_message ?? '' }}</textarea>
                     <small class="form-text text-muted">El primer mensaje que el bot enviará cuando un cliente inicie la conversación.</small>
                 </div>
             </div>
@@ -187,7 +205,13 @@
                             <span>Flujo activo</span>
                         </label>
                     </div>
-                    <small class="form-text text-muted">Si está desactivado, el bot usará búsqueda con IA.</small>
+                    <small class="form-text text-muted">
+                        @if(setting('crm_whatsapp_bot_vehicle_mode'))
+                            Si está desactivado, el bot usará IA directamente para buscar vehículos.
+                        @else
+                            Si está desactivado, el bot usará búsqueda con IA.
+                        @endif
+                    </small>
                 </div>
             </div>
         </div>
@@ -613,6 +637,7 @@
 <script>
 let flowOptions = @json(($flow?->flow_config ?? ['options' => []])['options'] ?? []);
 const currentTenantId = @json($tenantId);
+const isVehicleMode = @json((bool) setting('crm_whatsapp_bot_vehicle_mode'));
 
 function switchTenant(id) {
     window.location.href = '{{ route("crm.bot-flow.index") }}?tenant=' + id;
@@ -656,6 +681,35 @@ function renderOptions() {
 function createOptionEl(opt, index) {
     const div = document.createElement('div');
     div.className = 'cd-flow-option';
+
+    const labelPlaceholder = isVehicleMode ? 'Etiqueta (Buscar vehículo, Cotizar...)' : 'Etiqueta (Compra, Venta...)';
+    const intentPlaceholder = isVehicleMode ? 'Intención (search, quote, test_drive)' : 'Intención (purchase, sale, rent)';
+
+    let aiTriggerHtml = '';
+    if (isVehicleMode) {
+        const steps = opt.steps || [];
+        const aiVal = opt.ai_after_step !== undefined && opt.ai_after_step !== null ? parseInt(opt.ai_after_step) : -1;
+        let stepOpts = '<option value="-1"' + (aiVal === -1 ? ' selected' : '') + '>No activar IA</option>';
+        steps.forEach((s, si) => {
+            const label = s.question ? s.question.substring(0, 40) : ('Paso ' + (si + 1));
+            stepOpts += '<option value="' + si + '"' + (aiVal === si ? ' selected' : '') + '>Después: ' + label + '</option>';
+        });
+        aiTriggerHtml = `
+            <div class="cd-ai-trigger" style="background:#fef3c7;border:1px solid #fde68a;border-radius:8px;padding:10px 14px;margin-top:10px">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+                    <span class="material-icons" style="font-size:18px;color:#d97706">psychology</span>
+                    <strong style="font-size:13px;color:#92400e">Activar búsqueda IA</strong>
+                </div>
+                <select class="form-control form-control-sm" onchange="flowOptions[${index}].ai_after_step = this.value === '-1' ? null : parseInt(this.value); renderOptions();" style="font-size:13px">
+                    ${stepOpts}
+                </select>
+                <small style="font-size:11px;color:#92400e;margin-top:4px;display:block">
+                    Cuando el cliente complete este paso, la IA buscará vehículos en el API usando las respuestas recopiladas.
+                </small>
+            </div>
+        `;
+    }
+
     div.innerHTML = `
         <button type="button" class="cd-remove-btn" onclick="removeOption(${index})" title="Eliminar opción">
             <span class="material-icons" style="font-size:18px">delete</span>
@@ -663,15 +717,15 @@ function createOptionEl(opt, index) {
         <div class="cd-flow-option-header">
             <input type="text" class="form-control form-control-sm" placeholder="Clave (1,2,3...)" value="${opt.key || ''}" style="max-width:60px"
                 onchange="flowOptions[${index}].key = this.value">
-            <input type="text" class="form-control form-control-sm" placeholder="Etiqueta (Compra, Venta...)" value="${opt.label || ''}"
+            <input type="text" class="form-control form-control-sm" placeholder="${labelPlaceholder}" value="${opt.label || ''}"
                 onchange="flowOptions[${index}].label = this.value">
-            <input type="text" class="form-control form-control-sm" placeholder="Intención (purchase, sale, rent)" value="${opt.intent || ''}"
+            <input type="text" class="form-control form-control-sm" placeholder="${intentPlaceholder}" value="${opt.intent || ''}"
                 onchange="flowOptions[${index}].intent = this.value">
         </div>
         <div class="form-group mb-2">
             <input type="text" class="form-control form-control-sm" placeholder="Mensaje de finalización" value="${opt.completion_message || ''}"
                 onchange="flowOptions[${index}].completion_message = this.value">
-            <small class="form-text text-muted">Mensaje cuando se completan todos los pasos.</small>
+            <small class="form-text text-muted">${isVehicleMode ? 'Mensaje cuando se completan todos los pasos (no aplica si IA se activa antes).' : 'Mensaje cuando se completan todos los pasos.'}</small>
         </div>
         <div class="cd-flow-steps" id="steps-${index}">
             <small style="font-weight:600;color:var(--cd-ink-600)">Pasos / Preguntas:</small>
@@ -680,20 +734,29 @@ function createOptionEl(opt, index) {
         <button type="button" class="btn btn-outline-secondary btn-sm mt-2" onclick="addStep(${index})" style="font-size:12px">
             <span class="material-icons" style="font-size:14px;vertical-align:middle">add</span> Agregar paso
         </button>
+        ${aiTriggerHtml}
     `;
     return div;
 }
 
 function createStepHtml(optIndex, stepIndex, step) {
+    const opt = flowOptions[optIndex];
+    const isAiStep = isVehicleMode && opt.ai_after_step !== undefined && opt.ai_after_step !== null && parseInt(opt.ai_after_step) === stepIndex;
+    const aiStepStyle = isAiStep ? 'border:2px solid #f59e0b;background:#fffbeb;' : '';
+    const aiStepBadge = isAiStep ? '<span style="font-size:11px;background:#f59e0b;color:#fff;padding:2px 8px;border-radius:10px;margin-left:8px">IA se activa aquí</span>' : '';
+
+    const questionPlaceholder = isVehicleMode ? 'Pregunta (ej: ¿Qué marca le interesa?)' : 'Pregunta';
+    const idPlaceholder = isVehicleMode ? 'ID (ej: brand, budget)' : 'ID campo';
+
     return `
-        <div class="cd-flow-step">
+        <div class="cd-flow-step" style="${aiStepStyle}">
             <button type="button" class="cd-remove-btn" onclick="removeStep(${optIndex}, ${stepIndex})" title="Eliminar paso">
                 <span class="material-icons" style="font-size:14px">close</span>
             </button>
             <div class="cd-flow-step-fields">
-                <input type="text" placeholder="Pregunta" value="${step.question || ''}"
+                <input type="text" placeholder="${questionPlaceholder}" value="${step.question || ''}"
                     onchange="flowOptions[${optIndex}].steps[${stepIndex}].question = this.value">
-                <input type="text" placeholder="ID campo" value="${step.id || ''}"
+                <input type="text" placeholder="${idPlaceholder}" value="${step.id || ''}"
                     onchange="flowOptions[${optIndex}].steps[${stepIndex}].id = this.value">
                 <select onchange="flowOptions[${optIndex}].steps[${stepIndex}].type = this.value">
                     <option value="free_text" ${(step.type || 'free_text') === 'free_text' ? 'selected' : ''}>Texto libre</option>
@@ -702,6 +765,7 @@ function createStepHtml(optIndex, stepIndex, step) {
                     <option value="number" ${step.type === 'number' ? 'selected' : ''}>Número</option>
                 </select>
             </div>
+            ${aiStepBadge}
         </div>
     `;
 }
@@ -730,13 +794,23 @@ function removeStep(optIndex, stepIndex) {
 }
 
 function prepareFlowConfig() {
-    const config = { options: flowOptions };
+    const cleaned = flowOptions.map(opt => {
+        const o = { ...opt };
+        if (o.ai_after_step === null || o.ai_after_step === undefined || o.ai_after_step === -1 || o.ai_after_step === '-1') {
+            delete o.ai_after_step;
+        } else {
+            o.ai_after_step = parseInt(o.ai_after_step);
+        }
+        return o;
+    });
+    const config = { options: cleaned };
     document.getElementById('flowConfigInput').value = JSON.stringify(config);
 }
 
 function previewFlow() {
     const chat = document.getElementById('chatPreview');
-    const greeting = document.getElementById('greeting_message').value || '¡Hola! ¿Qué trámite desea realizar?';
+    const defaultGreeting = isVehicleMode ? '¡Hola! ¿Qué tipo de vehículo estás buscando?' : '¡Hola! ¿Qué trámite desea realizar?';
+    const greeting = document.getElementById('greeting_message').value || defaultGreeting;
 
     let html = `<div class="cd-chat-msg cd-chat-bot">${greeting}`;
     flowOptions.forEach(opt => {
@@ -748,14 +822,26 @@ function previewFlow() {
         const first = flowOptions[0];
         html += `<div class="cd-chat-msg cd-chat-user">${first.key}</div>`;
 
+        const aiAfter = first.ai_after_step !== undefined && first.ai_after_step !== null ? parseInt(first.ai_after_step) : -1;
+
         if (first.steps && first.steps.length > 0) {
-            first.steps.forEach((step, i) => {
+            for (let i = 0; i < first.steps.length; i++) {
+                const step = first.steps[i];
                 html += `<div class="cd-chat-msg cd-chat-bot">${step.question}</div>`;
                 html += `<div class="cd-chat-msg cd-chat-user">[Respuesta del cliente]</div>`;
-            });
+
+                if (isVehicleMode && aiAfter === i) {
+                    html += `<div class="cd-chat-msg cd-chat-bot" style="background:#fef3c7;border:1px solid #fde68a">
+                        <span style="font-size:12px;color:#92400e">🤖 <strong>IA se activa aquí</strong> — El bot busca vehículos usando las respuestas recopiladas...</span>
+                    </div>`;
+                    break;
+                }
+            }
         }
 
-        html += `<div class="cd-chat-msg cd-chat-bot">${first.completion_message || '¡Gracias! Un agente se comunicará pronto.'}</div>`;
+        if (!isVehicleMode || aiAfter === -1) {
+            html += `<div class="cd-chat-msg cd-chat-bot">${first.completion_message || '¡Gracias! Un agente se comunicará pronto.'}</div>`;
+        }
     }
 
     chat.innerHTML = html;

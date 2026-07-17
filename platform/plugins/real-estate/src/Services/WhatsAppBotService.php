@@ -70,11 +70,18 @@ class WhatsAppBotService
             $flowResult = $this->handleWithFlow($from, $name, $message, $activeTenantId);
 
             if ($flowResult !== null) {
-                $reply = $flowResult['reply'];
-                $flowMetadata = $flowResult['metadata'] ?? null;
+                if ($flowResult['trigger_ai'] ?? false) {
+                    $flowMetadata = $flowResult['metadata'] ?? null;
+                    $contextMessage = $this->buildAiContextFromFlow($message, $flowMetadata);
+                    $reply = $this->handlePropertySearch($from, $name, $contextMessage, $activeTenantId);
+                    $this->onFlowCompleted($from, $name, $activeTenantId, $flowMetadata ?? []);
+                } else {
+                    $reply = $flowResult['reply'];
+                    $flowMetadata = $flowResult['metadata'] ?? null;
 
-                if ($flowResult['completed'] ?? false) {
-                    $this->onFlowCompleted($from, $name, $activeTenantId, $flowResult['metadata'] ?? []);
+                    if ($flowResult['completed'] ?? false) {
+                        $this->onFlowCompleted($from, $name, $activeTenantId, $flowResult['metadata'] ?? []);
+                    }
                 }
             } else {
                 $reply = $this->handlePropertySearch($from, $name, $message, $activeTenantId);
@@ -322,6 +329,26 @@ class WhatsAppBotService
         }
 
         return $result;
+    }
+
+    protected function buildAiContextFromFlow(string $lastMessage, ?array $metadata): string
+    {
+        if (! $metadata || empty($metadata['collected_data'])) {
+            return $lastMessage;
+        }
+
+        $parts = [];
+        foreach ($metadata['collected_data'] as $data) {
+            $q = $data['question'] ?? '';
+            $a = $data['answer'] ?? '';
+            if ($q && $a) {
+                $parts[] = "{$q}: {$a}";
+            }
+        }
+
+        $context = implode('. ', $parts);
+
+        return "Basándote en lo siguiente que recopilé del cliente: {$context}. Último mensaje: {$lastMessage}. Buscá opciones que coincidan.";
     }
 
     protected function onFlowCompleted(string $phone, string $clientName, string $tenantId, array $metadata): void

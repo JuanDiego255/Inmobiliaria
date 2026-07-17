@@ -196,18 +196,14 @@ class WhatsAppBotService
         return false;
     }
 
+    protected function getVehicleTenantId(): string
+    {
+        return '_vehicle_';
+    }
+
     protected function autoAssignVehicleTenant(string $from, string $name): string
     {
-        $tenants = $this->listAvailableTenants();
-        $tenant = $tenants->first();
-
-        if (! $tenant) {
-            return '';
-        }
-
-        $this->createLeadInTenant($tenant->id, $from, $name);
-
-        return $tenant->id;
+        return $this->getVehicleTenantId();
     }
 
     protected function handleTenantSelection(string $from, string $name, string $message, bool $isReset = false): array
@@ -300,6 +296,16 @@ class WhatsAppBotService
 
     protected function handlePropertySearch(string $from, string $name, string $message, string $tenantId): string
     {
+        if ($this->isVehicleMode()) {
+            $dealerName = setting('crm_whatsapp_bot_vehicle_dealer_name') ?: 'Autos Grecia';
+            $this->currentTenantId = $tenantId;
+            $this->currentTenantName = $dealerName;
+
+            $history = $this->getConversationContext($from, $tenantId);
+
+            return $this->callLLM($message, $history);
+        }
+
         $tenant = Tenant::on('mysql')->find($tenantId);
         if (! $tenant) {
             $result = $this->handleTenantSelection($from, $name, $message, true);
@@ -389,23 +395,31 @@ class WhatsAppBotService
 
     protected function onFlowCompleted(string $phone, string $clientName, string $tenantId, array $metadata): void
     {
-        try {
-            $this->withTenantDb($tenantId, function () use ($phone, $clientName, $metadata) {
-                $lead = $this->getOrCreateLead($phone, $clientName);
+        if (! $this->isVehicleMode()) {
+            try {
+                $this->withTenantDb($tenantId, function () use ($phone, $clientName, $metadata) {
+                    $lead = $this->getOrCreateLead($phone, $clientName);
 
-                $activityDescription = $this->flowService->formatCollectedDataForActivity($metadata);
+                    $activityDescription = $this->flowService->formatCollectedDataForActivity($metadata);
 
-                CrmActivity::query()->create([
-                    'lead_id' => $lead->id,
-                    'type' => CrmActivityTypeEnum::META_AUTO,
-                    'description' => "📋 Bot WhatsApp — Flujo completado\n\n" . $activityDescription,
-                    'completed_at' => now(),
+                    CrmActivity::query()->create([
+                        'lead_id' => $lead->id,
+                        'type' => CrmActivityTypeEnum::META_AUTO,
+                        'description' => "📋 Bot WhatsApp — Flujo completado\n\n" . $activityDescription,
+                        'completed_at' => now(),
+                    ]);
+                });
+            } catch (\Exception $e) {
+                Log::warning('WhatsAppBot: Could not create activity for completed flow', [
+                    'tenant' => $tenantId,
+                    'error' => $e->getMessage(),
                 ]);
-            });
-        } catch (\Exception $e) {
-            Log::warning('WhatsAppBot: Could not create activity for completed flow', [
-                'tenant' => $tenantId,
-                'error' => $e->getMessage(),
+            }
+        } else {
+            Log::info('WhatsAppBot: Vehicle flow completed', [
+                'phone' => $phone,
+                'client' => $clientName,
+                'collected' => $metadata['collected_data'] ?? [],
             ]);
         }
 
@@ -491,7 +505,7 @@ class WhatsAppBotService
         $response = Http::withHeaders([
             'Authorization' => 'Bearer ' . $token,
             'Content-Type' => 'application/json',
-        ])->post("https://graph.facebook.com/v21.0/{$phoneNumberId}/messages", [
+        ])->post("https://graph.facebook.com/v25.0/{$phoneNumberId}/messages", [
             'messaging_product' => 'whatsapp',
             'to' => $to,
             'type' => 'template',
@@ -1189,7 +1203,7 @@ PROMPT;
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer ' . $token,
                 'Content-Type' => 'application/json',
-            ])->post("https://graph.facebook.com/v21.0/{$phoneNumberId}/messages", [
+            ])->post("https://graph.facebook.com/v25.0/{$phoneNumberId}/messages", [
                 'messaging_product' => 'whatsapp',
                 'to' => $to,
                 'type' => 'text',
@@ -1234,7 +1248,7 @@ PROMPT;
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer ' . $token,
                 'Content-Type' => 'application/json',
-            ])->post("https://graph.facebook.com/v21.0/{$phoneNumberId}/messages", $payload);
+            ])->post("https://graph.facebook.com/v25.0/{$phoneNumberId}/messages", $payload);
 
             if (! $response->successful()) {
                 Log::warning('WhatsAppBot: Failed to send image', [
@@ -1261,7 +1275,7 @@ PROMPT;
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer ' . $token,
                 'Content-Type' => 'application/json',
-            ])->post("https://graph.facebook.com/v21.0/{$phoneNumberId}/messages", [
+            ])->post("https://graph.facebook.com/v25.0/{$phoneNumberId}/messages", [
                 'messaging_product' => 'whatsapp',
                 'to' => $to,
                 'type' => 'interactive',
@@ -1307,7 +1321,7 @@ PROMPT;
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer ' . $token,
                 'Content-Type' => 'application/json',
-            ])->post("https://graph.facebook.com/v21.0/{$phoneNumberId}/messages", $payload);
+            ])->post("https://graph.facebook.com/v25.0/{$phoneNumberId}/messages", $payload);
 
             if (! $response->successful()) {
                 Log::warning('WhatsAppBot: Failed to send document', [

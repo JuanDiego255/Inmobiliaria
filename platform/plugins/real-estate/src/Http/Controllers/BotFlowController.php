@@ -15,7 +15,13 @@ class BotFlowController extends BaseController
     public function index(Request $request)
     {
         $tenants = DB::connection('mysql')->table('tenants')->orderBy('name')->get();
-        $tenantId = $request->query('tenant', $tenants->first()?->id);
+        $isVehicleMode = (bool) setting('crm_whatsapp_bot_vehicle_mode');
+
+        if ($isVehicleMode) {
+            $tenantId = '_vehicle_';
+        } else {
+            $tenantId = $request->query('tenant', $tenants->first()?->id);
+        }
 
         $flow = $tenantId ? WhatsAppBotFlow::where('tenant_id', $tenantId)->first() : null;
         $mailConfig = $tenantId ? TenantMailConfig::where('tenant_id', $tenantId)->first() : null;

@@ -329,6 +329,12 @@ Route::group(['namespace' => 'Botble\RealEstate\Http\Controllers', 'middleware' 
                 'permission' => 'crm-lead.create',
             ]);
 
+            Route::get('export-leads', [
+                'as' => 'export-leads',
+                'uses' => 'ExportCrmLeadController@download',
+                'permission' => 'crm-lead.index',
+            ]);
+
             Route::group(['prefix' => 'activities', 'as' => 'activities.'], function () {
                 Route::post('/', [
                     'as' => 'store',

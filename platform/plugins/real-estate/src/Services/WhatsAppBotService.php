@@ -23,6 +23,8 @@ class WhatsAppBotService
 
     protected TenantMailService $mailService;
 
+    protected VehicleSearchService $vehicleSearchService;
+
     protected ?string $currentTenantId = null;
 
     protected ?string $currentTenantName = null;
@@ -31,11 +33,17 @@ class WhatsAppBotService
 
     protected bool $interactiveSent = false;
 
-    public function __construct(PropertySearchService $searchService, BotFlowService $flowService, TenantMailService $mailService)
+    public function __construct(PropertySearchService $searchService, BotFlowService $flowService, TenantMailService $mailService, VehicleSearchService $vehicleSearchService)
     {
         $this->searchService = $searchService;
         $this->flowService = $flowService;
         $this->mailService = $mailService;
+        $this->vehicleSearchService = $vehicleSearchService;
+    }
+
+    protected function isVehicleMode(): bool
+    {
+        return (bool) setting('crm_whatsapp_bot_vehicle_mode');
     }
 
     public function processIncomingMessage(string $from, string $name, string $message, array $metadata = []): void
@@ -174,6 +182,19 @@ class WhatsAppBotService
             $tenant = $tenants->first();
             $this->createLeadInTenant($tenant->id, $from, $name);
 
+            if ($this->isVehicleMode()) {
+                $dealerName = setting('crm_whatsapp_bot_vehicle_dealer_name') ?: $tenant->name;
+                return [
+                    'reply' => "¡Hola! 👋 Bienvenido a *{$dealerName}*.\n\n"
+                        . "¿Qué vehículo estás buscando? Podés decirme:\n"
+                        . "- Marca y modelo (ej: Hyundai Tucson)\n"
+                        . "- Año (ej: 2020 en adelante)\n"
+                        . "- Presupuesto\n"
+                        . "- Transmisión (automática o manual)",
+                    'tenant_id' => $tenant->id,
+                ];
+            }
+
             return [
                 'reply' => "¡Hola! 👋 Te conecté con *{$tenant->name}*.\n\n"
                     . "¿Qué tipo de propiedad estás buscando? Podés decirme:\n"
@@ -190,6 +211,20 @@ class WhatsAppBotService
         if ($matched) {
             $this->createLeadInTenant($matched->id, $from, $name);
 
+            if ($this->isVehicleMode()) {
+                $dealerName = setting('crm_whatsapp_bot_vehicle_dealer_name') ?: $matched->name;
+                return [
+                    'reply' => "Perfecto, te conecté con *{$dealerName}* 🚗\n\n"
+                        . "¿Qué vehículo estás buscando? Podés decirme:\n"
+                        . "- Marca y modelo (ej: Toyota Corolla)\n"
+                        . "- Año\n"
+                        . "- Presupuesto\n"
+                        . "- Transmisión\n\n"
+                        . "_Escribí *cambiar* para elegir otra empresa._",
+                    'tenant_id' => $matched->id,
+                ];
+            }
+
             return [
                 'reply' => "Perfecto, te conecté con *{$matched->name}* 🏠\n\n"
                     . "¿Qué tipo de propiedad estás buscando? Podés decirme:\n"
@@ -203,7 +238,9 @@ class WhatsAppBotService
         }
 
         $greeting = $isReset ? "Sin problema.\n\n" : "¡Hola! 👋 Un gusto atenderte.\n\n";
-        $list = "¿Con cuál empresa inmobiliaria deseas consultar?\n\n";
+        $list = $this->isVehicleMode()
+            ? "¿Con cuál concesionario deseas consultar?\n\n"
+            : "¿Con cuál empresa inmobiliaria deseas consultar?\n\n";
 
         foreach ($tenants->values() as $i => $tenant) {
             $num = $i + 1;
@@ -708,8 +745,22 @@ class WhatsAppBotService
             'tool' => $tool,
             'params' => $params,
             'tenant' => $this->currentTenantId,
-            'db' => $this->resolveTenantDbName($this->currentTenantId),
+            'mode' => $this->isVehicleMode() ? 'vehicles' : 'realtor',
         ]);
+
+        if ($this->isVehicleMode() && in_array($tool, ['search_vehicles', 'get_vehicle_detail'])) {
+            $result = match ($tool) {
+                'search_vehicles' => $this->toolSearchVehicles($params),
+                'get_vehicle_detail' => $this->toolGetVehicleDetail($params),
+                default => 'Herramienta no reconocida.',
+            };
+
+            Log::info('WhatsAppBot: Vehicle tool result', [
+                'result_preview' => mb_substr($result, 0, 500),
+            ]);
+
+            return $result;
+        }
 
         return $this->withTenantDb($this->currentTenantId, function () use ($tool, $params) {
             $result = match ($tool) {
@@ -823,8 +874,95 @@ class WhatsAppBotService
         ]);
     }
 
+    protected function toolSearchVehicles(array $params): string
+    {
+        $vehicles = $this->vehicleSearchService->searchVehicles($params);
+
+        $this->lastSearchResults = [];
+        foreach ($vehicles as $vehicle) {
+            if (! empty($vehicle['main_image'])) {
+                $this->lastSearchResults[] = [
+                    'name' => $vehicle['title'] ?? $vehicle['name'] ?? '',
+                    'image_url' => $vehicle['main_image'],
+                ];
+            }
+        }
+
+        if (empty($vehicles)) {
+            return json_encode([
+                'results' => 0,
+                'message' => 'No se encontraron vehículos con esos criterios.',
+            ]);
+        }
+
+        $results = [];
+        foreach ($vehicles as $v) {
+            $results[] = [
+                'id' => $v['id'],
+                'name' => $v['name'] ?? '',
+                'title' => $v['title'] ?? '',
+                'brand' => $v['brand'] ?? '',
+                'model' => $v['model'] ?? '',
+                'year' => $v['year'] ?? '',
+                'price' => $v['formatted_price'] ?? '',
+                'color' => $v['color'] ?? '',
+                'mileage_km' => $v['mileage_km'] ?? '',
+                'transmission' => $v['transmission'] ?? '',
+                'fuel_type' => $v['fuel_type'] ?? '',
+                'condition' => $v['condition'] ?? '',
+                'location' => $v['location'] ?? '',
+                'doors' => $v['doors'] ?? '',
+                'passengers' => $v['passengers'] ?? '',
+                'has_tour' => $v['has_virtual_tour'] ?? false,
+            ];
+        }
+
+        return json_encode(['results' => count($results), 'vehicles' => $results]);
+    }
+
+    protected function toolGetVehicleDetail(array $params): string
+    {
+        $vehicleId = (int) ($params['vehicle_id'] ?? 0);
+        if (! $vehicleId) {
+            return json_encode(['error' => 'Se requiere vehicle_id.']);
+        }
+
+        $vehicle = $this->vehicleSearchService->getVehicleDetail($vehicleId);
+        if (! $vehicle) {
+            return json_encode(['error' => 'Vehículo no encontrado.']);
+        }
+
+        return json_encode([
+            'id' => $vehicle['id'],
+            'name' => $vehicle['name'] ?? '',
+            'title' => $vehicle['title'] ?? '',
+            'brand' => $vehicle['brand'] ?? '',
+            'model' => $vehicle['model'] ?? '',
+            'year' => $vehicle['year'] ?? '',
+            'price' => $vehicle['formatted_price'] ?? '',
+            'color' => $vehicle['color'] ?? '',
+            'mileage_km' => $vehicle['mileage_km'] ?? '',
+            'transmission' => $vehicle['transmission'] ?? '',
+            'fuel_type' => $vehicle['fuel_type'] ?? '',
+            'condition' => $vehicle['condition'] ?? '',
+            'location' => $vehicle['location'] ?? '',
+            'doors' => $vehicle['doors'] ?? '',
+            'passengers' => $vehicle['passengers'] ?? '',
+            'engine_cc' => $vehicle['engine_cc'] ?? '',
+            'drivetrain' => $vehicle['drivetrain'] ?? '',
+            'description' => $vehicle['description'] ? mb_substr(strip_tags($vehicle['description']), 0, 500) : null,
+            'has_tour' => $vehicle['has_virtual_tour'] ?? false,
+            'tour_url' => $vehicle['tour_url'] ?? null,
+            'images' => array_map(fn ($img) => $img['url'] ?? '', $vehicle['images'] ?? []),
+        ]);
+    }
+
     protected function buildSystemPrompt(): string
     {
+        if ($this->isVehicleMode()) {
+            return $this->buildVehicleSystemPrompt();
+        }
+
         $custom = setting('crm_whatsapp_bot_system_prompt');
         $company = $this->currentTenantName ?: 'la inmobiliaria';
 
@@ -855,8 +993,46 @@ Estrategia de búsqueda (MUY IMPORTANTE):
 PROMPT;
     }
 
+    protected function buildVehicleSystemPrompt(): string
+    {
+        $custom = setting('crm_whatsapp_bot_vehicle_system_prompt');
+        $dealerName = setting('crm_whatsapp_bot_vehicle_dealer_name') ?: 'Autos Grecia';
+
+        if ($custom) {
+            return $custom . "\n\nEstás atendiendo en nombre de: *{$dealerName}*. "
+                . 'Si es la primera interacción, mencioná que pueden escribir "cambiar" para elegir otra empresa.';
+        }
+
+        return <<<PROMPT
+Sos un asesor de ventas de vehículos profesional y amigable de *{$dealerName}*. Tu trabajo es ayudar a clientes a encontrar el vehículo ideal según sus necesidades.
+
+Reglas:
+- Respondé siempre en español, de forma concisa y profesional.
+- Usá la herramienta search_vehicles para buscar vehículos cuando el cliente pregunte por opciones.
+- Usá get_vehicle_detail cuando el cliente pida más información de un vehículo específico.
+- No inventés vehículos. Solo mostrá los que devuelve la herramienta de búsqueda.
+- Formateá las respuestas para WhatsApp: usá *negrita* para marcas, modelos y precios, emojis moderados.
+- Sé breve — máximo 3-4 vehículos por mensaje para no saturar.
+- Si es la primera respuesta, mencioná brevemente que pueden escribir *cambiar* para consultar con otra empresa.
+- Si el cliente quiere agendar una prueba de manejo o hablar con un asesor, indicale que un vendedor de {$dealerName} lo contactará pronto.
+- Si el vehículo tiene tour virtual (has_tour = true), mencionalo como ventaja: "Podés ver este vehículo en 360° desde tu celular".
+
+Estrategia de búsqueda (MUY IMPORTANTE):
+- Cuando el cliente mencione una marca y modelo (ej: "Hyundai Tucson"), usá los campos brand y model separados.
+- Si mencionan el año, usá year o year_min.
+- Empezá con pocos filtros. Si no hay resultados, quitá filtros progresivamente.
+- Usá "keyword" (campo q) para búsquedas de texto libre cuando no estés seguro de los valores exactos.
+- NUNCA repitas una búsqueda exacta que ya devolvió 0 resultados.
+- Llamá search_vehicles una sola vez por intento.
+PROMPT;
+    }
+
     protected function getToolDefinitions(): array
     {
+        if ($this->isVehicleMode()) {
+            return $this->getVehicleToolDefinitions();
+        }
+
         return [
             [
                 'name' => 'search_properties',
@@ -892,6 +1068,10 @@ PROMPT;
 
     protected function getOpenAIToolDefinitions(): array
     {
+        if ($this->isVehicleMode()) {
+            return $this->getOpenAIVehicleToolDefinitions();
+        }
+
         return [
             [
                 'type' => 'function',
@@ -1265,5 +1445,89 @@ PROMPT;
                 'message' => $c->message,
             ])
             ->toArray();
+    }
+
+    protected function getVehicleToolDefinitions(): array
+    {
+        return [
+            [
+                'name' => 'search_vehicles',
+                'description' => 'Buscar vehículos disponibles en el concesionario según criterios del cliente.',
+                'input_schema' => [
+                    'type' => 'object',
+                    'properties' => [
+                        'keyword' => ['type' => 'string', 'description' => 'Texto libre. Busca en marca, modelo, nombre, código y placa.'],
+                        'brand' => ['type' => 'string', 'description' => 'Marca del vehículo (ej: Toyota, Hyundai, Nissan)'],
+                        'model' => ['type' => 'string', 'description' => 'Modelo del vehículo (ej: Tucson, Corolla, Hilux)'],
+                        'year' => ['type' => 'integer', 'description' => 'Año exacto del vehículo'],
+                        'year_min' => ['type' => 'integer', 'description' => 'Año mínimo'],
+                        'year_max' => ['type' => 'integer', 'description' => 'Año máximo'],
+                        'color' => ['type' => 'string', 'description' => 'Color del vehículo'],
+                        'transmission' => ['type' => 'string', 'description' => 'Tipo de transmisión (Automática, Manual)'],
+                        'fuel_type' => ['type' => 'string', 'description' => 'Tipo de combustible (Gasolina, Diésel, Híbrido)'],
+                        'condition' => ['type' => 'string', 'description' => 'Condición (Nuevo, Usado)'],
+                        'price_min' => ['type' => 'number', 'description' => 'Precio mínimo'],
+                        'price_max' => ['type' => 'number', 'description' => 'Precio máximo'],
+                    ],
+                    'required' => [],
+                ],
+            ],
+            [
+                'name' => 'get_vehicle_detail',
+                'description' => 'Obtener detalles completos de un vehículo específico por su ID.',
+                'input_schema' => [
+                    'type' => 'object',
+                    'properties' => [
+                        'vehicle_id' => ['type' => 'integer', 'description' => 'ID del vehículo'],
+                    ],
+                    'required' => ['vehicle_id'],
+                ],
+            ],
+        ];
+    }
+
+    protected function getOpenAIVehicleToolDefinitions(): array
+    {
+        return [
+            [
+                'type' => 'function',
+                'function' => [
+                    'name' => 'search_vehicles',
+                    'description' => 'Buscar vehículos disponibles según criterios del cliente.',
+                    'parameters' => [
+                        'type' => 'object',
+                        'properties' => [
+                            'keyword' => ['type' => 'string', 'description' => 'Texto libre. Busca en marca, modelo, nombre, código y placa.'],
+                            'brand' => ['type' => 'string', 'description' => 'Marca (Toyota, Hyundai, Nissan, etc.)'],
+                            'model' => ['type' => 'string', 'description' => 'Modelo (Tucson, Corolla, Hilux, etc.)'],
+                            'year' => ['type' => 'integer', 'description' => 'Año exacto'],
+                            'year_min' => ['type' => 'integer', 'description' => 'Año mínimo'],
+                            'year_max' => ['type' => 'integer', 'description' => 'Año máximo'],
+                            'color' => ['type' => 'string', 'description' => 'Color'],
+                            'transmission' => ['type' => 'string', 'description' => 'Transmisión (Automática, Manual)'],
+                            'fuel_type' => ['type' => 'string', 'description' => 'Combustible (Gasolina, Diésel, Híbrido)'],
+                            'condition' => ['type' => 'string', 'description' => 'Condición (Nuevo, Usado)'],
+                            'price_min' => ['type' => 'number', 'description' => 'Precio mínimo'],
+                            'price_max' => ['type' => 'number', 'description' => 'Precio máximo'],
+                        ],
+                        'required' => [],
+                    ],
+                ],
+            ],
+            [
+                'type' => 'function',
+                'function' => [
+                    'name' => 'get_vehicle_detail',
+                    'description' => 'Obtener detalles completos de un vehículo por su ID.',
+                    'parameters' => [
+                        'type' => 'object',
+                        'properties' => [
+                            'vehicle_id' => ['type' => 'integer', 'description' => 'ID del vehículo'],
+                        ],
+                        'required' => ['vehicle_id'],
+                    ],
+                ],
+            ],
+        ];
     }
 }

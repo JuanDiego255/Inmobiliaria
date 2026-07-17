@@ -45,6 +45,85 @@
     </div>
     @endif
 
+    {{-- ═══════════ VEHICLE MODE (Central) ═══════════ --}}
+    <section class="cd-card cd-settings-card">
+        <div class="cd-sc-head">
+            <div class="cd-sc-icon" style="background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff">
+                <span class="material-icons">directions_car</span>
+            </div>
+            <div>
+                <h3>Modo Vehículos — Concesionario</h3>
+                <p>Activá este modo para que el bot busque vehículos en vez de propiedades. Ideal para concesionarios.</p>
+            </div>
+        </div>
+
+        <form method="POST" action="{{ route('crm.bot-flow.save-vehicle-settings') }}">
+            @csrf
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group mb-3">
+                        <label class="text-title-field">Activar bot para vehículos</label>
+                        <div>
+                            <label class="cd-toggle-label" style="display:inline-flex;align-items:center;gap:10px;cursor:pointer">
+                                <input type="hidden" name="crm_whatsapp_bot_vehicle_mode" value="0">
+                                <input type="checkbox" name="crm_whatsapp_bot_vehicle_mode" value="1"
+                                    class="cd-toggle-input"
+                                    {{ setting('crm_whatsapp_bot_vehicle_mode') ? 'checked' : '' }}>
+                                <span class="cd-toggle-switch"></span>
+                                <span>{{ setting('crm_whatsapp_bot_vehicle_mode') ? 'Modo vehículos activo' : 'Modo inmobiliario (actual)' }}</span>
+                            </label>
+                        </div>
+                        <small class="text-muted">Si está activo, el bot buscará vehículos vía API externa. Si no, mantiene el flujo inmobiliario.</small>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group mb-3">
+                        <label class="text-title-field" for="vehicle_dealer_name">Nombre del concesionario (Filial)</label>
+                        <input type="text" class="form-control" id="vehicle_dealer_name" name="crm_whatsapp_bot_vehicle_dealer_name"
+                            value="{{ setting('crm_whatsapp_bot_vehicle_dealer_name', 'Autos Grecia') }}"
+                            placeholder="Autos Grecia">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group mb-3">
+                        <label class="text-title-field" for="vehicle_api_url">URL del API de Vehículos</label>
+                        <input type="url" class="form-control" id="vehicle_api_url" name="crm_vehicle_api_url"
+                            value="{{ setting('crm_vehicle_api_url') }}"
+                            placeholder="https://space360cr.com">
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label class="text-title-field" for="vehicle_api_token">Token del API</label>
+                        <input type="password" class="form-control" id="vehicle_api_token" name="crm_vehicle_api_token"
+                            value="{{ setting('crm_vehicle_api_token') }}"
+                            placeholder="Bearer token del API de vehículos">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label class="text-title-field" for="vehicle_system_prompt">System prompt personalizado (opcional)</label>
+                        <textarea class="form-control" id="vehicle_system_prompt" name="crm_whatsapp_bot_vehicle_system_prompt"
+                            rows="3" placeholder="Dejá vacío para usar el prompt por defecto del concesionario">{{ setting('crm_whatsapp_bot_vehicle_system_prompt') }}</textarea>
+                    </div>
+                </div>
+            </div>
+            <div style="display:flex;gap:10px;align-items:center">
+                <button type="submit" class="btn btn-warning" style="display:inline-flex;align-items:center;gap:6px">
+                    <span class="material-icons" style="font-size:18px">save</span> Guardar configuración de vehículos
+                </button>
+                @if(setting('crm_whatsapp_bot_vehicle_mode'))
+                    <span class="badge" style="background:#f59e0b;color:#fff;padding:6px 12px;border-radius:20px;font-size:12px">
+                        <span class="material-icons" style="font-size:14px;vertical-align:middle">directions_car</span>
+                        Filial: {{ setting('crm_whatsapp_bot_vehicle_dealer_name', 'Autos Grecia') }}
+                    </span>
+                @endif
+            </div>
+        </form>
+    </section>
+
     {{-- ═══════════ TENANT SELECTOR ═══════════ --}}
     <section class="cd-card cd-settings-card">
         <div class="cd-sc-head">

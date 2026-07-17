@@ -196,6 +196,26 @@ class BotFlowController extends BaseController
             ->with('success_msg', '¡Funcionalidades premium actualizadas!');
     }
 
+    public function saveVehicleSettings(Request $request)
+    {
+        $settings = [
+            'crm_whatsapp_bot_vehicle_mode' => $request->input('crm_whatsapp_bot_vehicle_mode', '0'),
+            'crm_whatsapp_bot_vehicle_dealer_name' => $request->input('crm_whatsapp_bot_vehicle_dealer_name', 'Autos Grecia'),
+            'crm_vehicle_api_url' => $request->input('crm_vehicle_api_url', ''),
+            'crm_vehicle_api_token' => $request->input('crm_vehicle_api_token', ''),
+            'crm_whatsapp_bot_vehicle_system_prompt' => $request->input('crm_whatsapp_bot_vehicle_system_prompt', ''),
+        ];
+
+        foreach ($settings as $key => $value) {
+            \Botble\Setting\Facades\Setting::set($key, $value);
+        }
+        \Botble\Setting\Facades\Setting::save();
+
+        return redirect()
+            ->route('crm.bot-flow.index', ['tenant' => $request->query('tenant', '')])
+            ->with('success_msg', '¡Configuración de vehículos guardada! Modo: ' . ($settings['crm_whatsapp_bot_vehicle_mode'] ? 'Vehículos (Concesionario)' : 'Inmobiliario'));
+    }
+
     protected function validateFlowConfig(array $config): bool
     {
         if (! isset($config['options']) || ! is_array($config['options'])) {

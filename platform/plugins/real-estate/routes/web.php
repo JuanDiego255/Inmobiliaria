@@ -323,28 +323,10 @@ Route::group(['namespace' => 'Botble\RealEstate\Http\Controllers', 'middleware' 
                 ])->where('propertyId', '[0-9]+');
             });
 
-            Route::get('export-leads', [
-                'as' => 'export-leads',
-                'uses' => 'ExportCrmLeadController@download',
-                'permission' => 'crm-lead.index',
-            ]);
-
             Route::post('import-consults', [
                 'as' => 'import-consults',
                 'uses' => 'CrmLeadController@importConsults',
                 'permission' => 'crm-lead.create',
-            ]);
-
-            Route::post('recalculate-scores', [
-                'as' => 'recalculate-scores',
-                'uses' => 'CrmLeadController@recalculateScores',
-                'permission' => 'crm-lead.edit',
-            ]);
-
-            Route::get('properties/search', [
-                'as' => 'properties.search',
-                'uses' => 'CrmPropertySearchController@search',
-                'permission' => 'crm-lead.index',
             ]);
 
             Route::group(['prefix' => 'activities', 'as' => 'activities.'], function () {
@@ -368,13 +350,13 @@ Route::group(['namespace' => 'Botble\RealEstate\Http\Controllers', 'middleware' 
             });
 
             Route::group(['prefix' => 'tasks', 'as' => 'tasks.'], function () {
-                Route::match(['GET', 'POST'], '/', [
+                Route::get('/', [
                     'as' => 'index',
                     'uses' => 'CrmTaskController@index',
                     'permission' => 'crm-task.index',
                 ]);
 
-                Route::post('store', [
+                Route::post('/', [
                     'as' => 'store',
                     'uses' => 'CrmTaskController@store',
                     'permission' => 'crm-task.create',
@@ -466,6 +448,12 @@ Route::group(['namespace' => 'Botble\RealEstate\Http\Controllers', 'middleware' 
                         'uses' => 'BotFlowController@saveFeatures',
                         'permission' => 'crm-meta.settings',
                     ]);
+
+                    Route::post('save-vehicle-settings', [
+                        'as' => 'save-vehicle-settings',
+                        'uses' => 'BotFlowController@saveVehicleSettings',
+                        'permission' => 'crm-meta.settings',
+                    ]);
                 });
 
             });
@@ -485,19 +473,7 @@ Route::group(['namespace' => 'Botble\RealEstate\Http\Controllers', 'middleware' 
             });
 
             Route::group(['prefix' => 'reminders', 'as' => 'reminders.'], function () {
-                Route::match(['GET', 'POST'], '/', [
-                    'as' => 'index',
-                    'uses' => 'CrmReminderController@index',
-                    'permission' => 'crm-reminder.index',
-                ]);
-
-                Route::delete('{id}', [
-                    'as' => 'destroy',
-                    'uses' => 'CrmReminderController@destroy',
-                    'permission' => 'crm-reminder.index',
-                ])->wherePrimaryKey();
-
-                Route::post('store', [
+                Route::post('/', [
                     'as' => 'store',
                     'uses' => 'CrmReminderController@store',
                     'permission' => 'crm-reminder.create',
@@ -562,12 +538,6 @@ Route::group(['namespace' => 'Botble\RealEstate\Http\Controllers', 'middleware' 
                 'uses' => 'BoardController@bulkAddProperties',
                 'permission' => 'board.edit',
             ]);
-
-            Route::get('{id}/rating', [
-                'as' => 'rating',
-                'uses' => 'BoardController@rating',
-                'permission' => 'board.index',
-            ])->wherePrimaryKey();
         });
     });
 

@@ -497,7 +497,7 @@ class WhatsAppBotService
             'type' => 'template',
             'template' => [
                 'name' => $templateName,
-                'language' => ['code' => 'es'],
+                'language' => ['code' => 'es_CR'],
                 'components' => [
                     [
                         'type' => 'body',

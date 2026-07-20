@@ -8,6 +8,7 @@
         tasksDestroy: '/admin/real-estate/crm/tasks/{id}',
         tasksUpdateStatus: '/admin/real-estate/crm/tasks/{id}/status',
         myTasks: '/admin/real-estate/crm/tasks/my-tasks',
+        remindersIndex: '/admin/real-estate/crm/reminders',
         remindersStore: '/admin/real-estate/crm/reminders/store',
         remindersPending: '/admin/real-estate/crm/reminders/pending',
         remindersDismiss: '/admin/real-estate/crm/reminders/{id}/dismiss',

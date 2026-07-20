@@ -356,13 +356,13 @@ Route::group(['namespace' => 'Botble\RealEstate\Http\Controllers', 'middleware' 
             });
 
             Route::group(['prefix' => 'tasks', 'as' => 'tasks.'], function () {
-                Route::get('/', [
+                Route::match(['get', 'post'], '/', [
                     'as' => 'index',
                     'uses' => 'CrmTaskController@index',
                     'permission' => 'crm-task.index',
                 ]);
 
-                Route::post('/', [
+                Route::post('store', [
                     'as' => 'store',
                     'uses' => 'CrmTaskController@store',
                     'permission' => 'crm-task.create',
@@ -479,7 +479,13 @@ Route::group(['namespace' => 'Botble\RealEstate\Http\Controllers', 'middleware' 
             });
 
             Route::group(['prefix' => 'reminders', 'as' => 'reminders.'], function () {
-                Route::post('/', [
+                Route::match(['get', 'post'], '/', [
+                    'as' => 'index',
+                    'uses' => 'CrmReminderController@index',
+                    'permission' => 'crm-reminder.index',
+                ]);
+
+                Route::post('store', [
                     'as' => 'store',
                     'uses' => 'CrmReminderController@store',
                     'permission' => 'crm-reminder.create',
@@ -502,6 +508,12 @@ Route::group(['namespace' => 'Botble\RealEstate\Http\Controllers', 'middleware' 
                     'uses' => 'CrmReminderController@dismissAll',
                     'permission' => 'crm-reminder.index',
                 ]);
+
+                Route::delete('{id}', [
+                    'as' => 'destroy',
+                    'uses' => 'CrmReminderController@destroy',
+                    'permission' => 'crm-reminder.destroy',
+                ])->wherePrimaryKey();
             });
         });
 
@@ -544,6 +556,12 @@ Route::group(['namespace' => 'Botble\RealEstate\Http\Controllers', 'middleware' 
                 'uses' => 'BoardController@bulkAddProperties',
                 'permission' => 'board.edit',
             ]);
+
+            Route::get('{id}/rating', [
+                'as' => 'rating',
+                'uses' => 'BoardController@rating',
+                'permission' => 'board.index',
+            ])->wherePrimaryKey();
         });
     });
 

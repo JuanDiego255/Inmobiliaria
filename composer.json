@@ -95,7 +95,8 @@
             "merge-scripts": false
         },
         "google/apiclient-services": [
-            "Analytics"
+            "Analytics",
+            "Calendar"
         ],
         "aws/aws-sdk-php": [
             "S3",

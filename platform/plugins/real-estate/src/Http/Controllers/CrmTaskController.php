@@ -10,6 +10,7 @@ use Botble\Base\Http\Responses\BaseHttpResponse;
 use Botble\RealEstate\Enums\CrmTaskStatusEnum;
 use Botble\RealEstate\Http\Requests\CrmTaskRequest;
 use Botble\RealEstate\Models\CrmTask;
+use Botble\RealEstate\Services\GoogleCalendarService;
 use Botble\RealEstate\Tables\CrmTaskTable;
 use Carbon\Carbon;
 use Exception;
@@ -33,6 +34,8 @@ class CrmTaskController extends BaseController
     public function store(CrmTaskRequest $request, BaseHttpResponse $response)
     {
         $task = CrmTask::query()->create($request->validated());
+
+        app(GoogleCalendarService::class)->createEventFromTask($task->load(['lead']));
 
         return $response
             ->setMessage('Tarea creada correctamente.')

@@ -8,6 +8,7 @@ use Botble\Base\Http\Controllers\BaseController;
 use Botble\Base\Http\Responses\BaseHttpResponse;
 use Botble\RealEstate\Http\Requests\CrmReminderRequest;
 use Botble\RealEstate\Models\CrmReminder;
+use Botble\RealEstate\Services\GoogleCalendarService;
 use Botble\RealEstate\Tables\CrmReminderTable;
 use Carbon\Carbon;
 
@@ -28,6 +29,8 @@ class CrmReminderController extends BaseController
             $request->validated(),
             ['user_id' => auth()->id()]
         ));
+
+        app(GoogleCalendarService::class)->createEventFromReminder($reminder->load(['lead']));
 
         return $response
             ->setMessage('Recordatorio creado correctamente.')

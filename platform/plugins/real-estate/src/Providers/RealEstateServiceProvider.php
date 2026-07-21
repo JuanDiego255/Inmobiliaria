@@ -393,6 +393,15 @@ class RealEstateServiceProvider extends ServiceProvider
                     'url' => route('crm.reminders.pending'),
                     'permissions' => ['crm-lead.index'],
                 ])
+                ->registerItem([
+                    'id' => 'cms-plugins-crm-settings',
+                    'priority' => 11,
+                    'parent_id' => 'cms-plugins-crm',
+                    'name' => 'Configuración',
+                    'icon' => 'fas fa-cog',
+                    'url' => route('crm.settings.index'),
+                    'permissions' => ['crm-lead.index'],
+                ])
                 ->when(
                     in_array(request()->getHost(), config('tenancy.central_domains', [])),
                     function ($menu) {

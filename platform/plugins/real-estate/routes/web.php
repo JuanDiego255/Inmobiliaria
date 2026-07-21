@@ -478,6 +478,32 @@ Route::group(['namespace' => 'Botble\RealEstate\Http\Controllers', 'middleware' 
                 ]);
             });
 
+            Route::group(['prefix' => 'settings', 'as' => 'settings.'], function () {
+                Route::get('/', [
+                    'as' => 'index',
+                    'uses' => 'CrmSettingsController@index',
+                    'permission' => 'crm-lead.index',
+                ]);
+
+                Route::post('/', [
+                    'as' => 'update',
+                    'uses' => 'CrmSettingsController@update',
+                    'permission' => 'crm-lead.index',
+                ]);
+
+                Route::get('google-calendar/callback', [
+                    'as' => 'gcal-callback',
+                    'uses' => 'CrmSettingsController@googleCalendarCallback',
+                    'permission' => 'crm-lead.index',
+                ]);
+
+                Route::get('google-calendar/disconnect', [
+                    'as' => 'gcal-disconnect',
+                    'uses' => 'CrmSettingsController@googleCalendarDisconnect',
+                    'permission' => 'crm-lead.index',
+                ]);
+            });
+
             Route::group(['prefix' => 'reminders', 'as' => 'reminders.'], function () {
                 Route::match(['get', 'post'], '/', [
                     'as' => 'index',

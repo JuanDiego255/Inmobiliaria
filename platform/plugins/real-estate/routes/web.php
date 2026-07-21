@@ -478,6 +478,38 @@ Route::group(['namespace' => 'Botble\RealEstate\Http\Controllers', 'middleware' 
                 ]);
             });
 
+            Route::group(['prefix' => 'calendar', 'as' => 'calendar.'], function () {
+                Route::get('/', [
+                    'as' => 'index',
+                    'uses' => 'CrmCalendarController@index',
+                    'permission' => 'crm-lead.index',
+                ]);
+
+                Route::get('events', [
+                    'as' => 'events',
+                    'uses' => 'CrmCalendarController@events',
+                    'permission' => 'crm-lead.index',
+                ]);
+
+                Route::put('event', [
+                    'as' => 'update-event',
+                    'uses' => 'CrmCalendarController@updateEvent',
+                    'permission' => 'crm-lead.index',
+                ]);
+
+                Route::post('event', [
+                    'as' => 'store-event',
+                    'uses' => 'CrmCalendarController@storeEvent',
+                    'permission' => 'crm-lead.index',
+                ]);
+
+                Route::delete('event/{id}', [
+                    'as' => 'delete-event',
+                    'uses' => 'CrmCalendarController@deleteEvent',
+                    'permission' => 'crm-lead.index',
+                ]);
+            });
+
             Route::group(['prefix' => 'settings', 'as' => 'settings.'], function () {
                 Route::get('/', [
                     'as' => 'index',

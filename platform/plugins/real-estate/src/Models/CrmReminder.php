@@ -17,6 +17,7 @@ class CrmReminder extends BaseModel
         'lead_id',
         'user_id',
         'is_dismissed',
+        'google_event_id',
     ];
 
     protected $casts = [

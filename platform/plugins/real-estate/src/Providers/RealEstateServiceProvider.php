@@ -394,8 +394,17 @@ class RealEstateServiceProvider extends ServiceProvider
                     'permissions' => ['crm-lead.index'],
                 ])
                 ->registerItem([
+                    'id' => 'cms-plugins-crm-calendar',
+                    'priority' => 5,
+                    'parent_id' => 'cms-plugins-crm',
+                    'name' => 'Calendario',
+                    'icon' => 'fas fa-calendar-alt',
+                    'url' => route('crm.calendar.index'),
+                    'permissions' => ['crm-lead.index'],
+                ])
+                ->registerItem([
                     'id' => 'cms-plugins-crm-settings',
-                    'priority' => 11,
+                    'priority' => 12,
                     'parent_id' => 'cms-plugins-crm',
                     'name' => 'Configuración',
                     'icon' => 'fas fa-cog',
@@ -407,7 +416,7 @@ class RealEstateServiceProvider extends ServiceProvider
                     function ($menu) {
                         $menu->registerItem([
                             'id' => 'cms-plugins-crm-meta',
-                            'priority' => 5,
+                            'priority' => 20,
                             'parent_id' => 'cms-plugins-crm',
                             'name' => 'Meta Integración',
                             'url' => route('crm.meta-settings'),
@@ -415,7 +424,7 @@ class RealEstateServiceProvider extends ServiceProvider
                         ])
                         ->registerItem([
                             'id' => 'cms-plugins-crm-bot-flow',
-                            'priority' => 6,
+                            'priority' => 21,
                             'parent_id' => 'cms-plugins-crm',
                             'name' => 'Entrenamiento Bot',
                             'url' => route('crm.bot-flow.index'),
@@ -423,7 +432,7 @@ class RealEstateServiceProvider extends ServiceProvider
                         ])
                         ->registerItem([
                             'id' => 'cms-plugins-crm-bot-dashboard',
-                            'priority' => 7,
+                            'priority' => 22,
                             'parent_id' => 'cms-plugins-crm',
                             'name' => 'Dashboard Bot',
                             'icon' => 'fas fa-chart-line',
@@ -432,7 +441,7 @@ class RealEstateServiceProvider extends ServiceProvider
                         ])
                         ->registerItem([
                             'id' => 'cms-plugins-crm-webhook-logs',
-                            'priority' => 8,
+                            'priority' => 23,
                             'parent_id' => 'cms-plugins-crm',
                             'name' => 'Webhook Logs',
                             'icon' => 'fas fa-list-alt',
@@ -441,7 +450,7 @@ class RealEstateServiceProvider extends ServiceProvider
                         ])
                         ->registerItem([
                             'id' => 'cms-plugins-crm-help',
-                            'priority' => 9,
+                            'priority' => 24,
                             'parent_id' => 'cms-plugins-crm',
                             'name' => 'Ayuda API',
                             'url' => route('crm.meta-help'),

@@ -1,0 +1,188 @@
+/* ── Calendar Filters ── */
+.cal-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+.cal-filter-chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: .82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .2s;
+    border: 2px solid #e0e0e0;
+    background: #f5f5f5;
+    color: #9e9e9e;
+    user-select: none;
+}
+.cal-filter-chip.cal-filter-active {
+    border-color: var(--cd-accent, #1565c0);
+    background: rgba(21, 101, 192, .06);
+    color: var(--cd-ink-900, #1a1a2e);
+}
+.cal-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+/* ── GCal badge ── */
+.cal-gcal-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: .8rem;
+    font-weight: 600;
+    text-decoration: none;
+}
+.cal-gcal-on {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+.cal-gcal-off {
+    background: #fce4ec;
+    color: #c62828;
+}
+.cal-gcal-off:hover {
+    background: #ffcdd2;
+    text-decoration: none;
+    color: #b71c1c;
+}
+
+/* ── Legend ── */
+.cal-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    padding: 12px 0;
+    margin-top: 8px;
+}
+.cal-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: .8rem;
+    color: var(--cd-ink-500, #666);
+}
+
+/* ── FullCalendar overrides ── */
+#crmCalendar {
+    font-family: inherit;
+}
+#crmCalendar .fc {
+    font-family: inherit;
+}
+#crmCalendar .fc-toolbar-title {
+    font-size: 1.15rem !important;
+    font-weight: 700;
+    text-transform: capitalize;
+}
+#crmCalendar .fc-button {
+    font-size: .82rem !important;
+    padding: 6px 12px !important;
+    border-radius: 8px !important;
+    text-transform: capitalize;
+}
+#crmCalendar .fc-button-primary {
+    background: var(--cd-accent, #1565c0) !important;
+    border-color: var(--cd-accent, #1565c0) !important;
+}
+#crmCalendar .fc-button-primary:not(.fc-button-active):not(:disabled):hover {
+    background: #0d47a1 !important;
+    border-color: #0d47a1 !important;
+}
+#crmCalendar .fc-button-primary.fc-button-active {
+    background: #0d47a1 !important;
+    border-color: #0d47a1 !important;
+}
+#crmCalendar .fc-daygrid-event {
+    border-radius: 6px !important;
+    padding: 2px 6px !important;
+    font-size: .78rem !important;
+    border: none !important;
+    cursor: pointer;
+}
+#crmCalendar .fc-timegrid-event {
+    border-radius: 6px !important;
+    border: none !important;
+    font-size: .78rem !important;
+}
+#crmCalendar .fc-event-title {
+    font-weight: 600;
+}
+#crmCalendar .fc-daygrid-day-number {
+    font-size: .85rem;
+    font-weight: 600;
+    padding: 6px 10px;
+}
+#crmCalendar .fc-col-header-cell-cushion {
+    font-size: .82rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 8px 4px;
+}
+#crmCalendar .fc-daygrid-day.fc-day-today {
+    background: rgba(21, 101, 192, .04) !important;
+}
+#crmCalendar .fc-highlight {
+    background: rgba(21, 101, 192, .08) !important;
+}
+#crmCalendar .fc-list-event-dot {
+    border-radius: 50%;
+}
+
+/* ── Modal tweaks ── */
+#calEventDetailModal .modal-content,
+#calNewEventModal .modal-content {
+    border-radius: 14px;
+    border: none;
+    box-shadow: 0 12px 40px rgba(0,0,0,.15);
+}
+#calEventDetailModal .modal-header,
+#calNewEventModal .modal-header {
+    border-bottom: 1px solid rgba(0,0,0,.06);
+    padding: 16px 20px;
+}
+#calEventDetailModal .modal-body,
+#calNewEventModal .modal-body {
+    padding: 20px;
+}
+#calEventDetailModal .modal-footer,
+#calNewEventModal .modal-footer {
+    border-top: 1px solid rgba(0,0,0,.06);
+    padding: 12px 20px;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+    #crmCalendar .fc-toolbar {
+        flex-direction: column;
+        gap: 8px;
+    }
+    #crmCalendar .fc-toolbar-chunk {
+        display: flex;
+        justify-content: center;
+    }
+    .cal-filters {
+        gap: 6px;
+    }
+    .cal-filter-chip {
+        font-size: .75rem;
+        padding: 4px 10px;
+    }
+}
+
+/* spin animation for loading buttons */
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}

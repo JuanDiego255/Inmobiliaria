@@ -23,6 +23,7 @@ class CrmTask extends BaseModel
         'due_date',
         'status',
         'completed_at',
+        'google_event_id',
     ];
 
     protected $casts = [

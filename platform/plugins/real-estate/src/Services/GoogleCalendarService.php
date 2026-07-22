@@ -43,7 +43,7 @@ class GoogleCalendarService
 
     public function getRedirectUri(): string
     {
-        return url('/') . '/' . \Botble\Base\Facades\BaseHelper::getAdminPrefix() . '/real-estate/crm/settings/google-calendar/callback';
+        return url('/') . '/auth/gcal';
     }
 
     public function getAuthUrl(): string

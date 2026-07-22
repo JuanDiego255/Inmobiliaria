@@ -23,6 +23,12 @@ Route::group(['namespace' => 'Botble\RealEstate\Http\Controllers', 'middleware' 
         Route::post('meta', 'MetaWebhookController@handle')->name('meta.webhook.handle');
     });
 
+    Route::get('auth/gcal', [
+        'as' => 'crm.gcal.callback.public',
+        'uses' => 'CrmSettingsController@googleCalendarCallback',
+        'middleware' => 'auth',
+    ]);
+
     Route::group([
         'prefix' => BaseHelper::getAdminPrefix() . '/real-estate',
         'middleware' => 'auth',

@@ -19,7 +19,12 @@
             isGcalConnected: calEl.getAttribute('data-gcal') === '1',
         };
 
-        if (!cfg.eventsUrl) return;
+        console.log('[CRM Calendar] Config loaded:', JSON.stringify(cfg));
+
+        if (!cfg.eventsUrl) {
+            console.error('[CRM Calendar] eventsUrl is empty - data attributes missing from #crmCalendar');
+            return;
+        }
 
         detailModal = new bootstrap.Modal(document.getElementById('calEventDetailModal'));
         newEventModal = new bootstrap.Modal(document.getElementById('calNewEventModal'));

@@ -28,7 +28,6 @@ class CrmCalendarController extends BaseController
         ]);
         Assets::addScriptsDirectly([
             'vendor/core/plugins/real-estate/js/crm-modals.js',
-            'vendor/core/plugins/real-estate/js/crm-tasks.js',
             'vendor/core/plugins/real-estate/js/crm-calendar.js',
         ]);
 

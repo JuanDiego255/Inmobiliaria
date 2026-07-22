@@ -2,15 +2,13 @@
 
 namespace Botble\RealEstate\Services;
 
-use Google\Client as GoogleClient;
-use Google\Service\Calendar as GoogleCalendar;
-use Google\Service\Calendar\Event as GoogleEvent;
-use Google\Service\Calendar\EventDateTime;
 use Illuminate\Support\Facades\Log;
 
 class GoogleCalendarService
 {
-    protected ?GoogleClient $client = null;
+    protected const CALENDAR_EVENTS_SCOPE = 'https://www.googleapis.com/auth/calendar.events';
+
+    protected $client = null;
 
     public function isConfigured(): bool
     {
@@ -19,17 +17,17 @@ class GoogleCalendarService
             && ! empty(setting('crm_gcal_refresh_token'));
     }
 
-    public function getClient(): GoogleClient
+    public function getClient(): \Google\Client
     {
         if ($this->client) {
             return $this->client;
         }
 
-        $this->client = new GoogleClient();
+        $this->client = new \Google\Client();
         $this->client->setClientId(setting('crm_gcal_client_id'));
         $this->client->setClientSecret(setting('crm_gcal_client_secret'));
         $this->client->setRedirectUri($this->getRedirectUri());
-        $this->client->addScope(GoogleCalendar::CALENDAR_EVENTS);
+        $this->client->addScope(self::CALENDAR_EVENTS_SCOPE);
         $this->client->setAccessType('offline');
         $this->client->setPrompt('consent');
 
@@ -68,8 +66,11 @@ class GoogleCalendarService
             }
 
             return true;
-        } catch (\Exception $e) {
-            Log::error('Google Calendar callback failed: ' . $e->getMessage());
+        } catch (\Throwable $e) {
+            Log::error('Google Calendar callback failed: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
             return false;
         }
     }
@@ -93,24 +94,24 @@ class GoogleCalendarService
         }
 
         try {
-            $service = new GoogleCalendar($this->getClient());
+            $service = new \Google\Service\Calendar($this->getClient());
 
-            $event = new GoogleEvent();
+            $event = new \Google\Service\Calendar\Event();
             $event->setSummary($task->title);
             $event->setDescription($this->buildTaskDescription($task));
 
             if ($task->due_date) {
                 $dueDate = \Carbon\Carbon::parse($task->due_date);
-                $start = new EventDateTime();
+                $start = new \Google\Service\Calendar\EventDateTime();
                 $start->setDate($dueDate->format('Y-m-d'));
-                $end = new EventDateTime();
+                $end = new \Google\Service\Calendar\EventDateTime();
                 $end->setDate($dueDate->format('Y-m-d'));
                 $event->setStart($start);
                 $event->setEnd($end);
             } else {
-                $start = new EventDateTime();
+                $start = new \Google\Service\Calendar\EventDateTime();
                 $start->setDate(now()->format('Y-m-d'));
-                $end = new EventDateTime();
+                $end = new \Google\Service\Calendar\EventDateTime();
                 $end->setDate(now()->format('Y-m-d'));
                 $event->setStart($start);
                 $event->setEnd($end);
@@ -122,7 +123,7 @@ class GoogleCalendarService
             $task->update(['google_event_id' => $eventId]);
 
             return $eventId;
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('Google Calendar create task event failed: ' . $e->getMessage());
             return null;
         }
@@ -135,18 +136,18 @@ class GoogleCalendarService
         }
 
         try {
-            $service = new GoogleCalendar($this->getClient());
+            $service = new \Google\Service\Calendar($this->getClient());
 
-            $event = new GoogleEvent();
+            $event = new \Google\Service\Calendar\Event();
             $event->setSummary($reminder->title);
             $event->setDescription($this->buildReminderDescription($reminder));
 
             $remindAt = \Carbon\Carbon::parse($reminder->remind_at);
 
-            $start = new EventDateTime();
+            $start = new \Google\Service\Calendar\EventDateTime();
             $start->setDateTime($remindAt->toRfc3339String());
             $start->setTimeZone($this->getTimezone());
-            $end = new EventDateTime();
+            $end = new \Google\Service\Calendar\EventDateTime();
             $end->setDateTime($remindAt->copy()->addMinutes(30)->toRfc3339String());
             $end->setTimeZone($this->getTimezone());
 
@@ -159,7 +160,7 @@ class GoogleCalendarService
             $reminder->update(['google_event_id' => $eventId]);
 
             return $eventId;
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('Google Calendar create reminder event failed: ' . $e->getMessage());
             return null;
         }
@@ -174,7 +175,7 @@ class GoogleCalendarService
         }
 
         try {
-            $service = new GoogleCalendar($this->getClient());
+            $service = new \Google\Service\Calendar($this->getClient());
             $calendarId = $this->getCalendarId();
 
             $event = $service->events->get($calendarId, $googleEventId);
@@ -188,7 +189,7 @@ class GoogleCalendarService
             }
 
             if (isset($data['start'])) {
-                $start = new EventDateTime();
+                $start = new \Google\Service\Calendar\EventDateTime();
                 if (strlen($data['start']) <= 10) {
                     $start->setDate($data['start']);
                 } else {
@@ -199,7 +200,7 @@ class GoogleCalendarService
             }
 
             if (isset($data['end'])) {
-                $end = new EventDateTime();
+                $end = new \Google\Service\Calendar\EventDateTime();
                 if (strlen($data['end']) <= 10) {
                     $end->setDate($data['end']);
                 } else {
@@ -212,7 +213,7 @@ class GoogleCalendarService
             $service->events->update($calendarId, $googleEventId, $event);
 
             return true;
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('Google Calendar update event failed: ' . $e->getMessage());
             return false;
         }
@@ -227,10 +228,10 @@ class GoogleCalendarService
         }
 
         try {
-            $service = new GoogleCalendar($this->getClient());
+            $service = new \Google\Service\Calendar($this->getClient());
             $service->events->delete($this->getCalendarId(), $googleEventId);
             return true;
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('Google Calendar delete event failed: ' . $e->getMessage());
             return false;
         }
@@ -245,7 +246,7 @@ class GoogleCalendarService
         }
 
         try {
-            $service = new GoogleCalendar($this->getClient());
+            $service = new \Google\Service\Calendar($this->getClient());
 
             $params = [
                 'timeMin' => \Carbon\Carbon::parse($timeMin)->toRfc3339String(),
@@ -278,7 +279,7 @@ class GoogleCalendarService
             }
 
             return $events;
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('Google Calendar list events failed: ' . $e->getMessage());
             return [];
         }
@@ -290,7 +291,7 @@ class GoogleCalendarService
     {
         try {
             $this->getClient()->revokeToken();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             // ignore
         }
 

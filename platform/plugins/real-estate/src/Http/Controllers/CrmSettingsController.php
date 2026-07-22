@@ -63,24 +63,35 @@ class CrmSettingsController extends BaseController
 
     public function googleCalendarCallback(Request $request, GoogleCalendarService $gcal)
     {
-        $code = $request->query('code');
+        try {
+            $code = $request->query('code');
 
-        if (! $code) {
+            if (! $code) {
+                return redirect()
+                    ->route('crm.settings.index')
+                    ->with('error_msg', 'No se recibió código de autorización de Google.');
+            }
+
+            $success = $gcal->handleCallback($code);
+
             return redirect()
                 ->route('crm.settings.index')
-                ->with('error_msg', 'No se recibió código de autorización de Google.');
+                ->with(
+                    $success ? 'success_msg' : 'error_msg',
+                    $success
+                        ? 'Google Calendar conectado correctamente.'
+                        : 'Error al conectar Google Calendar. Verificá las credenciales.'
+                );
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('GCal callback error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
+
+            return redirect()
+                ->route('crm.settings.index')
+                ->with('error_msg', 'Error: ' . $e->getMessage());
         }
-
-        $success = $gcal->handleCallback($code);
-
-        return redirect()
-            ->route('crm.settings.index')
-            ->with(
-                $success ? 'success_msg' : 'error_msg',
-                $success
-                    ? 'Google Calendar conectado correctamente.'
-                    : 'Error al conectar Google Calendar. Verificá las credenciales.'
-            );
     }
 
     public function googleCalendarDisconnect(GoogleCalendarService $gcal)

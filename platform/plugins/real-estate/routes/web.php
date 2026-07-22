@@ -535,6 +535,12 @@ Route::group(['namespace' => 'Botble\RealEstate\Http\Controllers', 'middleware' 
                     'permission' => 'crm-lead.index',
                 ]);
 
+                Route::post('google-calendar/manual', [
+                    'as' => 'gcal-manual',
+                    'uses' => 'CrmSettingsController@googleCalendarManualCode',
+                    'permission' => 'crm-lead.index',
+                ]);
+
                 Route::get('google-calendar/disconnect', [
                     'as' => 'gcal-disconnect',
                     'uses' => 'CrmSettingsController@googleCalendarDisconnect',

@@ -94,6 +94,51 @@ class CrmSettingsController extends BaseController
         }
     }
 
+    public function googleCalendarManualCode(Request $request, GoogleCalendarService $gcal)
+    {
+        try {
+            $input = trim($request->input('auth_code_url', ''));
+
+            if (! $input) {
+                return redirect()
+                    ->route('crm.settings.index')
+                    ->with('error_msg', 'Pegá la URL o el código de autorización.');
+            }
+
+            $code = $input;
+            if (str_contains($input, 'code=')) {
+                parse_str(parse_url($input, PHP_URL_QUERY) ?: '', $params);
+                $code = $params['code'] ?? '';
+            }
+
+            if (! $code) {
+                return redirect()
+                    ->route('crm.settings.index')
+                    ->with('error_msg', 'No se pudo extraer el código de autorización de la URL proporcionada.');
+            }
+
+            $success = $gcal->handleCallback($code);
+
+            return redirect()
+                ->route('crm.settings.index')
+                ->with(
+                    $success ? 'success_msg' : 'error_msg',
+                    $success
+                        ? 'Google Calendar conectado correctamente.'
+                        : 'Error al conectar Google Calendar. Verificá las credenciales.'
+                );
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('GCal manual code error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
+
+            return redirect()
+                ->route('crm.settings.index')
+                ->with('error_msg', 'Error: ' . $e->getMessage());
+        }
+    }
+
     public function googleCalendarDisconnect(GoogleCalendarService $gcal)
     {
         $gcal->revokeAccess();

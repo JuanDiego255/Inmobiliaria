@@ -187,14 +187,32 @@
             </a>
         @else
             @if($authUrl)
-                <div style="background:linear-gradient(135deg,#fff3e0,#fce4ec);border-radius:10px;padding:16px 20px;margin-bottom:16px;border-left:4px solid #e65100">
-                    <p style="color:#bf360c;font-size:.84rem;margin:0;line-height:1.5">
-                        <strong>Paso final:</strong> Las credenciales están configuradas. Hacé clic en el botón de abajo para autorizar el acceso a Google Calendar.
+                <div style="background:linear-gradient(135deg,#e3f2fd,#e8eaf6);border-radius:10px;padding:16px 20px;margin-bottom:16px;border-left:4px solid #1565c0">
+                    <p style="color:#0d47a1;font-size:.84rem;margin:0;line-height:1.7">
+                        <strong>Paso 1:</strong> Hacé clic en el botón de abajo. Se abrirá una ventana de Google para autorizar el acceso.<br>
+                        <strong>Paso 2:</strong> Después de autorizar, aparecerá una página de error (es normal). Copiá <strong>toda la URL</strong> de la barra de direcciones del navegador.<br>
+                        <strong>Paso 3:</strong> Pegá la URL en el campo de abajo y hacé clic en "Conectar".
                     </p>
                 </div>
-                <a href="{{ $authUrl }}" class="cd-save-btn" style="display:inline-flex;text-decoration:none;background:linear-gradient(135deg,#4285f4,#34a853)">
-                    <span class="material-icons" style="font-size:20px">login</span> Conectar con Google Calendar
+                <a href="{{ $authUrl }}" target="_blank" rel="noopener" class="cd-save-btn" style="display:inline-flex;text-decoration:none;background:linear-gradient(135deg,#4285f4,#34a853);margin-bottom:16px">
+                    <span class="material-icons" style="font-size:20px">open_in_new</span> Abrir autorización de Google
                 </a>
+
+                <form action="{{ route('crm.settings.gcal-manual') }}" method="POST" style="margin-top:8px">
+                    @csrf
+                    <label class="text-title-field" style="margin-bottom:6px;display:block">Pegá la URL completa o el código de autorización:</label>
+                    <div style="display:flex;gap:8px;align-items:stretch">
+                        <input type="text" class="form-control" name="auth_code_url" required
+                            placeholder="https://elite.safeworsolutions.com/auth/gcal.php?code=4/0AX..."
+                            style="flex:1;font-size:.85rem" />
+                        <button type="submit" class="cd-save-btn" style="white-space:nowrap;padding:9px 20px">
+                            <span class="material-icons" style="font-size:18px">link</span> Conectar
+                        </button>
+                    </div>
+                    <small class="form-text text-muted" style="margin-top:6px;display:block">
+                        Después de autorizar en Google, copiá la URL completa de la barra de direcciones (aunque muestre error) y pegala acá.
+                    </small>
+                </form>
             @else
                 <div style="background:#f5f5f5;border-radius:10px;padding:16px 20px;border-left:4px solid #9e9e9e">
                     <p style="color:#616161;font-size:.84rem;margin:0;line-height:1.5">

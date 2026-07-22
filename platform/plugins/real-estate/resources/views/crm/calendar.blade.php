@@ -57,7 +57,14 @@
 
     {{-- Calendar container --}}
     <div class="cd-card" style="padding:20px;min-height:600px">
-        <div id="crmCalendar"></div>
+        <div id="crmCalendar"
+            data-events-url="{{ route('crm.calendar.events') }}"
+            data-update-url="{{ route('crm.calendar.update-event') }}"
+            data-store-url="{{ route('crm.calendar.store-event') }}"
+            data-delete-url="{{ url('/') }}/{{ Botble\Base\Facades\BaseHelper::getAdminPrefix() }}/real-estate/crm/calendar/event"
+            data-csrf="{{ csrf_token() }}"
+            data-gcal="{{ $isGcalConnected ? '1' : '0' }}"
+        ></div>
     </div>
 
     {{-- Legend --}}
@@ -176,15 +183,5 @@
 @push('footer')
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.15/locales/es.global.min.js"></script>
-<script>
-    window.CRM_CALENDAR_CONFIG = {
-        eventsUrl: '{{ route("crm.calendar.events") }}',
-        updateUrl: '{{ route("crm.calendar.update-event") }}',
-        storeUrl: '{{ route("crm.calendar.store-event") }}',
-        deleteUrl: '{{ url("/") }}/{{ Botble\Base\Facades\BaseHelper::getAdminPrefix() }}/real-estate/crm/calendar/event',
-        csrfToken: '{{ csrf_token() }}',
-        isGcalConnected: {{ $isGcalConnected ? 'true' : 'false' }},
-    };
-</script>
 @endpush
 @endsection

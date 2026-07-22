@@ -4,12 +4,22 @@
     var calendar;
     var detailModal, newEventModal;
     var activeSources = ['tasks', 'reminders', 'activities', 'leads', 'google'];
-    var cfg;
+    var cfg = {};
 
     function init() {
-        cfg = window.CRM_CALENDAR_CONFIG || {};
         var calEl = document.getElementById('crmCalendar');
         if (!calEl) return;
+
+        cfg = {
+            eventsUrl: calEl.getAttribute('data-events-url') || '',
+            updateUrl: calEl.getAttribute('data-update-url') || '',
+            storeUrl: calEl.getAttribute('data-store-url') || '',
+            deleteUrl: calEl.getAttribute('data-delete-url') || '',
+            csrfToken: calEl.getAttribute('data-csrf') || '',
+            isGcalConnected: calEl.getAttribute('data-gcal') === '1',
+        };
+
+        if (!cfg.eventsUrl) return;
 
         detailModal = new bootstrap.Modal(document.getElementById('calEventDetailModal'));
         newEventModal = new bootstrap.Modal(document.getElementById('calNewEventModal'));

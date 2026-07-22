@@ -105,7 +105,7 @@
         <div class="cd-webhook-url-box" style="margin-top:10px;margin-bottom:0">
             <label style="font-size:.82rem;color:var(--cd-ink-400);margin-bottom:4px;display:block">URI de redirección autorizada (copiá esto a Google Cloud Console)</label>
             <input type="text" readonly id="gcalRedirectUri"
-                value="{{ url('/') }}/auth/gcal" />
+                value="{{ url('/') }}/auth/gcal.php" />
             <button type="button" class="cd-copy-btn" onclick="copyRedirectUri()">
                 <span class="material-icons" style="font-size:16px">content_copy</span> Copiar
             </button>
@@ -286,7 +286,7 @@
                         <li>En <strong>"Authorized redirect URIs"</strong>, hacé clic en <strong>"+ ADD URI"</strong> y pegá esta URL:</li>
                     </ol>
                     <div class="gcal-uri-box">
-                        <code>{{ url('/') }}/auth/gcal</code>
+                        <code>{{ url('/') }}/auth/gcal.php</code>
                     </div>
                     <ol start="6">
                         <li>Hacé clic en <strong>"Create"</strong></li>

@@ -43,7 +43,7 @@ class GoogleCalendarService
 
     public function getRedirectUri(): string
     {
-        return url('/') . '/auth/gcal';
+        return url('/') . '/auth/gcal.php';
     }
 
     public function getAuthUrl(): string

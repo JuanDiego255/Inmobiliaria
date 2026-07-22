@@ -28,7 +28,6 @@ class CrmCalendarController extends BaseController
         ]);
         Assets::addScriptsDirectly([
             'vendor/core/plugins/real-estate/js/crm-modals.js',
-            'vendor/core/plugins/real-estate/js/crm-calendar.js',
         ]);
 
         $gcal = app(GoogleCalendarService::class);

@@ -4,9 +4,10 @@
     var calendar;
     var detailModal, newEventModal;
     var activeSources = ['tasks', 'reminders', 'activities', 'leads', 'google'];
-    var cfg = window.CRM_CALENDAR_CONFIG || {};
+    var cfg;
 
     function init() {
+        cfg = window.CRM_CALENDAR_CONFIG || {};
         var calEl = document.getElementById('crmCalendar');
         if (!calEl) return;
 

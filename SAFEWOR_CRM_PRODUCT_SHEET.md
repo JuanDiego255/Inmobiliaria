@@ -25,7 +25,8 @@ Arquitectura multi-tenant: un solo despliegue sirve a multiples empresas, cada u
 - Facilidades y amenidades asociadas (piscina, gimnasio, seguridad, etc.)
 - Vista de grilla con filtros avanzados en el admin
 - Duplicar propiedades para crear variaciones rapidas
-- Importacion masiva desde Excel/CSV (bulk import)
+- Generacion de PDF "Ficha Tecnica" por propiedad (DomPDF): imagen, specs, descripcion, amenidades
+- Importacion masiva desde Excel/CSV (bulk import) con template descargable
 - Exportacion de propiedades a Excel
 
 ### Tours Virtuales 360
@@ -59,22 +60,44 @@ Arquitectura multi-tenant: un solo despliegue sirve a multiples empresas, cada u
 - Leads recientes con acceso rapido
 - Timeline de actividades
 - Acciones rapidas (nuevo lead, nueva tarea, nuevo recordatorio)
-- Resumen visual del pipeline (embudo de ventas)
+- Resumen visual del pipeline (embudo de ventas con graficos ApexCharts)
+- Embudo de conversion con porcentajes por etapa
+- Rendimiento por agente: leads totales, ganados, perdidos, tasa de cierre, score promedio
 
 #### Leads
 
 - Captura automatica desde Facebook Lead Ads, Instagram DMs, Messenger y WhatsApp
+- 11 fuentes de lead: WhatsApp, Facebook Lead Ads, Instagram DM, Messenger, sitio web, consultas, referido, redes sociales, telefono, manual, otro
 - Tabla completa con filtros, busqueda y paginacion
 - Detalle de lead con historial completo (actividades, notas, propiedades vistas)
-- Asignacion a agentes (manual o automatica)
-- Fuentes de lead: WhatsApp, Facebook, Instagram, Messenger, sitio web, manual
+- Asignacion a agentes (manual o automatica al agente con menos carga)
+- Deteccion de duplicados automatica (por email o telefono) antes de crear
 - Exportacion de leads a Excel
+
+#### Lead Scoring Automatico
+
+- Puntuacion automatica de 0 a 100 basada en:
+  - Completitud de datos (+15 por email, +15 por telefono, +10 por presupuesto)
+  - Fuente del lead (referido: +20, sitio web: +15, redes sociales: +10)
+  - Cantidad de actividades registradas (hasta +15)
+  - Propiedades asociadas (hasta +10)
+- Recalculo masivo disponible desde el admin
+
+#### Automatizacion por Etapa
+
+Al cambiar un lead de etapa, el sistema automaticamente:
+- Registra la actividad del cambio
+- Crea tareas de seguimiento con prioridad y fecha limite:
+  - Contactado: "Calificar lead" (2 dias, prioridad media)
+  - Calificado: "Preparar propuesta comercial" (3 dias, prioridad alta)
+  - En negociacion: "Seguimiento de negociacion" (5 dias, prioridad alta)
+  - Ganado: "Cerrar documentacion" (7 dias, prioridad urgente)
 
 #### Pipeline de Ventas (Kanban)
 
 - Vista Kanban drag & drop con 6 etapas: Nuevo, Contactado, Calificado, En Negociacion, Ganado, Perdido
 - Arrastrar leads entre etapas para actualizar estado
-- Cards de lead con info clave (nombre, telefono, fuente, fecha)
+- Cards de lead con info clave (nombre, telefono, fuente, fecha, score)
 - Crear leads directamente desde el pipeline
 
 #### Tareas
@@ -126,24 +149,28 @@ Arquitectura multi-tenant: un solo despliegue sirve a multiples empresas, cada u
 
 ### Sitio Web Publico (Tema Flex Home)
 
-- Pagina principal con propiedades destacadas y buscador
-- Busqueda avanzada: por ubicacion, tipo, categoria, precio, habitaciones
-- Mapa interactivo con propiedades geolocalizadas (Google Maps)
-- Listado de propiedades con filtros y paginacion
-- Detalle de propiedad: galeria, descripcion, amenidades, ubicacion en mapa, agente de contacto, propiedades similares
-- Listado de proyectos inmobiliarios
-- Pagina de tours virtuales 360
-- Perfiles publicos de agentes con sus propiedades
-- Formulario de contacto / consulta
+- Pagina principal configurable con shortcodes (buscador, propiedades destacadas, carrusel, proyectos, agentes, noticias)
+- Buscador con filtros: ubicacion (estado/ciudad cascading), tipo (venta/alquiler), categoria, precio, habitaciones, banos
+- Carrusel de propiedades con scroll horizontal, filtrado en cliente y contador de progreso
+- Mapa interactivo con propiedades geolocalizadas (Leaflet.js / OpenStreetMap)
+- Listado de propiedades con filtros, paginacion y ordenamiento (precio, fecha, nombre)
+- Detalle de propiedad: galeria mosaico con lightbox fullscreen, ficha tecnica, amenidades, facilidades con distancia, ubicacion en mapa, video embebido, tour virtual 360, compartir en redes, comentarios de Facebook, resenas con estrellas, agente de contacto con boton de WhatsApp, propiedades similares
+- Listado de proyectos inmobiliarios con carrusel y filtros
+- Pagina dedicada de tours virtuales 360 con busqueda
+- Perfiles publicos de agentes con sus propiedades, biografia y estadisticas
+- Formulario de contacto con mapa de oficina, horario y redes sociales
+- Pagina de carreras/empleos (ofertas de trabajo)
 - Blog / noticias integrado
 - Paginas estaticas (Acerca de, Terminos, Politicas)
-- Multi-idioma (plugin de traduccion)
+- Multi-idioma con selector de idioma y soporte RTL (derecha-a-izquierda)
 - Multi-moneda configurable
-- Diseno responsive (mobile-first)
-- SEO optimizado (meta tags, slugs amigables, sitemap)
+- Diseno responsive (mobile-first) con menu fullscreen en movil
+- Header sticky con blur al hacer scroll
+- SEO optimizado (meta tags, Open Graph, slugs amigables, sitemap)
 - RSS Feed
 - Cookie consent (GDPR)
 - Lista de deseos (wishlist)
+- Propiedades vistas recientemente (cookie-based)
 - Carga dinamica de ciudades por estado (AJAX)
 
 ---
